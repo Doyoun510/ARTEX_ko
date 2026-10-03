@@ -37,7 +37,7 @@ AI 자율 침투 테스트 시스템 (Go 백엔드 + Next.js 프런트엔드)
 | :---: |
 | ![자산 커버리지 맵](screenshots/assets_test.png) |
 
-| 트래픽 레코딩 | 휴먼 인 더 루프 대화 |
+| 트래픽 레코딩 | human-in-the-loop 대화 |
 | :---: | :---: |
 | ![트래픽](screenshots/traffic.png) | ![대화](screenshots/chat.png) |
 
@@ -97,7 +97,7 @@ docker compose up -d          # autumn27/artex 이미지 + postgres 가져오기
 # → http://localhost:8787
 ```
 
-이미지에는 상용 도구(ripgrep/curl/vim/npm/nmap…)가 포함되어 있으며; `./skills`와 `./data`는 바인드 마운트로 영속화됩니다.
+이미지에는 자주 쓰는 도구(ripgrep/curl/vim/npm/nmap…)가 포함되어 있으며; `./skills`와 `./data`는 바인드 마운트로 영속화됩니다.
 
 원격 MCP는 시스템 설정에서 `http`(Streamable HTTP) 또는 `sse`(구버전 SSE)를 선택할 수 있습니다.
 구버전 SSE 서비스는 보통 `GET /sse`로 이벤트 스트림을 수립한 뒤, 서비스가 반환하는
@@ -306,7 +306,7 @@ flowchart TB
     GO["goals　목표 분해 + 범위 추출"]
     PL["planner　플래너（유일한 의도 생성자）"]
     WK["worker　실행자 ×N"]
-    MA["mainagent　휴먼 인 더 루프"]
+    MA["mainagent　human-in-the-loop"]
   end
   subgraph DB["PostgreSQL"]
     AGRAPH["자산 그래프　assets / companies / task_scope"]
@@ -339,7 +339,7 @@ flowchart TB
 
 | 계층 | 책임 |
 | --- | --- |
-| **프런트엔드** | Next.js 정적 내보내기, `go:embed`로 단일 바이너리에 임베드; 작업/자산/탐색 체인/커버리지 맵 시각화, 휴먼 인 더 루프 대화 |
+| **프런트엔드** | Next.js 정적 내보내기, `go:embed`로 단일 바이너리에 임베드; 작업/자산/탐색 체인/커버리지 맵 시각화, human-in-the-loop 대화 |
 | **server** | `net/http` 라우팅 + JWT 인증 + SSE; `Manager`가 작업·엔진·DB store의 생명주기를 관리 |
 | **engine** | 작업마다 `plannerLoop` 1개 + worker goroutine N개; 의도 획득(claim)·타임아웃/일시정지/drain |
 | **agent** | goals / planner / worker / mainagent, `ToolSet`이 이중 그래프를 LLM 도구로 노출 |
@@ -350,8 +350,8 @@ flowchart TB
 
 시스템은 「**목표가 무엇인가**」와 「**어느 정도까지 테스트했는가**」를 서로 독립적이면서도 앵커로 연결된 두 개의 그래프로 나눕니다:
 
-- **자산 그래프(Asset Graph, 전역 공유)**: 작업을 가로질러 동일한 하나의 자산 진실 저장소. 노드는 `root_domain / subdomain / ip / service / app / endpoint`이며 회사에 귀속됩니다; 도메인→서브도메인→서비스→엔드포인트의 부모-자식 관계와 중복 제거 key는 모두 프로그램이 계산하고, agent는 원시 정보만 제출합니다.
-- **탐색 그래프(Exploration Graph, 작업별 독립)**: 한 작업의 "사고와 추진" 과정. 노드는 `goal（목표）/ intent（의도）/ fact（사실）/ finding（취약점）/ hint（힌트）`이며, `spawns / derived_from / yields / proves` 등의 엣지로 **혈통 체인(lineage chain)**을 이루어 "어떤 방향이 어떤 사실에서 파생되어 무엇을 산출했는가"에 답합니다.
+- **자산 그래프(Asset Graph, 전역 공유)**: 작업을 가로질러 공유되는 자산의 단일 신뢰 소스(SSOT). 노드는 `root_domain / subdomain / ip / service / app / endpoint`이며 회사에 귀속됩니다; 도메인→서브도메인→서비스→엔드포인트의 부모-자식 관계와 중복 제거 key는 모두 프로그램이 계산하고, agent는 원시 정보만 제출합니다.
+- **탐색 그래프(Exploration Graph, 작업별 독립)**: 한 작업의 "사고와 추진" 과정. 노드는 `goal（목표）/ intent（의도）/ fact（사실）/ finding（취약점）/ hint（힌트）`이며, `spawns / derived_from / yields / proves` 등의 엣지로 **계보 체인(lineage chain)**을 이루어 "어떤 방향이 어떤 사실에서 파생되어 무엇을 산출했는가"에 답합니다.
 - **두 그래프는 앵커로 연결됩니다**: `exploration_anchors(node_id, asset_id)`가 의도/사실/취약점을 구체적인 자산에 앵커링합니다 — 그래서 "탐색 방향"에서 그것이 어떤 자산을 공격했는지도 볼 수 있고, "어떤 자산"에서 그것이 본 작업에서 어떤 의도로 테스트되었고 어떤 사실을 얻었는지도 역추적할 수 있습니다. 이는 **자산 테스트 커버리지**와 **자산 커버리지 맵**(범위 내 자산 + 테스트 완료 하이라이트)도 뒷받침합니다.
 
 ```mermaid
@@ -368,7 +368,7 @@ flowchart LR
     F1 -->|derived_from| I2
     I2 -->|proves| FD
   end
-  subgraph AG["자산 그래프（전역 공유 · 진실 저장소）"]
+  subgraph AG["자산 그래프（전역 공유 · 단일 신뢰 소스(SSOT)）"]
     direction TB
     RD["root_domain"]
     SD["subdomain"]
@@ -384,9 +384,9 @@ flowchart LR
 
 > 역할 분담: **planner**는 탐색 그래프의 상황을 읽고, 목표를 판단하며, 커버되지 않은 새 방향이 있을 때만 **의도**를 frontier에 투입합니다; **worker**는 **의도 한 건**을 받아 실제 도구로 실행하고, 새 자산/사실/취약점을 두 그래프에 기록한 뒤 멈춥니다. 자산 그래프는 공유 사실이고, 탐색 그래프는 작업별 추진 체인입니다.
 
-### 엔진과 의도 생명주기(한 번의 탐색 폐곡선)
+### 엔진과 의도 생명주기(한 번의 탐색 폐루프)
 
-엔진은 **이벤트 기반** 폐곡선입니다: 그래프가 바뀌면 planner를 깨우고, planner가 의도를 투입하면, worker가 의도를 받아 실행하고 기록하며, 기록이 다시 다음 라운드를 촉발합니다 — 목표가 증명될 때까지(`prove_goal`).
+엔진은 **이벤트 기반** 폐루프입니다: 그래프가 바뀌면 planner를 깨우고, planner가 의도를 투입하면, worker가 의도를 받아 실행하고 기록하며, 기록이 다시 다음 라운드를 촉발합니다 — 목표가 증명될 때까지(`prove_goal`).
 
 ```mermaid
 sequenceDiagram
@@ -408,7 +408,7 @@ sequenceDiagram
   PX-->>W: 응답(전 과정 흔적 + CA 검증)
   W->>DB: fact / asset / finding 기록 + 매 단계 activity
   DB-->>EV: 그래프 변경
-  EV-->>P: 재깨우기(폐곡선)
+  EV-->>P: 재깨우기(폐루프)
 ```
 
 ### worker 간 프로세스 수준 정보 교환
@@ -432,7 +432,7 @@ flowchart LR
 
 ### planner 멀티라운드 공유 todolist → 안정적인 공격 체인
 
-실제 공격 체인은 보통 **앞뒤 의존성이 있는 다단계 시퀀스**입니다(예: 주입점 발견 → 자격 증명 획득 → 측면 이동 → 권한 상승). 이것들을 한꺼번에 병렬로 투입하면 엉망이 될 뿐입니다. 그래서 planner는 **작업별로 보존되고 깨우기(wake) 간에 공유되는 계획 할 일 목록(todolist)**을 보유합니다:
+실제 공격 체인은 보통 **앞뒤 의존성이 있는 다단계 시퀀스**입니다(예: 주입점 발견 → 자격 증명 획득 → 횡적 이동 → 권한 상승). 이것들을 한꺼번에 병렬로 투입하면 엉망이 될 뿐입니다. 그래서 planner는 **작업별로 보존되고 깨우기(wake) 간에 공유되는 계획 할 일 목록(todolist)**을 보유합니다:
 
 - planner는 이벤트 기반입니다 — 그래프가 바뀌면 깨어나지만, **매 깨우기는 완전히 새로운 세션**입니다; 공유 todolist 덕분에 하나의 직렬 익스플로잇 체인을 **한 번 기록**해 두고, 이후 여러 라운드에 걸쳐 **의존성에 따라 단계적으로 의도를 투입**하며, 전체 체인을 한 라운드에 전부 앞당겨 펼치지 않습니다;
 - 매 라운드마다 「선행 단계가 완료되고, 그것이 의존하는 fact가 이미 존재하는」 다음 단계에만 의도를 투입하며, 진행에 따라 목록을 업데이트합니다(fact로 충족된 단계를 완료로 표시).
@@ -443,7 +443,7 @@ flowchart TB
     direction LR
     T1["1 주입점　[완료]"]
     T2["2 자격증명 획득　[진행 중]"]
-    T3["3 측면 이동　[선행 대기]"]
+    T3["3 횡적 이동　[선행 대기]"]
     T4["4 권한 상승　[선행 대기]"]
     T1 -.선행충족.-> T2 -.-> T3 -.-> T4
   end
@@ -458,7 +458,7 @@ flowchart TB
 
 ## 교류 그룹
 
-QR 코드를 스캔해 위챗 공식계정 **SecSentry**를 팔로우하고, 공식계정 후방에서 쪽지(DM)를 보내면 그룹에 참여해 교류할 수 있습니다.
+QR 코드를 스캔해 위챗 공식계정 **SecSentry**를 팔로우하고, 공식계정에 쪽지(DM)를 보내면 그룹에 참여해 교류할 수 있습니다.
 
 <div align="center">
 
@@ -498,7 +498,7 @@ https://github.com/oritera/Cairn
 
 ### 준법 책임
 
-사용자는 소재 국가/지역의 네트워크 보안, 데이터 보호 및 컴퓨터 범죄에 관한 모든 법률·법규를 스스로 준수해야 합니다(중국 본토의 경우 《네트워크안전법》 《데이터안전법》 《개인정보보호법》 및 관련 사법 해석을 포함하되 이에 국한되지 않음). **본 도구의 사용으로 발생하는 모든 법적 책임과 결과는 사용자 본인이 부담합니다.**
+사용자는 소재 국가/지역의 네트워크 보안, 데이터 보호 및 컴퓨터 범죄에 관한 모든 법률·법규를 스스로 준수해야 합니다(중국 본토의 경우 사이버보안법《网络安全法》·데이터보안법《数据安全法》·개인정보보호법《个人信息保护法》 및 관련 사법 해석을 포함하되 이에 국한되지 않음). **본 도구의 사용으로 발생하는 모든 법적 책임과 결과는 사용자 본인이 부담합니다.**
 
 ### 면책 조항
 
