@@ -92,8 +92,8 @@ cd ARTEX
 ```bash
 git clone https://github.com/Autumn-27/ARTEX.git
 cd ARTEX
-cp .env.example .env          # 填 POSTGRES_PASSWORD、可选 ANTHROPIC_API_KEY
-docker compose up -d          # 拉取 autumn27/artex 镜像 + postgres
+cp .env.example .env          # POSTGRES_PASSWORD 입력, 선택적으로 ANTHROPIC_API_KEY
+docker compose up -d          # autumn27/artex 이미지 + postgres 가져오기
 # → http://localhost:8787
 ```
 
@@ -109,7 +109,7 @@ docker compose up -d          # 拉取 autumn27/artex 镜像 + postgres
 [Releases](https://github.com/Autumn-27/ARTEX/releases)에서 해당 플랫폼의 zip을 내려받아 압축을 풀면 `artex` + `start.sh`(Windows는 `start.bat`) + `skills/` + `config.example.json`을 얻습니다:
 
 ```bash
-cp config.example.json config.json   # 填好 database 连接
+cp config.example.json config.json   # database 연결 정보 입력
 ./start.sh                           # → http://localhost:8787
 ```
 
@@ -119,11 +119,11 @@ cp config.example.json config.json   # 填好 database 连接
 ### 방식 4: 소스에서 단일 바이너리 컴파일
 
 ```bash
-# 1) 前端静态导出
+# 1) 프런트엔드 정적 내보내기
 cd web && npm ci && npm run build:static && cd ..
-# 2) 拷进内嵌目录
+# 2) 임베드 디렉터리로 복사
 cp -r web/out server/webui/dist
-# 3) 编译（-tags embedui 才内嵌前端）
+# 3) 컴파일（-tags embedui 를 줘야 프런트엔드 임베드）
 CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 ./start.sh
 ```
@@ -134,7 +134,7 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 
 ```bash
 ./build.sh --release
-# 产物：dist/artex-0.3.3-*.zip
+# 산출물: dist/artex-0.3.3-*.zip
 ```
 
 UPX 자가 압축 해제 바이너리는 일부 Linux 커널, 가상화 환경 또는 보안 정책과 호환되지 않을 수 있어 기본적으로 비활성화됩니다. `ARTEX_TARGETS`로 대상을 커스터마이즈할 수 있으며; 대상 실행 환경의 호환성을 확인했다면 `--upx`를 명시적으로 전달해 바이너리를 더 줄일 수 있습니다:
@@ -179,11 +179,11 @@ cd ARTEX
 
 ```bash
 cd ARTEX
-git pull                       # 更新 compose / 脚本（可选）
-# 指定版本：在 .env 设 ARTEX_TAG=v0.2.0；不设则用 latest
+git pull                       # compose / 스크립트 업데이트（선택）
+# 버전 지정: .env 에 ARTEX_TAG=v0.2.0 설정; 미설정 시 latest 사용
 docker compose pull artex
-docker compose up -d artex     # 换新镜像重启 → 自动迁移 schema
-docker image prune -f          # 清理旧镜像（可选）
+docker compose up -d artex     # 새 이미지로 교체 후 재시작 → schema 자동 마이그레이션
+docker image prune -f          # 오래된 이미지 정리（선택）
 ```
 
 ### 방식 4: 사전 컴파일 바이너리(Releases)
@@ -191,7 +191,7 @@ docker image prune -f          # 清理旧镜像（可选）
 [Releases](https://github.com/Autumn-27/ARTEX/releases)에서 새 버전 zip을 내려받고, 기존 프로세스를 중지한 뒤 `artex`와 `skills/`를 덮어쓰고(당신의 `config.json`과 `data/`는 보존), 재시작하면 됩니다:
 
 ```bash
-cp -r <解压目录>/skills ./ && cp <解压目录>/artex ./
+cp -r <압축해제디렉터리>/skills ./ && cp <압축해제디렉터리>/artex ./
 ./start.sh
 ```
 
@@ -202,7 +202,7 @@ git pull
 cd web && npm ci && npm run build:static && cd ..
 cp -r web/out server/webui/dist
 CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
-# 重启 ./start.sh
+# ./start.sh 재시작
 ```
 
 ---
@@ -245,7 +245,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # SSE 关键项：关缓冲、长超时、HTTP/1.1
+        # SSE 핵심 항목: 버퍼링 끄기, 긴 타임아웃, HTTP/1.1
         proxy_buffering off;
         proxy_cache off;
         proxy_read_timeout 3600s;
@@ -276,7 +276,7 @@ server {
 ### 로컬 실행 및 테스트
 
 ```bash
-./dev.sh    # 后端(:8787) + 流量代理(:8788) + 前端 next dev(:5173) → http://localhost:5173
+./dev.sh    # 백엔드(:8787) + 트래픽 프록시(:8788) + 프런트엔드 next dev(:5173) → http://localhost:5173
 ```
 
 - 백엔드: `go run ./cmd/artex`(`-tags embedui` 없이는 프런트엔드를 임베드하지 않음)
