@@ -9,6 +9,12 @@ AI 自主渗透测试系统（Go 后端 + Next.js 前端）
 
 </div>
 
+<!-- README-I18N:START -->
+
+**简体中文** | [한국어](./README.ko.md)
+
+<!-- README-I18N:END -->
+
 ---
 
 ## 截图预览
