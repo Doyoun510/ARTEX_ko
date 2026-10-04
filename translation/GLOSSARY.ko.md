@@ -95,7 +95,7 @@
 | 원문(zh) | 영문 | 한국어 | 비고 |
 | --- | --- | --- | --- |
 | 仪表盘 | dashboard | 대시보드 | |
-| 任务 | task | 작업 | 전역 통일 |
+| 任务 | task | 작업 | `[확정]` 전역 통일. `操作`(동작)과 구분 |
 | 资产 | asset | 자산 | |
 | 流量 | traffic | 트래픽 | |
 | 流量录制 | traffic recording | 트래픽 레코딩 | |
@@ -147,10 +147,43 @@
 
 ---
 
+### 파일/워크스페이스·상세 화면 용어 (UI 1단계 등재)
+
+| 원문(zh) | 영문 | 한국어 | 비고 |
+| --- | --- | --- | --- |
+| 刷新 | refresh | 새로고침 | |
+| 名称 | name | 이름 | |
+| 大小 | size | 크기 | |
+| 目录 | directory | 디렉터리 | |
+| 文件 / 文件夹 | file / folder | 파일 / 폴더 | |
+| 上传 / 下载 | upload / download | 업로드 / 다운로드 | |
+| 编辑 | edit | 편집 | |
+| 二进制 | binary | 바이너리 | |
+| 操作 | action / operation | 동작 | `[확정]` 테이블 액션 열 포함. `任务`(작업)과 구분하며 "조작" 대신 "동작" 사용 |
+| 参数 | parameter | 파라미터 | `[확정]` 명령·함수·도구 스키마 모두 통일. 이전 인수/매개변수 구분 결정은 취소. 파라미터명(식별자)은 DNT(5.3) |
+| 调用 | call | 호출 | `工具调用`=도구 호출 |
+| 详情 | detail | 상세 | |
+| 概览 / 总览 | overview | 개요 | |
+| 链路图 | lineage/chain graph | 체인 그래프 | 취약점 상세의 체인 탭에 한정. 탐색 그래프(`探索图`)·탐색 체인(`探索链路`)·계보 체인(`血缘链`)과 구분 |
+| 涉及资产 | involved assets | 관련 자산 | |
+| 来源任务 | source task | 출처 작업 | 상속 표시 |
+| 只读 | read-only | 읽기 전용 | |
+| 未分类 | uncategorized | 미분류 | 표시 기본값(name/vulnclass 없을 때) |
+| 可见性 | visibility | 노출 설정 | `[확정]` Agent별 리소스 노출 문맥에 한정 |
+| 授权可见 | grant visibility | 노출 허용 | `[확정]` Agent별 리소스 노출 문맥에 한정 |
+| 可见性（按 Agent 授权） | visibility (per-Agent grant) | 노출 설정(Agent별 허용) | `[확정]` Agent별 리소스 노출 문맥에 한정 |
+| 取消…可见 (노출 설정 취소·해제 동작) | revoke visibility | 노출 해제 | `[확정]` Agent별 리소스 노출 문맥에 한정. 일반 승인·취소 문구에는 적용하지 않음 |
+
+새 용어 등록은 **표시 문구의 번역 기준**이다. 식별자·스키마 키·실제 파라미터 값·명령 예시·헤더 예시·계약 문자열·DNT는 계속 보존한다(5장).
+
 ## 3. 인프라·운영 용어
 
 | 원문(zh) | 영문 | 한국어 | 비고 |
 | --- | --- | --- | --- |
+| 请求头 | request header | 요청 헤더 | `[확정]` 헤더 키·값·예시는 DNT |
+| 传输方式 | transport | 전송 방식 | `[확정]` 표시 문구만 번역. `stdio`·`http`·`sse` 값은 DNT |
+| TLS 证书校验 | TLS certificate verification | TLS 인증서 검증 | `[확정]` 표시 문구만 번역. 검증 로직·설정값은 보존 |
+| 自签证书 | self-signed certificate | 자체 서명 인증서 | `[확정]` |
 | 反向代理 | reverse proxy | 리버스 프록시 | |
 | 同源 | same-origin | 동일 출처(same-origin) | 첫 등장 병기(6장). UI는 "동일 출처" |
 | 缓冲 | buffering | 버퍼링 | |
@@ -351,7 +384,7 @@ role enum: `baseline` · `proof` · `verification` · `supporting`
 | `system/intercept/page.tsx:747` | 禁止 — 阻断，返回拒绝消息给模型 | 금지 — 차단, 거부 메시지를 모델에 반환 | 규칙 동작 설명 |
 | `system/intercept/page.tsx:754` | 拒绝消息（返回给模型） | 거부 메시지(모델에 반환) | |
 | `system/intercept/page.tsx:799` | 自动拒绝 | 자동 거부 | 승인 시간 초과 시 동작 |
-| `overview-tab.tsx:575`, `lib/types.ts:459` (작업 제약 `allow`/`deny`) | 允许 / 禁止 | 허용 / **금지** | 작업의 조작 제약 관리 |
+| `overview-tab.tsx:575`, `lib/types.ts:459` (작업 제약 `allow`/`deny`) | 允许 / 禁止 | 허용 / **금지** | 작업의 동작 제약 관리 |
 | `status.ts` `audit` (`allow`/`block`) | 放行 / 拦截 | 허용 / 차단 | 감사 로그 라벨 |
 
 > 원칙: 사람이 거절하거나 시간 초과로 거절되면 **거부**, 규칙·인터셉트가 자동으로 막으면 **차단**, 작업 제약의 `deny`는 **금지**. 소스의 중국어가 일관되지 않아서 코드만으로는 구분되지 않으므로, 새 화면을 번역할 때는 이 표에서 가장 가까운 맥락을 찾아 따릅니다.
