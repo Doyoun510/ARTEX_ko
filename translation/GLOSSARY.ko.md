@@ -230,6 +230,11 @@
 | (数据库)迁移 | migration | 마이그레이션 | |
 | 幂等 | idempotent | 멱등 | |
 | 全局代理 | global proxy | 전역 프록시 | |
+| 流量捕获 | traffic capture | 트래픽 캡처 | `[확정]` 트래픽 캡처 기능 문맥 |
+| 出口代理 | outbound proxy | 아웃바운드 프록시 | `[확정]` 외부 요청의 프록시 문맥. 키·명령·실제 설정값·계약 문자열은 DNT |
+| 跳板 | relay server | 경유 서버 | `[확정]` 프록시를 통한 경유 접속 문맥 |
+| 上游 | upstream | 업스트림 | `[확정]` 레코딩 프록시의 상위 프록시 문맥. 업스트림 저장소와 구분 |
+| 解释器 | interpreter | 인터프리터 | `[확정]` Python 등 프로그램 실행 인터프리터 문맥. 경로·명령·실제 설정값은 DNT |
 | 并发 | concurrency | 동시성 | |
 | 调度循环 | schedule loop | 스케줄 루프 | |
 | 生命周期 | lifecycle | 생명주기 | |
@@ -250,6 +255,7 @@
 | 凭据 | credential | 자격 증명 | |
 | 横向 | lateral movement | 횡적 이동 | |
 | 提权 | privilege escalation | 권한 상승 | |
+| 爆破 | brute force | 무차별 대입 | `[확정]` 보안 공격 기법 문맥 |
 | 攻防对抗 | attack-defense confrontation | 공격·방어 대결 | `[확정]` 보안 공격·방어 활동 문맥 |
 | 红蓝演练 | red-team/blue-team exercise | 레드팀·블루팀 훈련 | `[확정]` 보안 훈련 문맥 |
 | 拒绝服务 | denial of service | 서비스 거부 | `[확정]` DoS/DDoS 문맥. 약어는 원문 보존 |
