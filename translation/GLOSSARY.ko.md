@@ -264,6 +264,8 @@
 | 解析类型 / 解析值 | record type / value | 레코드 유형 / 레코드 값 | DNS 레코드 |
 | 移出 | remove | 제외 | 작업에서 빼냄 |
 | 归档 | archive | 아카이브 | |
+| 软删除 | soft delete | 소프트 삭제 | **[확정]** 데이터를 실제로 지우지 않고 상태로만 표시하는 과거 방식. intent 상태 `stopped` 주석(`web/src/lib/status.ts`) 문맥. enum 값은 DNT |
+| 假删除 | logical delete | 논리 삭제 | **[확정]** 노드와 계보는 보존하고 논리적으로만 삭제 표시(삭제 사유는 `delete_reason`). intent 상태 `deleted` 주석 문맥. enum 값·필드명은 DNT |
 | 暂停 / 恢复 | pause / resume | 일시 중지 / 재개 | enum `paused`는 DNT |
 | 播报板 | broadcast board | 브로드캐스트 | 탭 이름 |
 | 黑板 | blackboard | 블랙보드 | |
@@ -411,7 +413,7 @@
 | --- | --- |
 | 위험도 `severity` | `critical` 严重 → 심각 · `high` 高危 → 높음 · `medium` 中危 → 중간 · `low` 低危 → 낮음 |
 | 의도 `intent` | `open` 待领 → 대기 · `running` 执行中 → 실행 중 · `paused` 已暂停 → 일시 중지됨 · `done` 已完成 → 완료 · `blocked` 执行出错 → 실행 오류 · `exhausted` 预算耗尽 → 예산 소진 · `stopped` 已停止 → 중지됨 · `deleted` 已删除 → 삭제됨 |
-| 작업 `task` | `created` 已创建 → 생성됨 · `queued` 排队中 → 대기열 · `running` 运行中 → 실행 중 · `paused` 已暂停 → 일시 중지됨 · `done` 已完成 → 완료 · `failed` 失败 → 실패 · `timeout` 已超时 → 시간 초과 |
+| 작업 `task` | `created` 已创建 → 생성됨 · `queued` 排队中 → 대기 중 · `running` 运行中 → 실행 중 · `paused` 已暂停 → 일시 중지됨 · `done` 已完成 → 완료 · `failed` 失败 → 실패 · `timeout` 已超时 → 시간 초과 |
 | 엔진 `engine` | `exploring` 探索中 → 탐색 중 · `paused` 已暂停 → 일시 중지됨 · `stalled` 停滞 → 정체 · `idle` 空闲 → 유휴 |
 | 목표 `goal` | `open` 进行中 → 진행 중 · `met` 已达成 → 달성 · `abandoned` 已放弃 → 포기됨 |
 | 감사 `audit` | `allow` 放行 → 허용 · `block` 拦截 → 차단 |
