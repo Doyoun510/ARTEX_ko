@@ -171,7 +171,7 @@ export default function WorkspacePage() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 헤더: 브레드크럼 + 조작 */}
+      {/* 헤더: 브레드크럼 + 동작 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1 text-sm">
           <HardDriveIcon className="text-muted-foreground mr-1 size-4 shrink-0" />
@@ -219,7 +219,7 @@ export default function WorkspacePage() {
                 <TableHead>이름</TableHead>
                 <TableHead className="w-28 text-right">크기</TableHead>
                 <TableHead className="w-40">수정 시간</TableHead>
-                <TableHead className="w-24 text-right">조작</TableHead>
+                <TableHead className="w-24 text-right">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
