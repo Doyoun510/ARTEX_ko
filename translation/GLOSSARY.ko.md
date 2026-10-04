@@ -147,6 +147,29 @@
 
 ---
 
+### 파일/워크스페이스·상세 화면 용어 (UI 1단계 등재)
+
+| 원문(zh) | 영문 | 한국어 | 비고 |
+| --- | --- | --- | --- |
+| 刷新 | refresh | 새로고침 | |
+| 名称 | name | 이름 | |
+| 大小 | size | 크기 | |
+| 目录 | directory | 디렉터리 | |
+| 文件 / 文件夹 | file / folder | 파일 / 폴더 | |
+| 上传 / 下载 | upload / download | 업로드 / 다운로드 | |
+| 编辑 | edit | 편집 | |
+| 二进制 | binary | 바이너리 | |
+| 操作 | action / operation | 조작 | 테이블 액션 열 포함. `任务`(작업)과 혼동 피해 "조작" |
+| 参数 | parameter | 파라미터 | 표시용. 파라미터명(식별자)은 DNT(5.3) |
+| 调用 | call | 호출 | `工具调用`=도구 호출 |
+| 详情 | detail | 상세 | |
+| 概览 / 总览 | overview | 개요 | |
+| 链路图 | lineage/chain graph | 체인 그래프 | 취약점 상세의 체인 탭 |
+| 涉及资产 | involved assets | 관련 자산 | |
+| 来源任务 | source task | 출처 작업 | 상속 표시 |
+| 只读 | read-only | 읽기 전용 | |
+| 未分类 | uncategorized | 미분류 | 표시 기본값(name/vulnclass 없을 때) |
+
 ## 3. 인프라·운영 용어
 
 | 원문(zh) | 영문 | 한국어 | 비고 |
