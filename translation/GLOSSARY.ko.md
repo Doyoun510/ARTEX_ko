@@ -232,6 +232,8 @@
 | (数据库)迁移 | migration | 마이그레이션 | |
 | 幂等 | idempotent | 멱등 | |
 | 全局代理 | global proxy | 전역 프록시 | |
+| 网段 | network range | 네트워크 대역 | `[확정]` 회사 자산 범위의 CIDR 입력 안내 문맥 |
+| 网段前缀 | network prefix length | 네트워크 접두사 길이 | `[확정]` 회사 자산 범위의 CIDR 비트 길이 문맥. /16·/32 등 값과 검증 조건은 보존 |
 | 并发 | concurrency | 동시성 | |
 | 调度循环 | schedule loop | 스케줄 루프 | |
 | 生命周期 | lifecycle | 생명주기 | |
