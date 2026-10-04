@@ -250,6 +250,16 @@
 | 凭据 | credential | 자격 증명 | |
 | 横向 | lateral movement | 횡적 이동 | |
 | 提权 | privilege escalation | 권한 상승 | |
+| 攻防对抗 | attack-defense confrontation | 공격·방어 대결 | `[확정]` 보안 공격·방어 활동 문맥 |
+| 红蓝演练 | red-team/blue-team exercise | 레드팀·블루팀 훈련 | `[확정]` 보안 훈련 문맥 |
+| 拒绝服务 | denial of service | 서비스 거부 | `[확정]` DoS/DDoS 문맥. 약어는 원문 보존 |
+
+### 보증·면책·책임 제한 용어
+
+| 원문(zh) | 영문 | 한국어 | 비고 |
+| --- | --- | --- | --- |
+| 适销性 | merchantability | 상품성 | `[확정]` 보증·면책·책임 제한 문맥 |
+| 后果性损失 | consequential loss | 결과적 손해 | `[확정]` 보증·면책·책임 제한 문맥 |
 
 ---
 
