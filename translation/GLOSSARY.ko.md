@@ -233,6 +233,12 @@
 | 清空 | clear/purge | 비우기 | `删除`(삭제)와 구분 |
 | 严重度 | severity | 심각도 | 严重等级과 동일 |
 | 往来 | exchange | 송수신 | HTTP 往来 |
+| 关联 | associate / related | 연관 | `[확정]` `关联流量`=연관 트래픽. 바인딩(`绑定`)과 구분하며 "연관"으로 표기 |
+| 继承 | inherit | 상속 | `[확정]` `继承证据`=상속 증거 등 증거 승계 문맥 |
+| 技术指纹 | technology fingerprint | 기술 지문 | `[확정]` 자산 DSL `technology` 필드 설명. 필드명·값은 DNT |
+| 精确匹配 / 模糊匹配 | exact / fuzzy match | 정확 일치 / 부분 일치 | `[확정]` 자산 DSL·인터셉트 규칙 매칭 방식. 연산자(`==`/`=`)·enum은 DNT |
+| 全等 | exact (equal) | 완전 일치 | `[확정]` 자산 인터셉트 규칙의 `exact_*` 종류 라벨. kind 값은 DNT |
+| 排除 | exclude | 제외 | `[확정]` DSL `!=` 연산자 설명 문맥 |
 
 ### 파일/워크스페이스·상세 화면 용어 (UI 1단계 등재)
 
