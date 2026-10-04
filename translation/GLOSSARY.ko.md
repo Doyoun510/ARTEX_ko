@@ -146,6 +146,28 @@
 | 轮询 / 超时 / 重试 | polling / timeout / retry | 폴링 / 타임아웃 / 재시도 | `[확정]` |
 | 约束 / 命中 | constraint / hit(match) | 제약 조건 / 매칭 | `[확정]` 규칙이 걸린 경우 "매칭" |
 
+### 알림 설정 용어 (UI 1단계 확정)
+
+| 원문(zh) | 영문 | 한국어 | 비고 |
+| --- | --- | --- | --- |
+| 加签 | signing | 서명 추가 | `[확정]` DingTalk 봇 보안 설정의 서명 추가 동작 |
+| 加签密钥 | signing key | 서명 키 | `[확정]` DingTalk 봇의 서명 추가에 사용하는 키 |
+| 签名校验 | signature verification | 서명 검증 | `[확정]` Feishu 봇 보안 설정의 서명 검증 |
+| 签名校验密钥 | signature verification key | 서명 검증 키 | `[확정]` Feishu 봇의 서명 검증에 사용하는 키 |
+| 请求体 | request body | 요청 본문 | `[확정]` HTTP 요청 본문 표시 문구. 실제 본문·예시·계약 문자열은 DNT |
+| 请求体模板 | request body template | 요청 본문 템플릿 | `[확정]` Webhook 요청 본문 템플릿의 표시명. 템플릿 변수와 계약은 DNT |
+| 隐式 TLS | implicit TLS | 암시적 TLS | `[확정]` SMTP 연결 방식의 표시 문구. `tls` 키와 실제 설정값은 DNT |
+| 授权码 | mail authorization code | 메일 인증 코드 | `[확정]` SMTP 인증 문맥에 한정. 메일 서비스에서 발급한 앱 비밀번호 등이 해당할 수 있음. 실제 인증값은 DNT |
+| 掩码 | masking | 마스킹 | `[확정]` 자격 증명 표시 문맥. 문장에서는 "마스킹된 값/필드"처럼 표현. `__masked__` 등 계약 문자열은 DNT |
+| 积压 | delivery backlog | 전송 적체 | `[확정]` 알림 전송 대기 문맥. 시간 통계는 "적체 시간", `最久积压` 라벨은 "최장 적체 시간" |
+| 回链 / 回链地址 | detail link / detail link address | 상세 링크 / 상세 링크 주소 | `[확정]` 알림 메시지의 상세 버튼 링크 문맥. 실제 URL은 DNT |
+| 汇总 | digest delivery | 모아 보내기 | `[확정]` 알림의 `digest` 전송 모드 문맥에 한정. 모드 값은 DNT. `摘要`(요약)와 구분 |
+| 限流 | delivery rate limit | 전송 속도 제한 | `[확정]` 알림 전송 문맥에 한정. 기존 LLM의 "요청 제한"은 유지하며 문맥으로 구분. 키·실제 설정값은 DNT |
+| 应急响应 | emergency response | 긴급 대응 | `[확정]` 긴급 대응 알림 채널 이름 예시 문맥 |
+| 子串匹配 | substring matching | 부분 문자열 매칭 | `[확정]` 취약점 유형 필터 설명 문맥. 실제 매칭 대상·키워드 예시·파서 정규식은 보존 |
+
+위 항목은 표시 문구·주석의 번역 기준이다. 영어·제품명·식별자·키·enum·실제 설정값·계약 문자열·템플릿 변수·DNT는 보존한다.
+
 ### LLM 설정·재시도 용어 (UI 1단계 확정)
 
 | 원문(zh) | 영문 | 한국어 | 비고 |
