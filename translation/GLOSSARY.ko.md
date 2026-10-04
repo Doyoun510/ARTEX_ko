@@ -147,6 +147,42 @@
 
 ---
 
+### 작업/발견/트래픽 화면 용어 (UI 1단계 2차 등재)
+
+| 원문(zh) | 영문 | 한국어 | 비고 |
+| --- | --- | --- | --- |
+| 目标 | target | 대상 | 테스트 대상(URL·호스트). 노드 `goal`=목표와 구분 |
+| 测试资产 | test asset | 테스트 자산 | |
+| 根域名 | root domain | 루트 도메인 | 식별자 `root_domain`은 DNT |
+| 应用 | app | 앱 | 자산 종류 `app` |
+| 地址 | address | 주소 | |
+| 分类 | category | 분류 | |
+| 标题 | title | 제목 | |
+| 指纹 | fingerprint | 핑거프린트 | |
+| 状态码 | status code | 상태 코드 | |
+| 响应长度 | response length | 응답 길이 | |
+| 认证 | auth | 인증 | |
+| 方法 | method | 메서드 | HTTP 메서드 |
+| 来源 | source | 출처 | |
+| 绑定域名 | bound domains | 바인딩 도메인 | |
+| 开放端口 | open ports | 열린 포트 | |
+| 解析类型 / 解析值 | record type / value | 레코드 유형 / 레코드 값 | DNS 레코드 |
+| 移出 | remove | 제외 | 작업에서 빼냄 |
+| 归档 | archive | 아카이브 | |
+| 暂停 / 恢复 | pause / resume | 일시 중지 / 재개 | enum `paused`는 DNT |
+| 播报板 | broadcast board | 브로드캐스트 | 탭 이름 |
+| 黑板 | blackboard | 블랙보드 | |
+| 流量 | traffic | 트래픽 | |
+| 录制 | recording | 레코딩 | |
+| 报文 | message/packet | 메시지 | HTTP 요청/응답 원문 |
+| 数据包 | packet | 데이터 패킷 | |
+| 倒序 / 正序 | desc / asc | 내림차순 / 오름차순 | |
+| 高级筛选 | advanced filter | 고급 필터 | |
+| 深入 | deepen | 심화 | 발견 더 파기 |
+| 清空 | clear/purge | 비우기 | `删除`(삭제)와 구분 |
+| 严重度 | severity | 심각도 | 严重等级과 동일 |
+| 往来 | exchange | 송수신 | HTTP 往来 |
+
 ### 파일/워크스페이스·상세 화면 용어 (UI 1단계 등재)
 
 | 원문(zh) | 영문 | 한국어 | 비고 |
@@ -406,7 +442,7 @@ role enum: `baseline` · `proof` · `verification` · `supporting`
 - `schema.sql`은 시작할 때마다 다시 실행됩니다. 번역한 트리거 함수의 문구는 기존 DB에서도 **새로 생기는 행**부터 적용되지만, 새 DB에서는 문제가 없습니다.
 
 ### 7.2 번역해도 안전한 것
-- 화면 표시용 `strings.Join` 구분자 "、": `agent/planner.go:229`, `db/companies.go:636`, `notify/mask.go:73`, `notify/render.go:134-136`, `web/src/app/(main)/function/sync/page.tsx:467`(`.join("、")`→한국어 `", "`, UI 1단계 결정)
+- 화면 표시용 `strings.Join` 구분자 "、": `agent/planner.go:229`, `db/companies.go:636`, `notify/mask.go:73`, `notify/render.go:134-136`, `web/src/app/(main)/function/sync/page.tsx:467`(`.join("、")`→한국어 `", "`, UI 1단계 결정), `web/src/app/(main)/function/traffic/page.tsx:799`(호스트 목록 `.join("、")`→`", "`)
 - 5.7에 없는 에러 메시지·토스트·플레이스홀더
 - `config.example.json`의 `_comment*` 값(키 이름은 유지), 쉘 스크립트의 안내 문구(응답 비교값은 `y`/`n`과 숫자이므로 유지)
 
