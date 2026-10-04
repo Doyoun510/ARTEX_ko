@@ -85,6 +85,7 @@
 | 提示 | `hint` | 힌트 | `战略提示` 등도 "힌트". **提示词(프롬프트)와 혼동 금지** |
 | 提示词 | prompt | 프롬프트 | `[확정]` 에이전트 시스템 프롬프트. 提示(힌트)와 구분 |
 | 规划者 | planner | planner | 에이전트명은 영문 유지(6장 영문 유지 규칙). 개념 설명 문장에서도 `planner`로 통일 |
+| 规划 | planning | 계획 수립 | `[확정]` planner가 계획을 세우는 동작 문맥. 에이전트 이름 `planner`와 식별자는 DNT로 보존 |
 | 执行者 | worker | worker | 위와 동일 |
 | 主 agent / 主 Agent | main agent | 메인 agent | `[확정]` `agent` 영문 유지 규칙에 맞춤. 식별자 `mainagent`는 DNT |
 
@@ -268,6 +269,7 @@
 | 生命周期 | lifecycle | 생명주기 | |
 | 守护脚本 | daemon script | 데몬 스크립트 | |
 | 工具审批门 | tool approval gate | 도구 승인 게이트 | |
+| 破坏性规则 | destructive action rule | 파괴적 동작 규칙 | `[확정]` 인터셉트에서 파괴적 동작에 매칭되는 규칙 문맥. 표시 문구만 번역하며 규칙 키·계약 문자열은 DNT로 보존 |
 | 异步补全 | async enrichment | 비동기 보강 | |
 | 事件驱动 | event-driven | 이벤트 기반 | |
 | 闭环 | closed loop | 폐루프 | "폐곡선"(기하학 용어)은 오역 |
