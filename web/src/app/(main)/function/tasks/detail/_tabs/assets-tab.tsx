@@ -319,7 +319,7 @@ function AddTaskAssetsSheet({
             onValueChange={setScopeText}
             parsed={parsedScope}
             label="테스트 자산 및 범위"
-            description="한 줄에 하나씩, 도메인·IP·CIDR·ICP 备案·키워드를 자동 인식합니다."
+            description="한 줄에 하나씩, 도메인·IP·CIDR·ICP 등록·키워드를 자동 인식합니다."
           />
         </div>
         <SheetFooter>

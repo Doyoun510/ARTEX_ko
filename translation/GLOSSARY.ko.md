@@ -85,6 +85,7 @@
 | 提示 | `hint` | 힌트 | `战略提示` 등도 "힌트". **提示词(프롬프트)와 혼동 금지** |
 | 提示词 | prompt | 프롬프트 | `[확정]` 에이전트 시스템 프롬프트. 提示(힌트)와 구분 |
 | 规划者 | planner | planner | 에이전트명은 영문 유지(6장 영문 유지 규칙). 개념 설명 문장에서도 `planner`로 통일 |
+| 规划 | planning | 계획 수립 | `[확정]` planner가 계획을 세우는 동작 문맥. 에이전트 이름 `planner`와 식별자는 DNT로 보존 |
 | 执行者 | worker | worker | 위와 동일 |
 | 主 agent / 主 Agent | main agent | 메인 agent | `[확정]` `agent` 영문 유지 규칙에 맞춤. 식별자 `mainagent`는 DNT |
 
@@ -144,6 +145,56 @@
 | 上下文 / 压缩 / 快照 / 归档 | context / compaction / snapshot / archive | 컨텍스트 / 압축 / 스냅샷 / 아카이브 | `[확정]` |
 | 轮询 / 超时 / 重试 | polling / timeout / retry | 폴링 / 타임아웃 / 재시도 | `[확정]` |
 | 约束 / 命中 | constraint / hit(match) | 제약 조건 / 매칭 | `[확정]` 규칙이 걸린 경우 "매칭" |
+
+### 알림 설정 용어 (UI 1단계 확정)
+
+| 원문(zh) | 영문 | 한국어 | 비고 |
+| --- | --- | --- | --- |
+| 加签 | signing | 서명 추가 | `[확정]` DingTalk 봇 보안 설정의 서명 추가 동작 |
+| 加签密钥 | signing key | 서명 키 | `[확정]` DingTalk 봇의 서명 추가에 사용하는 키 |
+| 签名校验 | signature verification | 서명 검증 | `[확정]` Feishu 봇 보안 설정의 서명 검증 |
+| 签名校验密钥 | signature verification key | 서명 검증 키 | `[확정]` Feishu 봇의 서명 검증에 사용하는 키 |
+| 请求体 | request body | 요청 본문 | `[확정]` HTTP 요청 본문 표시 문구. 실제 본문·예시·계약 문자열은 DNT |
+| 请求体模板 | request body template | 요청 본문 템플릿 | `[확정]` Webhook 요청 본문 템플릿의 표시명. 템플릿 변수와 계약은 DNT |
+| 隐式 TLS | implicit TLS | 암시적 TLS | `[확정]` SMTP 연결 방식의 표시 문구. `tls` 키와 실제 설정값은 DNT |
+| 授权码 | mail authorization code | 메일 인증 코드 | `[확정]` SMTP 인증 문맥에 한정. 메일 서비스에서 발급한 앱 비밀번호 등이 해당할 수 있음. 실제 인증값은 DNT |
+| 掩码 | masking | 마스킹 | `[확정]` 자격 증명 표시 문맥. 문장에서는 "마스킹된 값/필드"처럼 표현. `__masked__` 등 계약 문자열은 DNT |
+| 积压 | delivery backlog | 전송 적체 | `[확정]` 알림 전송 대기 문맥. 시간 통계는 "적체 시간", `最久积压` 라벨은 "최장 적체 시간" |
+| 回链 / 回链地址 | detail link / detail link address | 상세 링크 / 상세 링크 주소 | `[확정]` 알림 메시지의 상세 버튼 링크 문맥. 실제 URL은 DNT |
+| 汇总 | digest delivery | 모아 보내기 | `[확정]` 알림의 `digest` 전송 모드 문맥에 한정. 모드 값은 DNT. `摘要`(요약)와 구분 |
+| 限流 | delivery rate limit | 전송 속도 제한 | `[확정]` 알림 전송 문맥에 한정. 기존 LLM의 "요청 제한"은 유지하며 문맥으로 구분. 키·실제 설정값은 DNT |
+| 应急响应 | emergency response | 긴급 대응 | `[확정]` 긴급 대응 알림 채널 이름 예시 문맥 |
+| 子串匹配 | substring matching | 부분 문자열 매칭 | `[확정]` 취약점 유형 필터 설명 문맥. 실제 매칭 대상·키워드 예시·파서 정규식은 보존 |
+
+위 항목은 표시 문구·주석의 번역 기준이다. 영어·제품명·식별자·키·enum·실제 설정값·계약 문자열·템플릿 변수·DNT는 보존한다.
+
+### LLM 설정·재시도 용어 (UI 1단계 확정)
+
+| 원문(zh) | 영문 | 한국어 | 비고 |
+| --- | --- | --- | --- |
+| 轮询 | sequential attempts / failover | 순환 전환 | `[확정]` LLM 설정의 순차 시도·실패 시 전환 문맥에 한정. 기존 polling 문맥의 "폴링" 항목은 유지하며 문맥으로 구분 |
+| 故障转移 | failover | 장애 조치 | `[확정]` 실패한 모델 설정에서 다른 설정으로 전환 |
+| 兜底 | fallback | 대체 처리 | `[확정]` 지정 모델 실패 시 대체 설정 사용 |
+| 熔断 | circuit breaking | 회로 차단 | `[확정]` 실패한 설정의 호출 차단 |
+| 冷却 | cooldown | 재시도 대기 | `[확정]` 회로 차단 후 재시도 대기 문맥. 기간·시간값을 설명할 때는 "재시도 대기 시간" |
+| 限速 | rate limit | 요청 속도 제한 | `[확정]` 초·분당 요청 속도 제한 |
+| 限流 | request throttling | 요청 제한 | `[확정]` 모델 요청 제한 |
+| 上下文窗口 | context window | 컨텍스트 창 | `[확정]` 모델의 컨텍스트 수용량 |
+| 流 | stream | 스트림 | `[확정]` 모델 응답 전송 문맥 |
+| 流式 | streaming | 스트리밍 | `[확정]` 모델 응답 전송 방식 |
+| 非流式 | non-streaming | 비스트리밍 | `[확정]` 전체 응답을 한 번에 반환하는 방식 |
+| 思考 | thinking | 사고 | `[확정]` 모델 사고 기능 문맥 |
+| 思考强度 | reasoning effort | 사고 강도 | `[확정]` 모델 사고 강도 설정 |
+| 推理模型 | reasoning model | 추론 모델 | `[확정]` 모델 유형 |
+| 提示缓存 | prompt cache | 프롬프트 캐시 | `[확정]` 모델 요청의 프롬프트 캐싱 |
+| 粘性路由 | sticky routing | 고정 라우팅 | `[확정]` 같은 세션의 요청 경로를 유지하는 문맥에 한정 |
+| 安全窗口 | safe retry window | 안전 구간 | `[확정]` 호출자에게 출력을 전달하기 전에 재시도할 수 있는 구간 |
+| 退避 | backoff | 백오프 | `[확정]` 재시도 간격 문맥 |
+| 指数退避 | exponential backoff | 지수 백오프 | `[확정]` 재시도 간격을 지수적으로 늘리는 방식 |
+| 指数 | exponential | 지수 | `[확정]` 재시도 간격 설명에서는 "지수적으로 증가" 등 문맥에 맞게 표현 |
+| 采样 | sampling | 샘플링 | `[확정]` 모델 응답 생성 문맥 |
+
+위 항목은 표시 문구·주석의 번역 기준이다. 식별자·키·enum·실제 설정값·계약 문자열·DNT는 보존하며, `thinking`, `reasoning_effort`, `streaming` 등 코드 키와 기존 영어 표기는 변경하지 않는다.
 
 ---
 
@@ -234,11 +285,17 @@
 | 全局代理 | global proxy | 전역 프록시 | |
 | 网段 | network range | 네트워크 대역 | `[확정]` 회사 자산 범위의 CIDR 입력 안내 문맥 |
 | 网段前缀 | network prefix length | 네트워크 접두사 길이 | `[확정]` 회사 자산 범위의 CIDR 비트 길이 문맥. /16·/32 등 값과 검증 조건은 보존 |
+| 流量捕获 | traffic capture | 트래픽 캡처 | `[확정]` 트래픽 캡처 기능 문맥 |
+| 出口代理 | outbound proxy | 아웃바운드 프록시 | `[확정]` 외부 요청의 프록시 문맥. 키·명령·실제 설정값·계약 문자열은 DNT |
+| 跳板 | relay server | 경유 서버 | `[확정]` 프록시를 통한 경유 접속 문맥 |
+| 上游 | upstream | 업스트림 | `[확정]` 레코딩 프록시의 상위 프록시 문맥. 업스트림 저장소와 구분 |
+| 解释器 | interpreter | 인터프리터 | `[확정]` Python 등 프로그램 실행 인터프리터 문맥. 경로·명령·실제 설정값은 DNT |
 | 并发 | concurrency | 동시성 | |
 | 调度循环 | schedule loop | 스케줄 루프 | |
 | 生命周期 | lifecycle | 생명주기 | |
 | 守护脚本 | daemon script | 데몬 스크립트 | |
 | 工具审批门 | tool approval gate | 도구 승인 게이트 | |
+| 破坏性规则 | destructive action rule | 파괴적 동작 규칙 | `[확정]` 인터셉트에서 파괴적 동작에 매칭되는 규칙 문맥. 표시 문구만 번역하며 규칙 키·계약 문자열은 DNT로 보존 |
 | 异步补全 | async enrichment | 비동기 보강 | |
 | 事件驱动 | event-driven | 이벤트 기반 | |
 | 闭环 | closed loop | 폐루프 | "폐곡선"(기하학 용어)은 오역 |
@@ -254,6 +311,17 @@
 | 凭据 | credential | 자격 증명 | |
 | 横向 | lateral movement | 횡적 이동 | |
 | 提权 | privilege escalation | 권한 상승 | |
+| 爆破 | brute force | 무차별 대입 | `[확정]` 보안 공격 기법 문맥 |
+| 攻防对抗 | attack-defense confrontation | 공격·방어 대결 | `[확정]` 보안 공격·방어 활동 문맥 |
+| 红蓝演练 | red-team/blue-team exercise | 레드팀·블루팀 훈련 | `[확정]` 보안 훈련 문맥 |
+| 拒绝服务 | denial of service | 서비스 거부 | `[확정]` DoS/DDoS 문맥. 약어는 원문 보존 |
+
+### 보증·면책·책임 제한 용어
+
+| 원문(zh) | 영문 | 한국어 | 비고 |
+| --- | --- | --- | --- |
+| 适销性 | merchantability | 상품성 | `[확정]` 보증·면책·책임 제한 문맥 |
+| 后果性损失 | consequential loss | 결과적 손해 | `[확정]` 보증·면책·책임 제한 문맥 |
 
 ---
 
