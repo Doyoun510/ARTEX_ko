@@ -159,7 +159,7 @@ export function FindingsTable({
           <TableHead className="w-28">상태</TableHead>
           <TableHead className="w-32">소속 작업</TableHead>
           <TableHead className="w-24">시간</TableHead>
-          <TableHead className="w-48">조작</TableHead>
+          <TableHead className="w-48">동작</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

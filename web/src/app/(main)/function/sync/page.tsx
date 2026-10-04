@@ -375,7 +375,7 @@ function SyncWorkbench() {
           )}
         </div>
 
-        {/* 검색 + 조작 */}
+        {/* 검색 + 동작 */}
         <div className="flex items-center gap-2">
           <div className="relative max-w-xs flex-1">
             <SearchIcon className="absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />

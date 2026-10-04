@@ -283,7 +283,7 @@ function TaskDetailInner() {
       setPaused(next);
       toast.success(next ? "탐색을 일시 중지했습니다" : "탐색을 재개했습니다");
     } catch (e) {
-      toast.error("조작 실패: " + (e as Error).message);
+      toast.error("동작 실패: " + (e as Error).message);
     }
   }
 

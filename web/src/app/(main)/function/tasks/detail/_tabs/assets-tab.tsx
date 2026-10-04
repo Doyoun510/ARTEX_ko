@@ -506,7 +506,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
         {searchBox}
 
         <TabsContent value="root_domain" className="mt-0 flex min-h-0 flex-1 flex-col">
-          <AssetCard cols={["도메인", "ICP 등록", "출처", "조작"]} {...commonCardProps}>
+          <AssetCard cols={["도메인", "ICP 등록", "출처", "동작"]} {...commonCardProps}>
             {rows.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell className="font-medium font-mono text-xs">{asset.domain}</TableCell>
@@ -521,7 +521,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
         </TabsContent>
 
         <TabsContent value="ip" className="mt-0 flex min-h-0 flex-1 flex-col">
-          <AssetCard cols={["IP", "C 대역", "바인딩 도메인", "열린 포트", "출처", "조작"]} {...commonCardProps}>
+          <AssetCard cols={["IP", "C 대역", "바인딩 도메인", "열린 포트", "출처", "동작"]} {...commonCardProps}>
             {rows.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell className="font-medium font-mono text-xs">{asset.ip}</TableCell>
@@ -547,7 +547,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
         </TabsContent>
 
         <TabsContent value="subdomain" className="mt-0 flex min-h-0 flex-1 flex-col">
-          <AssetCard cols={["도메인", "루트 도메인", "레코드 유형", "레코드 값", "출처", "조작"]} {...commonCardProps}>
+          <AssetCard cols={["도메인", "루트 도메인", "레코드 유형", "레코드 값", "출처", "동작"]} {...commonCardProps}>
             {rows.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell className="font-medium font-mono text-xs">{asset.domain}</TableCell>
@@ -566,7 +566,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
         </TabsContent>
 
         <TabsContent value="app" className="mt-0 flex min-h-0 flex-1 flex-col">
-          <AssetCard cols={["앱", "주소", "분류", "제목", "핑거프린트", "출처", "조작"]} {...commonCardProps}>
+          <AssetCard cols={["앱", "주소", "분류", "제목", "핑거프린트", "출처", "동작"]} {...commonCardProps}>
             {rows.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell className="max-w-48 truncate font-medium text-xs">{asset.app_name || "—"}</TableCell>
@@ -589,7 +589,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
 
         <TabsContent value="service" className="mt-0 flex min-h-0 flex-1 flex-col">
           <AssetCard
-            cols={["주소 / 서비스", "상태 코드", "제목", "응답 길이", "핑거프린트", "인증", "출처", "조작"]}
+            cols={["주소 / 서비스", "상태 코드", "제목", "응답 길이", "핑거프린트", "인증", "출처", "동작"]}
             {...commonCardProps}
           >
             {rows.map((asset) => {
@@ -647,7 +647,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
         </TabsContent>
 
         <TabsContent value="endpoint" className="mt-0 flex min-h-0 flex-1 flex-col">
-          <AssetCard cols={["메서드", "전체 주소", "파라미터", "출처", "조작"]} {...commonCardProps}>
+          <AssetCard cols={["메서드", "전체 주소", "파라미터", "출처", "동작"]} {...commonCardProps}>
             {rows.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell className="w-16">
