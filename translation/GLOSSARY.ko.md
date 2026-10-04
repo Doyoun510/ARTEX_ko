@@ -117,6 +117,7 @@
 | 拒绝 / 禁止 / 阻断 | deny | 6장 "deny 맥락별 표기" | **[확정]** 맥락별로 거부·차단·금지를 구분 |
 | 审批卡片 | approval card | 승인 카드 | |
 | 资产同步 | asset sync | 자산 동기화 | |
+| 入库 | register (into store) | 등록 | `[확정]` 자산을 시스템에 등록. "입고"(물류 뉘앙스) 쓰지 말 것 (UI 1단계 결정) |
 | 后端日志 | backend log | 백엔드 로그 | |
 | 活动流 | activity stream | 활동 스트림 | 식별자 `activity`는 DNT |
 | 页签 | tab | 탭 | |
@@ -372,7 +373,7 @@ role enum: `baseline` · `proof` · `verification` · `supporting`
 - `schema.sql`은 시작할 때마다 다시 실행됩니다. 번역한 트리거 함수의 문구는 기존 DB에서도 **새로 생기는 행**부터 적용되지만, 새 DB에서는 문제가 없습니다.
 
 ### 7.2 번역해도 안전한 것
-- 화면 표시용 `strings.Join` 구분자 "、": `agent/planner.go:229`, `db/companies.go:636`, `notify/mask.go:73`, `notify/render.go:134-136`
+- 화면 표시용 `strings.Join` 구분자 "、": `agent/planner.go:229`, `db/companies.go:636`, `notify/mask.go:73`, `notify/render.go:134-136`, `web/src/app/(main)/function/sync/page.tsx:467`(`.join("、")`→한국어 `", "`, UI 1단계 결정)
 - 5.7에 없는 에러 메시지·토스트·플레이스홀더
 - `config.example.json`의 `_comment*` 값(키 이름은 유지), 쉘 스크립트의 안내 문구(응답 비교값은 `y`/`n`과 숫자이므로 유지)
 
