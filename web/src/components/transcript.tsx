@@ -382,7 +382,7 @@ function ToolBlock({
   const rawCmd =
     use && use.summary.startsWith(toolName) ? use.summary.slice(toolName.length).trimStart() : (use?.summary ?? "");
   const cmd = toolInputText(toolName, rawCmd);
-  // status only — the full result lives behind the expand (【출력】), not previewed inline
+  // status only — the full result lives behind the expand ([출력]), not previewed inline
   const statusText = running ? "실행 중…" : ok ? "✓" : "✕ 실패";
 
   // key over the seqs we'd load; changes when the result (or command) arrives.
@@ -403,7 +403,7 @@ function ToolBlock({
       if (!live) return;
       setDetail(
         segs
-          .map((x, i) => `【${x.label}】\n${x.label === "명령" ? toolInputText(toolName, parts[i]) : parts[i]}`)
+          .map((x, i) => `[${x.label}]\n${x.label === "명령" ? toolInputText(toolName, parts[i]) : parts[i]}`)
           .join("\n\n"),
       );
       loadedKey.current = detailKey;
@@ -514,7 +514,7 @@ function MessageBlock({
       ),
     ).then((parts) => {
       if (!live) return;
-      setDetail(group.steps.map((s, i) => `【${kindLabel(s.kind)}】\n${parts[i]}`).join("\n\n"));
+      setDetail(group.steps.map((s, i) => `[${kindLabel(s.kind)}]\n${parts[i]}`).join("\n\n"));
       loadedKey.current = detailKey;
     });
     return () => {

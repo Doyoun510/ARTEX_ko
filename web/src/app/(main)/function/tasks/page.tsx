@@ -145,7 +145,7 @@ function fmtBytes(n: number): string {
 
 // UPLOAD_MARKER는 작업 설명 안에 자동 추가되는 업로드 파일 경로 블록을 표시한다.
 // description, so re-uploads append under the same block instead of adding a new header.
-const UPLOAD_MARKER = "【업로드 파일(절대 경로)】";
+const UPLOAD_MARKER = "[업로드 파일(절대 경로)]";
 
 // appendUploads folds newly-uploaded files' ABSOLUTE paths into the description as a
 // Read/Bash-friendly manifest — the worker opens them by path. Keeps one marked block:
