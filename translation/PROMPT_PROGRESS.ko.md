@@ -73,3 +73,10 @@
 - **생성부·소비부·관련 테스트 대조**: `server/assembly.go`·`server/server_mgmt.go`·`server/orchestration.go`와 `agent/assembly.go`의 시드·재정의 소비 경로를 확인했다. `agent/toolcatalog_test.go`·`server/tools_wire_test.go`·`agent/finding_workflow_test.go`는 key·바인딩·설명 전달·기본값 주입 동작을 검사하며, 번역한 주석을 비교하지 않으므로 기대값 수정은 필요하지 않다.
 - **U5 잔여**: `agent/tools.go`·`agent/tools_insert.go`·`agent/tools_digest.go`는 이번 범위 밖 미작업이다. 따라서 U5 전체를 완료로 표시하지 않으며 U1·U2와 기존 U6 상태를 유지한다.
 - **실행 검증**: 설치·빌드·테스트·lint·실제 템플릿 렌더·스모크·`gofmt`·Git 훅은 **사용자 요청으로 미실행**했다.
+
+### U5 · cold digest 조회 도구  [대상 번역·정적 검토 완료 / U5 잔여 미작업 / 실행 미검증]
+- **대상·문자열 분류**: `agent/tools_digest.go` 전체를 검토하고 `expand_digest`의 모델용 도구 설명·`id` 스키마 설명·도구 오류 결과와 중국어 개발자 주석을 번역했다. 지시 범위와 도구 사용 순서를 유지했다.
+- **계약·코드 보존**: 도구명 `expand_digest`, 파라미터·JSON 키 `id`·`summary`·`state`·`confidence`·`error`, 조회 필드 `cold_digests`·`recent_facts`·`recent_done_intents`, enum과 출력 구조를 보존했다. 데이터 조회·집계·정렬·필터 로직, 숫자·포맷 지정자와 순서·개행·이스케이프·들여쓰기·원본 줄 수도 유지했다. 번역 대상 중국어·전각 문장부호 잔여와 추가 용어·계약 보류는 없다.
+- **생성부·소비부·관련 테스트 대조**: `agent/tools.go`의 `graph_overview`가 cold digest 목록을 만들고 planner 도구 모음에 `expand_digest`를 등록하며, `agent/tools_insert.go`가 메인 agent 도구 모음에 등록함을 확인했다. `agent/tools_overview_test.go`와 `agent/coldgraph_test.go`를 포함한 관련 테스트를 검색했으나 이번 번역 문자열을 직접 비교하는 기대값이나 `expand_digest` 전용 테스트는 발견하지 못해 테스트 수정은 필요하지 않다.
+- **U5 잔여**: `agent/tools.go`·`agent/tools_insert.go`는 이번 범위 밖 미작업이다. 따라서 U5 전체를 완료로 표시하지 않으며 U1·U2와 기존 U6 상태를 유지한다.
+- **실행 검증**: 설치·빌드·테스트·lint·실제 템플릿 렌더·스모크·`gofmt`·Git 훅은 **사용자 요청으로 미실행**했다.
