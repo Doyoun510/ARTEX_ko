@@ -533,7 +533,7 @@ export default function NotifyPage() {
                     <Label htmlFor="n-inc">이 취약점 유형만 알림 전송</Label>
                     <Textarea
                       id="n-inc"
-                      placeholder={"SQL注入\n命令执行"}
+                      placeholder={"SQL 인젝션\n명령 실행"}
                       value={form.includeText}
                       onChange={(e) => setF({ includeText: e.target.value })}
                     />
@@ -545,7 +545,7 @@ export default function NotifyPage() {
                     <Label htmlFor="n-exc">이 취약점 유형 제외</Label>
                     <Textarea
                       id="n-exc"
-                      placeholder={"信息泄露"}
+                      placeholder={"정보 유출"}
                       value={form.excludeText}
                       onChange={(e) => setF({ excludeText: e.target.value })}
                     />
