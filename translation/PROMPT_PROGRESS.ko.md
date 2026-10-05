@@ -147,7 +147,16 @@ U9에서 확정한 `"작업 #<id>"` 라벨 계약을 사용자 지시로 처리�
 - **번역**: HTTP writeErr·로그·JSON 필드 주석·프롬프트 템플릿 변수 설명(Now/DataDir)·재시도 정책 주석. `段 [A]`→`섹션 [A]`.
 - **DNT**: `已存在` 앵커(L1361)·식별자(llm_profile_id·profile·SetAgentTriggerBehavior·Chat Completions·anthropic·openai·Registry·GBK/RLO/NBSP)·`{{.Var}}`·`SKILL.md`·포맷 지정자.
 - **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 테스트·프런트(기타 에러) 커플링 없음. DB 필요 서버 테스트 미검증.
-- **묶음 B 잔여(todo)**: `server.go`(227, §5.7 `意图`/`提示` fallbackChat HasPrefix 등).
+### 묶음 B-2b (핵심 API: server.go)  [정적검토 done · 실행 검증 일부 PASS]
+- **대상(완료)**: `server/server.go`(라우팅·작업/의도/목표 CRUD·LLM 설정/연결 테스트·설정·채팅·seed). **묶음 B 완료**.
+- **⚠️ §5.7 계약 DNT — fallbackChat 명령 접두**: `strings.HasPrefix(m, "意图")`·`strings.HasPrefix(m, "提示")`와 그 `TrimPrefix`(L3820-3825)는 **비교값이라 원문 보존**. 안내 문구는 §5.7대로 영문 `intent`/`hint` 사용을 안내하도록 번역(둘 다 HasPrefix 허용).
+- **번역**: 라우트/셋업 주석·writeErr·로그·DTO 필드 주석·seed 의도 요약(모델-읽기)·LLM 연결 테스트/준비 상태 에러·설정 맵 주석·채팅 핸들러. `主 Agent`→`메인 Agent`, `规划者`→`planner`, 전각부호→반각.
+- **DNT**: `意图`/`提示` 접두(L3820-3825)·상태 enum·설정 맵 키·`{{.Var}}`·식별자·포맷 지정자. seed asset source 값은 §7.1(새 DB) 번역.
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 순수 서버 테스트 PASS · 테스트/프런트 커플링 없음. DB 필요 서버 테스트는 미검증.
+
+### 묶음 B 요약
+HTTP 핸들러/관리 API 6파일 완료(B-1 auth·dto·customtool·platform_tools / B-2a server_mgmt / B-2b server). §5.7 계약 2건을 앵커 보존으로 처리: skill 업로드 `已存在`(server_mgmt.go, 프런트 skills 페이지 매칭)·fallbackChat `意图`/`提示` 접두(server.go). DB 필요 서버 테스트는 전 배치 공통 미검증.
+- **U11 잔여(todo)**: 묶음 C(알림·동기화·업데이트: notifier.go·notify_api.go·sync_scopesentry.go·update.go·manager.go·llmretry.go) + 그 외 server/ 미분류 파일.
 
 ## U5~U8·U10·U12~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
