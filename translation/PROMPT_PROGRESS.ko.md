@@ -164,7 +164,13 @@ HTTP 핸들러/관리 API 6파일 완료(B-1 auth·dto·customtool·platform_too
 - **manager.go/update.go/llmretry.go**: DTO 필드/설정/재시도 정책/자가 업데이트 주석·로그·SSE 진행 메시지. `docs/任务级超时与收尾设计.md`·`docs/LLM重试设计.md`(파일 경로) DNT.
 - **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / `go vet ./server/`(테스트 컴파일 포함) clean ✅ / 순수 서버 테스트(trigger merge·empty-turn·notify budget) PASS ✅. DB 필요 서버 테스트는 미검증.
 
-### U11 잔여(todo) — server/ 긴 꼬리 (~29파일)
+### 묶음 D (server/ 긴 꼬리) — 진행 중
+**D-1(계약·증거 클러스터)  [정적검토 done · 실행 검증 일부]**: `chat_mentions.go`·`task_archives.go`·`finding_retests.go`·`finding_traffic.go`·`finding_workflow.go`.
+- **§5.7 계약 보존**: `chat_mentions.go` 멘션 토큰 정규식·맵 키(`漏洞/资产/…`)는 **DNT**(파서 계약), `已截断`은 번역(`잘림`)+테스트 동기화. `task_archives.go` `归档不存在`은 **앵커 보존**(한국어+병기, 프런트 tasks 페이지 매칭). `finding_retests.go` `内置默认`(프롬프트 버전 라벨)은 db/config.go(U12)와 일치 위해 **DNT 유지**(U12 번역 시 함께).
+- 모델-읽기 도구 설명(get_finding_retest_context·record_finding_retest_result·get_finding_traffic·bind_finding_traffic·legacy traffic_search)·에러·안전 문구 번역. 도구/파라미터/enum·`finding recorded`·`report_finding` 등 DNT.
+- **검증**: go build ./server/ OK, gofmt 무출력, 테스트 커플링 없음(chat_mentions_test 동기화 완료). DB 필요 테스트 미검증.
+
+### U11 잔여(todo) — server/ 긴 꼬리 (D-2 이후)
 A/B/C가 핵심 핸들러·오케스트레이션·알림을 덮었고, `server/`엔 소규모 파일이 다수 남음. **⚠️ §5.7 계약 주의 파일**:
 - `chat_mentions.go`(12) — 멘션 토큰(`@[漏洞#id]` 종류명)·`已截断`(chat_mentions_test 매칭). 프런트·테스트 동시 고려.
 - `task_archives.go`(19) — `归档不存在`(프런트 tasks 페이지 `includes("归档不存在")` 매칭).
