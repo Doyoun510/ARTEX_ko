@@ -49,7 +49,26 @@
   - `prompt_test.go`의 픽스처(`目标:{{.Goal}} 范围:{{.Scope}}`·`走代理`·입력 `拿下X` 등) — renderSystem 치환 **메커니즘 검증용 테스트 데이터**라 GUIDE §1대로 일괄 번역 안 함(표시 문자열 아님).
 - **DNT**: `执行者`→`worker`·`规划者`→`planner`(용어집), 도구명(insert_assets·record_fact·report_finding·traffic_search/get/blob·add_intent·prove_goal·TodoWrite 등)·키(intent_id·summary·detail·evidence·confidence·asset_ids 등)·enum(observed·inferred·met)·경로(`/tmp`·`<workDir>/...`·`@blob sha256`)·`workerChatMarker` 포맷·`{{.ProxyAddr}}` 등 전부 원문.
 
-## U4~U15  [todo]
+## U4 · 메인/리테스트/발견  [정적검토 done · 실행 검증 PASS(2026-10-05)]
+- **대상 파일**: `agent/mainagent.go`·`retester.go`·`finding_workflow.go`·`finding_recorder.go`.
+- **내용**: 메인 agent 시스템 프롬프트(mainAgentDefaultTmpl)·조립부 주석·문자열 / 재검증(retester) 프롬프트(RetesterDefaultPrompt) / 발견 워크플로의 도구 설명·note·가이던스(findingIDGuidance·report_finding/add_hint note·트래픽 증거 인계·보고 전 자동 연관 블록·HintTrafficSchema 설명·evidence_hint_id 오류 메시지) / 발견 기록 가이던스(findingTrafficGuidance).
+- **관련 테스트 확인(이름 다른 것 포함)**:
+  - `finding_workflow_test.go` — `traffic_refs`·`TCP`·`evidence_hint_id` 같은 **DNT 토큰만** 검사 → 보존하므로 변경 불필요.
+  - `finding_recorder_test.go:102` — `strings.Contains(got, "未登记")` 는 **`agent/tools.go:1261`(U5 소관)** 의 문자열을 검사한다. U4 파일이 생성하지 않으므로 기대값·소스 모두 **건드리지 않음**(U5에서 tools.go 번역 시 동기화 대상).
+  - `toolcatalog_test.go`·`side_questions_test.go` — U4 번역 문자열에 대한 기대값 없음(중국어 비교 없음). 변경 불필요.
+- **검증(정적)**: 번역 대상 중국어·전각 문장부호 잔여 0(계약 앵커 없음) ✅ / `{{.Goal}}` 치환자 보존 ✅ / `%d`(evidence_hint_id 오류 메시지) 개수·순서 보존 ✅ / `\n`·`\n\n` 이스케이프·`[]`·JSON 구조 보존 ✅ / role enum `baseline / proof / verification / supporting` 원문 유지 ✅.
+- **실행 검증(2026-10-05, Go 1.26.3)**: `gofmt -l` 무출력(정렬 OK) ✅ / `go build ./...` OK ✅ / `go test ./agent/` PASS(0.078s, finding_workflow_test·finding_recorder_test·prompt_test 포함) ✅. 1 run 스모크(실제 에이전트 구동)는 미실시.
+- **용어·표기**:
+  - `规划者`→`planner`·`执行者`→`worker`(용어집), `主 agent`→`"메인 agent"`, `报告 Agent`→`보고서 Agent`, `任务 Agent`→`작업 Agent`(소스 영문 `Auto`/`Planner`/`Worker` 대문자는 원문 유지).
+  - `段 [A]`→`섹션 [A]`, `中间产物输出规约`→`중간 산출물 출력 규약`(U3 동기화), `收尾`→`마무리`, `接管`→`인계`(chat.go 선례).
+  - 출력 언어 지시(§2.5): retester `使用简洁中文答复`→`간결한 한국어로 답하라`(간결 조건 보존). mainagent `用人话简洁回复`→`쉬운 말로 간결하게 답하고`.
+  - verdict enum `reproduced`/`fixed`/`inconclusive` DNT, 괄호 주석만 번역. 발견 처리 상태 라벨 `「已修复」`→`'수정 완료'`(§확정#3, 내부 enum `fixed`는 별개 DNT).
+  - `「」`→`'…'`(§6), 산문 전각부호→반각, 열거 `、`→`·`.
+  - `evidence_hint_id=%d` 오류 메시지는 콜론 형식으로 변수 뒤 조사 회피(§변수 뒤 조사).
+- **DNT**: 도구명 전부(report_finding·update_finding_report·get/bind_finding_traffic·list_findings·list_task_findings·node_detail·get_task_node_detail·get_finding_retest_context·record_finding_retest_result·traffic_search/get·add_hint·add_task_hint·set_goals·set_constraints·add_intent·steer_work·graph_overview·list_facts/assets·get_worker_output 등)·파라미터/키(finding_id·finding_node_id·traffic_refs·evidence_hint_id·intent_id·evidence_version·version·verdict·summary·evidence·traffic_id·role·note·hints·text·priority·type=allow/deny 등)·role enum(baseline/proof/verification/supporting)·약어(HTTP·TCP·WAF·PoC·Markdown·JSON·ID)·`{{.Goal}}`·경로(`<workDir>/...`·`/tmp`) 전부 원문.
+- **U9 이월(미착수)**: U1·U9 조정 포인트인 컨텍스트 라벨 `"작업: #<id>"` 생성부 확인은 **U9 소관**이라 이번 U4에서 건드리지 않음. U9 착수 시 생성부·참조부 대조 예정.
+
+## U5~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
 
 ### U6 · 첫 파일럿  [대상 번역·정적 검토 완료 / U6 잔여 미작업 / 실행 미검증]
