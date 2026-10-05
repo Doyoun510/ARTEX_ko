@@ -74,7 +74,7 @@ func TestTerminalTextAbortedNamesCauseAndHangingTool(t *testing.T) {
 		Usage:  llm.Usage{InputTokens: 1200, OutputTokens: 340},
 	}
 	summary, detail := terminalText(ctx, term, trace)
-	if !strings.Contains(summary, "规划者") || strings.Contains(summary, "\n") {
+	if !strings.Contains(summary, "planner") || strings.Contains(summary, "\n") {
 		t.Fatalf("unexpected summary: %q", summary)
 	}
 	for _, want := range []string{"killed_by_planner", "aborted_tools", "7회", "Bash", "결과 미반환", "1200"} {
@@ -88,7 +88,7 @@ func TestTerminalTextDirectContextCancellationKeepsCause(t *testing.T) {
 	ctx, cancel := context.WithCancelCause(context.Background())
 	cancel(AbortChatStoppedByUser)
 	summary, detail := terminalText(ctx, &harness.Terminal{Err: context.Canceled}, &runTrace{startedAt: time.Now()})
-	if !strings.Contains(summary, "用户停止") || !strings.Contains(detail, "chat_stopped_by_user") {
+	if !strings.Contains(summary, "사용자가 이번 대화를 중지") || !strings.Contains(detail, "chat_stopped_by_user") {
 		t.Fatalf("direct context cancellation lost cause: %q\n%s", summary, detail)
 	}
 	if !strings.Contains(detail, "context_canceled") {
@@ -103,7 +103,7 @@ func TestTerminalTextAbortedPreservesPartialOutput(t *testing.T) {
 		Reason: harness.ReasonAbortedStreaming,
 		Text:   "已经生成的半段回答",
 	}, &runTrace{startedAt: time.Now()})
-	if !strings.Contains(summary, "用户暂停") {
+	if !strings.Contains(summary, "사용자가 작업을 일시 중지") {
 		t.Fatalf("abort summary lost cause: %q", summary)
 	}
 	if !strings.Contains(detail, "已经生成的半段回答") {
