@@ -118,7 +118,21 @@ U9에서 확정한 `"작업 #<id>"` 라벨 계약을 사용자 지시로 처리�
 - **계약 테스트**: `engine_emptyturn_test.go`는 `emptyTurnNudge` **상수 참조**로 비교 → 상수 값 번역돼도 통과(기대값 변경 불필요). 테스트 내 중국어는 픽스처·케이스명(§7.4 DNT)이라 미변경.
 - **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 순수 테스트(empty-turn·trigger merge) PASS ✅. DB 필요 서버 테스트는 미검증.
 
-- **묶음 A 잔여(todo)**: `orchestration.go`(187, 도구 설명 다수=모델-읽기, U5급 주의).
+### 묶음 A-4 (오케스트레이션)  [정적검토 done · 실행 검증 일부 PASS]
+- **대상(완료)**: `server/orchestration.go`. **묶음 A 완료**.
+- **모델-읽기 도구 설명(U5급 DNT 주의)**: 크로스 작업 오케스트레이션 도구(list_tasks·list_llm_profiles·spawn_task·pause_task·get_task_graph·list_task_findings·add_task_hint·get_task_worker_trace·list_task_worker_traces·search_task_worker_traces·node_detail·update_finding_report)의 설명·파라미터 설명 번역. 도구명·파라미터 키·`finding recorded: <id>`·enum 전부 보존.
+- **모델-읽기 프롬프트**: `reporterToolCallMessage`(리포터 트리거 메시지, 현재 시드값) 번역.
+- **⚠️ 계약 DNT — `reporterToolCallMessageV1`**: 구 버전(0.3.8) 트리거 메시지로, `upgradeReporterTriggerMessage`가 **기존 DB 레코드와 바이트 단위 일치 비교**(L719 `!= reporterToolCallMessageV1`)해 마이그레이션 여부를 판정하는 **역사적 리터럴**. 번역하면 구 DB 매칭이 깨지므로 **원문 보존**(V1 상수만, 설명 주석은 번역).
+- **표시/오류/로그/주석**: 작업 생성·바인딩 마이그레이션·reporter agent 시드 로그·주석 번역. 리포터 agent 표시명 `报告撰写`→`보고서 작성`(U1 동일).
+- **DNT**: 도구/파라미터/상태 enum·settings flag(`*_v1/v2/v3`)·`finding recorded: <id>`·`docs/跑分编排`(설계 문서 참조)·포맷 지정자.
+- **계약 확인**: 테스트/프런트 매칭 없음(`报告撰写`·`激活配置` 등 프런트 grep 0). 
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 순수 서버 테스트(trigger merge·empty-turn) + agent 회귀 PASS ✅. DB 필요 서버 테스트는 미검증.
+
+### 묶음 A 요약
+실행 루프 코어 9파일 완료(A-1 scheduler·task_control·goals·goals_api·engine_timeout / A-2 conversations·task_llm / A-3 engine / A-4 orchestration). DB 필요 서버 테스트는 전 배치 공통으로 PostgreSQL 미연결 미검증.
+- **U11 잔여 묶음(todo)**: B(HTTP 핸들러/관리 API: server.go·server_mgmt.go·dto.go·auth.go·customtool.go·platform_tools.go — §5.7 프런트 계약 집중) / C(알림·동기화·업데이트: notifier.go·notify_api.go·sync_scopesentry.go·update.go·manager.go·llmretry.go). 그 외 server/ 미분류 파일 다수.
+
+## U5~U8·U10·U12~U15  [todo]
 
 ## U5~U8·U10~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
