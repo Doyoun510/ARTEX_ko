@@ -156,7 +156,27 @@ U9에서 확정한 `"작업 #<id>"` 라벨 계약을 사용자 지시로 처리�
 
 ### 묶음 B 요약
 HTTP 핸들러/관리 API 6파일 완료(B-1 auth·dto·customtool·platform_tools / B-2a server_mgmt / B-2b server). §5.7 계약 2건을 앵커 보존으로 처리: skill 업로드 `已存在`(server_mgmt.go, 프런트 skills 페이지 매칭)·fallbackChat `意图`/`提示` 접두(server.go). DB 필요 서버 테스트는 전 배치 공통 미검증.
-- **U11 잔여(todo)**: 묶음 C(알림·동기화·업데이트: notifier.go·notify_api.go·sync_scopesentry.go·update.go·manager.go·llmretry.go) + 그 외 server/ 미분류 파일.
+### 묶음 C (알림·동기화·업데이트)  [정적검토 done · 실행 검증 일부 PASS]
+- **대상(완료)**: `server/llmretry.go`·`sync_scopesentry.go`·`manager.go`·`update.go`·`notifier.go`·`notify_api.go`.
+- **notifier.go/notify_api.go**: 취약점 IM 푸시 전달 엔진·채널 CRUD API 주석·로그·내부 에러·테스트 메시지. **푸시 메시지 템플릿·StatusLabel은 notify/ 패키지(U10) 소관이라 여기엔 없음**(전달/재시도/리스/토큰버킷 로직만).
+- **계약 테스트 동기화**: `notify_api_test.go` 2곳 — `渠道类型无效`→`채널 유형이 유효하지 않음`, 테스트 메시지 매칭 `测试`→`테스트`(notify_api.go 테스트 메시지 Name/Summary 번역에 맞춤). e2e 테스트는 PostgreSQL 필요라 미실행.
+- **sync_scopesentry.go**: ScopeSentry 자산 동기화 주석·에러·경고. ScopeSentry/MCP/list_projects_data 등 DNT.
+- **manager.go/update.go/llmretry.go**: DTO 필드/설정/재시도 정책/자가 업데이트 주석·로그·SSE 진행 메시지. `docs/任务级超时与收尾设计.md`·`docs/LLM重试设计.md`(파일 경로) DNT.
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / `go vet ./server/`(테스트 컴파일 포함) clean ✅ / 순수 서버 테스트(trigger merge·empty-turn·notify budget) PASS ✅. DB 필요 서버 테스트는 미검증.
+
+### 묶음 D (server/ 긴 꼬리) — 진행 중
+**D-1(계약·증거 클러스터)  [정적검토 done · 실행 검증 일부]**: `chat_mentions.go`·`task_archives.go`·`finding_retests.go`·`finding_traffic.go`·`finding_workflow.go`.
+- **§5.7 계약 보존**: `chat_mentions.go` 멘션 토큰 정규식·맵 키(`漏洞/资产/…`)는 **DNT**(파서 계약), `已截断`은 번역(`잘림`)+테스트 동기화. `task_archives.go` `归档不存在`은 **앵커 보존**(한국어+병기, 프런트 tasks 페이지 매칭). `finding_retests.go` `内置默认`(프롬프트 버전 라벨)은 db/config.go(U12)와 일치 위해 **DNT 유지**(U12 번역 시 함께).
+- 모델-읽기 도구 설명(get_finding_retest_context·record_finding_retest_result·get_finding_traffic·bind_finding_traffic·legacy traffic_search)·에러·안전 문구 번역. 도구/파라미터/enum·`finding recorded`·`report_finding` 등 DNT.
+- **검증**: go build ./server/ OK, gofmt 무출력, 테스트 커플링 없음(chat_mentions_test 동기화 완료). DB 필요 테스트 미검증.
+
+### U11 잔여(todo) — server/ 긴 꼬리 (D-2 이후)
+A/B/C가 핵심 핸들러·오케스트레이션·알림을 덮었고, `server/`엔 소규모 파일이 다수 남음. **⚠️ §5.7 계약 주의 파일**:
+- `chat_mentions.go`(12) — 멘션 토큰(`@[漏洞#id]` 종류명)·`已截断`(chat_mentions_test 매칭). 프런트·테스트 동시 고려.
+- `task_archives.go`(19) — `归档不存在`(프런트 tasks 페이지 `includes("归档不存在")` 매칭).
+- `finding_retests.go`·`finding_traffic.go`·`finding_workflow.go` — 재검증/증거 도구 설명(모델-읽기).
+- `intercept.go`·`asset_intercept.go`·`task_intercept.go`·`side_questions.go`·`constraints_api.go`·`chatupload.go`·`skill_zip.go`·`workspace.go` 등.
+- 그 외: assembly·assets·findings_groups·intent_intervention·llmpool·logsink·mcpdiscover·task_* ·triggers·webui_* 등.
 
 ## U5~U8·U10·U12~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
