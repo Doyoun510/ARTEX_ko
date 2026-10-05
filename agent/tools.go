@@ -1411,13 +1411,13 @@ type hintItem struct {
 	TrafficRefs []db.TrafficRef   `json:"traffic_refs"`
 }
 
-// addOneHint 挂一条 hint 节点(active/human)到探索图,可锚定资产,返回 id。
+// addOneHint 함수는 hint 노드(active/human)를 탐색 그래프에 매달며, 자산에 앵커로 걸 수 있고 id를 반환한다.
 func (t *ToolSet) addOneHint(it hintItem) (int64, error) {
 	if len(it.TrafficRefs) > 0 && !findingTrafficBindingEnabled() {
-		return 0, fmt.Errorf("Agent 自动绑定流量已关闭，未保存携带 traffic_refs 的提示；可在系统设置开启，或仅交接文字")
+		return 0, fmt.Errorf("Agent 자동 트래픽 바인딩이 비활성화되어 있어, traffic_refs가 포함된 힌트를 저장하지 않았습니다. 시스템 설정에서 켜거나, 텍스트만 인계할 수 있습니다")
 	}
 	if strings.TrimSpace(it.Text) == "" {
-		return 0, fmt.Errorf("text 不能为空")
+		return 0, fmt.Errorf("text 값을 비워 둘 수 없습니다")
 	}
 	var anchors []int64
 	for _, raw := range it.AssetIDs {
@@ -1433,8 +1433,8 @@ func (t *ToolSet) addOneHint(it hintItem) (int64, error) {
 	if len(refs) > 0 {
 		payload["traffic_refs"] = refs
 	}
-	// 唤醒 planner 不在此处逐条做——由 addHint 在整批写完后统一触发一次（带上提示文本），
-	// 避免一次 add_hint 多条提示逐条刷屏 planner 的触发行。
+	// planner 깨우기는 여기서 한 건씩 하지 않는다——addHint 함수가 전체 묶음을 다 쓴 뒤 한 번만 트리거한다(힌트 텍스트를 함께 전달),
+	// 한 번의 add_hint에 여러 힌트가 planner의 트리거 행을 한 건씩 도배하는 것을 피한다.
 	return t.ts.AddNode(db.KindHint, payload, 0, "active", "human", anchors)
 }
 
@@ -1443,13 +1443,13 @@ type goalItem struct {
 	VulnClass string `json:"vulnclass"`
 }
 
-// addOneGoal 挂一条 goal 节点(open)到探索图:连到任务根(origin fact,rel spawns)。
-// origin 取 t.worker(缺省 system):goals 拆解器写入的记 "goals"、主 agent 运行时记
-// "human"。唤醒 planner 由 setGoals 在整批写完后统一做(见下),这里只负责落库。
+// addOneGoal 함수는 goal 노드(open)를 탐색 그래프에 매달아 작업 루트(origin fact, rel spawns)에 연결한다.
+// origin은 t.worker(기본값 system)를 쓴다: goals 분해기가 쓰면 "goals", 메인 agent 런타임이 쓰면
+// "human"으로 기록한다. planner 깨우기는 setGoals 함수가 전체 묶음을 다 쓴 뒤 한 번에 한다(아래 참고). 여기서는 저장만 담당한다.
 func (t *ToolSet) addOneGoal(it goalItem) (int64, error) {
 	text := strings.TrimSpace(it.Text)
 	if text == "" {
-		return 0, fmt.Errorf("text 不能为空")
+		return 0, fmt.Errorf("text 값을 비워 둘 수 없습니다")
 	}
 	payload := map[string]any{"text": text}
 	if vc := strings.TrimSpace(it.VulnClass); vc != "" {
@@ -1469,25 +1469,25 @@ func (t *ToolSet) addOneGoal(it goalItem) (int64, error) {
 	return id, nil
 }
 
-// setGoals 给【本任务】新增探索目标(goal 节点)。既是目标拆解器的提交工具,也是主
-// agent 运行时补目标的工具——同一个受管工具,可在 web 端改描述/schema、按 agent 绑定。
+// setGoals 함수는 [이 작업]에 탐색 목표(goal 노드)를 새로 추가한다. 목표 분해기의 제출 도구이자 메인
+// agent 런타임이 목표를 보충하는 도구다——같은 관리 대상 도구이며, web 쪽에서 설명/schema를 바꾸거나 agent별로 바인딩할 수 있다.
 func (t *ToolSet) setGoals() actool.CoreTool {
 	return writeTool("set_goals",
-		"给【本任务】新增探索目标(goal)。目标=最终可交付/可核验的结果,不是攻击步骤或侦察动作。\n"+
-			"★优先批量:多个目标放进 goals 数组一次提交,返回 ids 与之等长同序(失败项 id=0,详情见 errors)。单条则省略 goals 直接给顶层 text。\n"+
-			"vulnclass 可选:对应漏洞类(如 SQLi/IDOR),业务逻辑类目标留空。目标是否达成由系统判定标记 met,本工具只负责新增。",
+		"[이 작업]에 탐색 목표(goal)를 새로 추가합니다. 목표=최종적으로 전달 가능하거나 검증 가능한 결과이며, 공격 단계나 정찰 동작이 아닙니다.\n"+
+			"★일괄 우선: 여러 목표를 goals 배열에 담아 한 번에 제출하면, ids를 배열과 길이가 같고 순서도 같게 반환합니다(실패 항목은 id=0, 자세한 내용은 errors 참고). 단건이면 goals를 생략하고 최상위 text를 바로 전달합니다.\n"+
+			"vulnclass 선택: 대응하는 취약점 유형(예: SQLi/IDOR), 업무 로직 유형 목표는 비워 둡니다. 목표 달성 여부는 시스템이 판정해 met으로 표시하며, 이 도구는 추가만 담당합니다.",
 		obj(map[string]any{
-			"goals":     map[string]any{"type": "array", "description": "【优先用这个】要新增的目标数组,按顺序处理。每个元素:text(必填,一个独立可验证的最终目标)+ vulnclass(可选)。返回 ids 与本数组等长、同序。", "items": map[string]any{"type": "object"}},
-			"text":      str("[单条] 一个独立可验证的最终目标"),
-			"vulnclass": str("[单条] 对应漏洞类(若明确),如 SQLi/IDOR;业务逻辑目标可留空"),
+			"goals":     map[string]any{"type": "array", "description": "[이것을 우선 사용] 새로 추가할 목표 배열이며 순서대로 처리됩니다. 각 요소: text(필수, 독립적이고 검증 가능한 최종 목표) + vulnclass(선택). ids는 이 배열과 길이가 같고 순서도 같습니다.", "items": map[string]any{"type": "object"}},
+			"text":      str("[단건] 독립적이고 검증 가능한 최종 목표"),
+			"vulnclass": str("[단건] 대응하는 취약점 유형(명확하면), 예: SQLi/IDOR. 업무 로직 목표는 비워 둘 수 있습니다"),
 		}),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			if t.ts == nil {
-				return actool.Errorf("set_goals 未启用: ExplorationStore 未初始化"), nil
+				return actool.Errorf("set_goals 도구를 사용할 수 없습니다: ExplorationStore가 초기화되지 않았습니다"), nil
 			}
 			var a struct {
 				Goals    []goalItem `json:"goals"`
-				goalItem            // 单条模式:顶层 text/vulnclass
+				goalItem            // 단건 모드: 최상위 text/vulnclass
 			}
 			_ = json.Unmarshal(in, &a)
 			batch := len(a.Goals) > 0
@@ -1509,23 +1509,23 @@ func (t *ToolSet) setGoals() actool.CoreTool {
 				addedTexts = append(addedTexts, strings.TrimSpace(it.Text))
 			}
 			if len(addedTexts) > 0 {
-				// 唤醒 planner(整批一次)。优先 notifyGoal:一次 set_goals 记一条「人新增了
-				// N 个目标:…」触发,不逐条刷屏;拆解器/worker 无此回调 → 退回纯 notify(拆解器
-				// round-0 连 notify 也没接,即无操作,因为此时 planner 尚未启动)。
+				// planner 깨우기(전체 묶음 한 번). notifyGoal 우선: 한 번의 set_goals는 '사용자가 목표
+				// N개 추가:…' 트리거를 하나 기록하며 한 건씩 도배하지 않는다. 분해기/worker는 이 콜백이 없음 → 순수 notify로 되돌아간다(분해기
+				// round-0에서는 notify조차 연결되지 않아 무동작인데, 이때 planner가 아직 시작되지 않았기 때문이다).
 				switch {
 				case t.notifyGoal != nil:
 					t.notifyGoal(addedTexts)
 				case t.notify != nil:
 					t.notify()
 				}
-				// 主 agent 运行时新增目标 → 把已完成/暂停的任务拉回 running 继续跑(终态门会
-				// 吞掉普通 notify,必须显式复活)。仅 mainagent 接了此回调;拆解器/worker 为 nil。
+				// 메인 agent 런타임에서 목표를 새로 추가 → 완료/일시 중지된 작업을 running으로 되돌려 계속 실행한다(종료 상태 게이트가
+				// 일반 notify를 삼켜 버리므로 반드시 명시적으로 되살려야 한다). 이 콜백은 mainagent만 연결하며, 분해기/worker는 nil이다.
 				if t.resumeTask != nil {
 					t.resumeTask()
 				}
 			}
 
-			if !batch { // 单条:保持原返回
+			if !batch { // 단건: 원래 반환 유지
 				if e, bad := errs["0"]; bad {
 					return actool.Errorf(e), nil
 				}
@@ -1544,44 +1544,44 @@ type constraintItem struct {
 	Type string `json:"type"` // allow | deny
 }
 
-// addOneConstraint 落一条操作约束到 task_constraints。origin 取 t.worker(缺省 system):
-// 拆解器写 "goals"、主 agent 写 "human"。
+// addOneConstraint 함수는 동작 제약 조건 하나를 task_constraints에 기록한다. origin은 t.worker(기본값 system)를 쓴다:
+// 분해기는 "goals", 메인 agent는 "human"을 쓴다.
 func (t *ToolSet) addOneConstraint(it constraintItem) (int64, error) {
 	text := strings.TrimSpace(it.Text)
 	if text == "" {
-		return 0, fmt.Errorf("text 不能为空")
+		return 0, fmt.Errorf("text 값을 비워 둘 수 없습니다")
 	}
 	kind := strings.TrimSpace(strings.ToLower(it.Type))
 	if kind == "" {
-		kind = "deny" // 默认按禁止处理:未标注类型时更保守
+		kind = "deny" // 기본값으로 금지 처리: 유형을 표시하지 않았을 때 더 보수적
 	}
 	if kind != "allow" && kind != "deny" {
-		return 0, fmt.Errorf("type 必须是 allow 或 deny")
+		return 0, fmt.Errorf("type은 allow 또는 deny여야 합니다")
 	}
 	return t.ts.AddConstraint(kind, text, t.worker)
 }
 
-// setConstraints 给【本任务】新增操作约束(allow=允许做什么 / deny=禁止做什么)。既是目标
-// 拆解器 round-0 抽约束的提交工具,也是主 agent 运行时补约束的工具——同一受管工具,可在 web
-// 端改描述/schema、按 agent 绑定。约束会被注入 planner/worker 的系统提示以约束探索边界。
+// setConstraints 함수는 [이 작업]에 동작 제약 조건(allow=무엇을 허용할지 / deny=무엇을 금지할지)을 새로 추가한다. 목표
+// 분해기가 round-0에서 제약을 추출하는 제출 도구이자 메인 agent 런타임이 제약을 보충하는 도구다——같은 관리 대상 도구이며, web
+// 쪽에서 설명/schema를 바꾸거나 agent별로 바인딩할 수 있다. 제약은 planner/worker의 시스템 프롬프트에 주입되어 탐색 경계를 제한한다.
 func (t *ToolSet) setConstraints() actool.CoreTool {
 	return writeTool("set_constraints",
-		"给【本任务】新增操作约束,用来框定探索边界:type=allow(允许做的操作)或 deny(禁止做的操作)。\n"+
-			"约束=对『可以/不可以做哪些操作』的规定(如『仅测当前端口,不扫其他端口』『禁止对生产库做写操作』『只允许被动侦察』),不是目标、也不是攻击步骤。\n"+
-			"★优先批量:多条放进 constraints 数组一次提交,返回 ids 与之等长同序(失败项 id=0,详情见 errors)。单条则省略 constraints 直接给顶层 text/type。\n"+
-			"只登记任务目标/描述里【明确写出】的约束,不要臆造;拿不准类型时用 deny(更保守)。",
+		"[이 작업]에 동작 제약 조건을 새로 추가하며, 탐색 경계를 정하는 데 씁니다: type=allow(허용하는 동작) 또는 deny(금지하는 동작).\n"+
+			"제약 조건='어떤 동작을 할 수 있는지/할 수 없는지'에 대한 규정(예: '현재 포트만 테스트하고 다른 포트는 스캔하지 않음' '운영 DB에 쓰기 작업 금지' '패시브 정찰만 허용')이며, 목표도 아니고 공격 단계도 아닙니다.\n"+
+			"★일괄 우선: 여러 개를 constraints 배열에 담아 한 번에 제출하면, ids를 배열과 길이가 같고 순서도 같게 반환합니다(실패 항목은 id=0, 자세한 내용은 errors 참고). 단건이면 constraints를 생략하고 최상위 text/type을 바로 전달합니다.\n"+
+			"작업 목표/설명에 [명시적으로 적힌] 제약만 등록하고, 임의로 지어내지 마세요. 유형을 확신할 수 없으면 deny(더 보수적)를 씁니다.",
 		obj(map[string]any{
-			"constraints": map[string]any{"type": "array", "description": "【优先用这个】要新增的约束数组,按顺序处理。每个元素:text(必填,一条约束)+ type(allow|deny)。返回 ids 与本数组等长、同序。", "items": map[string]any{"type": "object"}},
-			"text":        str("[单条] 一条操作约束的内容"),
-			"type":        str("[单条] allow(允许)或 deny(禁止);缺省按 deny 处理"),
+			"constraints": map[string]any{"type": "array", "description": "[이것을 우선 사용] 새로 추가할 제약 배열이며 순서대로 처리됩니다. 각 요소: text(필수, 제약 하나) + type(allow|deny). ids는 이 배열과 길이가 같고 순서도 같습니다.", "items": map[string]any{"type": "object"}},
+			"text":        str("[단건] 동작 제약 조건 하나의 내용"),
+			"type":        str("[단건] allow(허용) 또는 deny(금지). 기본값은 deny 처리"),
 		}),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			if t.ts == nil {
-				return actool.Errorf("set_constraints 未启用: ExplorationStore 未初始化"), nil
+				return actool.Errorf("set_constraints 도구를 사용할 수 없습니다: ExplorationStore가 초기화되지 않았습니다"), nil
 			}
 			var a struct {
 				Constraints    []constraintItem `json:"constraints"`
-				constraintItem                  // 单条模式:顶层 text/type
+				constraintItem                  // 단건 모드: 최상위 text/type
 			}
 			_ = json.Unmarshal(in, &a)
 			batch := len(a.Constraints) > 0
@@ -1599,7 +1599,7 @@ func (t *ToolSet) setConstraints() actool.CoreTool {
 				}
 				ids[i] = id
 			}
-			if !batch { // 单条:保持简单返回
+			if !batch { // 단건: 간단한 반환 유지
 				if e, bad := errs["0"]; bad {
 					return actool.Errorf(e), nil
 				}
@@ -1614,18 +1614,18 @@ func (t *ToolSet) setConstraints() actool.CoreTool {
 }
 
 func (t *ToolSet) addHint() actool.CoreTool {
-	return t.writeExpTool("add_hint", "把人类/主 agent 的战略提示挂到探索图，规划者下次生成意图时会读到它。\n"+
-		"★优先批量：多条提示放进 hints 数组一次提交（比逐条调用省往返）。返回 ids 数组，与 hints 等长同序（失败项 id=0，详情见 errors）。单条则省略 hints 直接给顶层 text。",
+	return t.writeExpTool("add_hint", "사람/메인 agent의 힌트를 탐색 그래프에 매달며, planner가 다음에 의도를 생성할 때 이를 읽습니다.\n"+
+		"★일괄 우선: 여러 힌트를 hints 배열에 담아 한 번에 제출합니다(하나씩 호출하는 것보다 왕복이 줄어듭니다). ids 배열을 반환하며, hints와 길이가 같고 순서도 같습니다(실패 항목은 id=0, 자세한 내용은 errors 참고). 단건이면 hints를 생략하고 최상위 text를 바로 전달합니다.",
 		obj(map[string]any{
-			"hints":        map[string]any{"type": "array", "description": "【优先用这个】要新增的提示数组，按顺序处理。每个元素字段同下方顶层字段（text/asset_ids/traffic_refs）。返回 ids 与本数组等长、同序。", "items": obj(map[string]any{"text": str("提示内容"), "asset_ids": map[string]any{"type": "array", "items": map[string]any{"type": "integer"}}, "traffic_refs": HintTrafficSchema()})},
-			"text":         str("[单条] 提示内容，如'重点挖认证后接口'"),
+			"hints":        map[string]any{"type": "array", "description": "[이것을 우선 사용] 새로 추가할 힌트 배열이며 순서대로 처리됩니다. 각 요소의 필드는 아래 최상위 필드(text/asset_ids/traffic_refs)와 동일합니다. ids는 이 배열과 길이가 같고 순서도 같습니다.", "items": obj(map[string]any{"text": str("힌트 내용"), "asset_ids": map[string]any{"type": "array", "items": map[string]any{"type": "integer"}}, "traffic_refs": HintTrafficSchema()})},
+			"text":         str("[단건] 힌트 내용, 예: '인증 후 엔드포인트를 집중 공략'"),
 			"traffic_refs": HintTrafficSchema(),
-			"asset_ids":    map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "锚定的资产 id（可选，0/1/多个）"},
+			"asset_ids":    map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "앵커로 거는 자산 id(선택, 0/1/여러 개)"},
 		}),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
 				Hints    []hintItem `json:"hints"`
-				hintItem            // 单条模式：顶层 text/asset_ids
+				hintItem            // 단건 모드: 최상위 text/asset_ids
 			}
 			_ = json.Unmarshal(in, &a)
 			batch := len(a.Hints) > 0
@@ -1647,9 +1647,9 @@ func (t *ToolSet) addHint() actool.CoreTool {
 				addedTexts = append(addedTexts, strings.TrimSpace(it.Text))
 			}
 			if len(addedTexts) > 0 {
-				// 唤醒 planner（整批一次）。优先 notifyHint：一次 add_hint 记一条「人新增了
-				// N 条战略提示：…」触发，让 planner 明确"本轮由新增 hint 触发"并看到提示内容；
-				// 未接该回调时退回纯 notify（bare wake，hint 仍折在图里供其自行读取）。
+				// planner 깨우기(전체 묶음 한 번). notifyHint 우선: 한 번의 add_hint는 '사용자가 힌트
+				// N개 추가:…' 트리거를 하나 기록해, planner가 '이번 라운드는 새 hint로 트리거됨'을 명확히 알고 힌트 내용을 보게 한다.
+				// 이 콜백이 없으면 순수 notify로 되돌아간다(bare wake, hint는 여전히 그래프에 접힌 채 planner가 직접 읽도록 둔다).
 				switch {
 				case t.notifyHint != nil:
 					t.notifyHint(addedTexts)
@@ -1658,7 +1658,7 @@ func (t *ToolSet) addHint() actool.CoreTool {
 				}
 			}
 
-			if !batch { // 单条：保持原返回
+			if !batch { // 단건: 원래 반환 유지
 				if e, bad := errs["0"]; bad {
 					return actool.Errorf(e), nil
 				}
