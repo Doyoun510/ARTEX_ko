@@ -130,11 +130,20 @@ U9에서 확정한 `"작업 #<id>"` 라벨 계약을 사용자 지시로 처리�
 
 ### 묶음 A 요약
 실행 루프 코어 9파일 완료(A-1 scheduler·task_control·goals·goals_api·engine_timeout / A-2 conversations·task_llm / A-3 engine / A-4 orchestration). DB 필요 서버 테스트는 전 배치 공통으로 PostgreSQL 미연결 미검증.
-- **U11 잔여 묶음(todo)**: B(HTTP 핸들러/관리 API: server.go·server_mgmt.go·dto.go·auth.go·customtool.go·platform_tools.go — §5.7 프런트 계약 집중) / C(알림·동기화·업데이트: notifier.go·notify_api.go·sync_scopesentry.go·update.go·manager.go·llmretry.go). 그 외 server/ 미분류 파일 다수.
+- **U11 잔여 묶음(todo)**: B(HTTP 핸들러/관리 API) / C(알림·동기화·업데이트). 그 외 server/ 미분류 파일 다수.
+
+### 묶음 B-1 (인증·DTO·커스텀/플랫폼 도구)  [정적검토 done · 실행 검증 일부 PASS]
+- **대상(완료)**: `server/auth.go`·`dto.go`·`customtool.go`·`platform_tools.go`.
+- **auth.go**: 로그인/비밀번호 HTTP 에러·JWT 로그. 프런트가 이 인증 에러를 substring 매칭하지 않음(표시용) 확인 → 번역.
+- **dto.go**: DTO 구조체 필드/문서 주석(전부 주석). 식별자·enum(state=running/deleted·max_tokens 등) 보존.
+- **customtool.go**: 커스텀 도구 실행기 주석·CRUD HTTP 에러(writeErr)·모델-읽기 도구 에러(actool.Errorf)·도구 설명. `该 key 已存在`는 프런트 매칭 페이지 없음(§5.7의 `已存在`는 skills 페이지 전용, customtool 아님) 확인 → 번역.
+- **platform_tools.go**: Auto agent용 플랫폼 조작 도구(delete_assets_by_host·create_skill·update_skill_file·create_custom_tool·update_custom_tool·create_mcp·update_mcp) 설명·파라미터 설명·모델-읽기 에러. `skill 已存在`·`该 key 已存在`는 모두 **actool.Errorf(모델-읽기 도구 에러)**라 프런트 미노출 → 번역.
+- **⚠️ §5.7 계약 위치 확인(묶음 B 핵심)**: 프런트가 substring 매칭하는 `已存在`는 **`web/src/.../system/skills/page.tsx:370`(`msg.includes("已存在")`)** 한 곳뿐이며, 이를 먹이는 백엔드는 **`server_mgmt.go`의 skill 생성 HTTP 에러**. 묶음 B-1 파일에는 해당 HTTP 계약 문자열이 없음. **B-2(server_mgmt.go) 번역 시 그 `已存在`는 DNT 유지 or 프런트(B레인) 동시 변경 필요.**
+- **DNT**: 도구/파라미터/상태 enum·`docs/自定义工具设计.md`(파일 경로)·포맷 지정자 보존.
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 테스트 커플링 없음. DB 필요 서버 테스트는 미검증.
+- **묶음 B 잔여(todo)**: `server_mgmt.go`(85, §5.7 `已存在` 계약)·`server.go`(227, §5.7 `意图`/`提示` fallbackChat 등).
 
 ## U5~U8·U10·U12~U15  [todo]
-
-## U5~U8·U10~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
 
 ### U6 · 첫 파일럿  [대상 번역·정적 검토 완료 / U6 잔여 미작업 / 실행 미검증]
