@@ -110,7 +110,15 @@ U9에서 확정한 `"작업 #<id>"` 라벨 계약을 사용자 지시로 처리�
 - **계약 확인**: 번역 문자열을 검사하는 테스트 없음. 프런트가 이 에러/제목 문자열을 매칭하지 않음(§7.2) 확인.
 - **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅. DB 필요 서버 테스트는 미검증.
 
-- **묶음 A 잔여(todo)**: `orchestration.go`(187, 도구 설명 다수=모델-읽기, U5급 주의)·`engine.go`(139).
+### 묶음 A-3 (엔진 루프)  [정적검토 done · 실행 검증 일부 PASS]
+- **대상(완료)**: `server/engine.go`.
+- **모델-읽기 문자열(프롬프트 규칙 적용)**: `emptyTurnNudge`(공회전 라운드 이어 실행 지시)·planner 실시간 교정 주입 메시지·work 제어 오류·goalless 종료 Summary. 지시 강도·조건 보존.
+- **로그·주석**: 엔진 루프(계획/워커 수명주기·타임아웃 마무리·model_error 재시도·공회전 nudge) 대량 번역.
+- **DNT**: 상태 enum(open/running/paused/done/failed/timeout/exhausted/blocked/stopped/met)·model_error·first_run_at·deadline/drain/settling/frontier·cancelExec/SetTaskStatusGuarded·stop_reason/end_turn/tool_use·norma 경로·`%s/%d/%v/%w/%q`(개수·순서)·`docs/任务级超时与收尾设计.md`(파일 경로).
+- **계약 테스트**: `engine_emptyturn_test.go`는 `emptyTurnNudge` **상수 참조**로 비교 → 상수 값 번역돼도 통과(기대값 변경 불필요). 테스트 내 중국어는 픽스처·케이스명(§7.4 DNT)이라 미변경.
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 순수 테스트(empty-turn·trigger merge) PASS ✅. DB 필요 서버 테스트는 미검증.
+
+- **묶음 A 잔여(todo)**: `orchestration.go`(187, 도구 설명 다수=모델-읽기, U5급 주의).
 
 ## U5~U8·U10~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
