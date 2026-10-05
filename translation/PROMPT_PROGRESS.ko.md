@@ -80,3 +80,11 @@
 - **생성부·소비부·관련 테스트 대조**: `agent/tools.go`의 `graph_overview`가 cold digest 목록을 만들고 planner 도구 모음에 `expand_digest`를 등록하며, `agent/tools_insert.go`가 메인 agent 도구 모음에 등록함을 확인했다. `agent/tools_overview_test.go`와 `agent/coldgraph_test.go`를 포함한 관련 테스트를 검색했으나 이번 번역 문자열을 직접 비교하는 기대값이나 `expand_digest` 전용 테스트는 발견하지 못해 테스트 수정은 필요하지 않다.
 - **U5 잔여**: `agent/tools.go`·`agent/tools_insert.go`는 이번 범위 밖 미작업이다. 따라서 U5 전체를 완료로 표시하지 않으며 U1·U2와 기존 U6 상태를 유지한다.
 - **실행 검증**: 설치·빌드·테스트·lint·실제 템플릿 렌더·스모크·`gofmt`·Git 훅은 **사용자 요청으로 미실행**했다.
+
+### U5 · 자산 등록·범위·조회 도구  [대상 번역·정적 검토 완료 / U5 잔여 미작업 / 실행 미검증]
+- **대상·문자열 분류**: `agent/tools_insert.go` 전체를 검토하고 `insert_assets`·`add_company_scope`·`add_task_scope`·`list_untested_assets`·`list_assets`·`list_companies`의 모델용 도구 설명과 스키마 설명, 자체 오류·출처 설명 및 중국어 개발자 주석을 번역했다. 필수·금지·선택 조건, 자산 범위와 권한 경계, 입력 제약 및 도구 사용 목적을 유지했다.
+- **계약·코드 보존**: 도구명·agent key·파라미터명·JSON/JSON-Schema 키·enum·실제 입력값·DSL 연산자와 필드·출력 구조를 보존했다. 도구 등록·권한·DB 쓰기·검증·조회·필터·조건 분기·반환 로직과 숫자·포맷 지정자 및 순서·개행·이스케이프·들여쓰기·원본 699줄을 유지했다. 자동 분류 계약인 `备案`은 표시 표기 `ICP 등록(备案)` 안에 보존했다.
+- **생성부·소비부·관련 테스트 대조**: 모델 도구 설명과 스키마가 `writeTool`/`readTool`을 거쳐 카탈로그와 agent 도구 모음에 제공되고, 자체 오류는 도구 결과로 반환되며, 자산 출처 설명은 `SetTaskAssetSource`를 통해 저장·표시됨을 확인했다. `agent/insert_assets_test.go`·`agent/blackboard_inheritance_test.go`·`agent/tools_nil_store_test.go`·`agent/toolcatalog_test.go` 및 `db/task_assets_test.go`를 포함해 관련 테스트를 검색했으나 이번 번역 문자열의 정확한 전체 값을 비교하는 기대값은 발견하지 못해 테스트 수정은 필요하지 않다.
+- **잔여·범위 밖**: 대상 파일의 한자 잔여는 자동 분류 계약 표기인 `备案`뿐이며 번역 누락·추가 용어 보류·계약 보류는 없다. 자산 차단 오류에 결합되는 `d.Reason`은 범위 밖 `db/asset_intercept_match.go`에서 생성되므로 그 안의 중국어 표시 문구는 이번 파일에서 수정하지 않았다. U1·U2의 기존 보류 상태도 유지한다.
+- **U5 잔여**: `agent/tools.go`가 남아 있으므로 U5 전체를 완료로 표시하지 않는다. 완료된 `toolcatalog.go`·`tools_digest.go`와 U6 기록은 유지한다.
+- **실행 검증**: 설치·빌드·타입 검사·테스트·lint·실제 템플릿 렌더·스모크·`gofmt`·Git 훅은 **사용자 요청으로 미실행**했다.
