@@ -1820,16 +1820,16 @@ func traceSteps(acts []db.Activity) []map[string]any {
 // few specific steps. Thinking steps are excluded everywhere.
 func (t *ToolSet) getWorkerTrace() actool.CoreTool {
 	return t.readExpTool("get_worker_trace",
-		"查看某条意图(work)的【执行过程】（区别于 get_worker_output 只给最终结论）。三种用法：\n"+
-			"① 只传 intent_id → 返回该 work 每一步的摘要流（summary≤100字，含 step_id；只是动作轮廓，不含完整输出）；\n"+
-			"② intent_id + q → 只返回命中关键字的步骤摘要（在摘要和完整输出里都搜；仍只给 summary，要看内容用③）；\n"+
-			"③ intent_id + step_ids → 返回这些步骤的完整内容(detail)；一次最多取 5 个，超出只返回前 5 个并在 notice/omitted_step_ids 里告知未取的。\n"+
-			"典型流程：先①/②定位可疑步骤的 step_id，再用③取其完整输出。不含思考(thinking)步骤。支持直接关联任务的历史 trace；其结果带 source_task_id/inherited=true 且只读。",
+		"어떤 의도(work)의 [실행 과정]을 봅니다(get_worker_output이 최종 결론만 주는 것과 구별됩니다). 세 가지 용법:\n"+
+			"① intent_id만 전달 → 해당 work의 각 단계 요약 스트림을 반환합니다(summary≤100자, step_id 포함; 동작 윤곽일 뿐 전체 출력은 포함하지 않습니다);\n"+
+			"② intent_id + q → 키워드에 매칭된 단계 요약만 반환합니다(요약과 전체 출력 양쪽에서 검색합니다; 여전히 summary만 제공하므로 내용을 보려면 ③을 사용하세요);\n"+
+			"③ intent_id + step_ids → 이 단계들의 전체 내용(detail)을 반환합니다; 한 번에 최대 5개까지 가져오며, 초과하면 앞 5개만 반환하고 가져오지 않은 것은 notice/omitted_step_ids에 안내합니다.\n"+
+			"일반적인 흐름: 먼저 ①/②로 의심스러운 단계의 step_id를 찾고, 그다음 ③으로 그 전체 출력을 가져옵니다. 사고(thinking) 단계는 포함하지 않습니다. 직접 관련된 작업의 과거 trace를 지원합니다; 그 결과에는 source_task_id/inherited=true가 붙고 읽기 전용입니다.",
 		obj(map[string]any{
-			"intent_id": idp("意图 id（= work 句柄）"),
-			"q":         str("关键字：只返回摘要/完整输出命中它的步骤（可选；与 step_ids 互斥）"),
-			"step_ids":  map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "要取完整内容的 step_id（来自①/②返回；一次最多取 5 个，多传只返回前 5 个，其余在 omitted_step_ids 里列出）"},
-			"limit":     intp("摘要流/检索的返回上限（可选）"),
+			"intent_id": idp("의도 id(= work 핸들)"),
+			"q":         str("키워드: 요약/전체 출력에서 이에 매칭된 단계만 반환합니다(선택; step_ids와 상호 배타적)"),
+			"step_ids":  map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "전체 내용을 가져올 step_id(①/② 반환값에서; 한 번에 최대 5개, 더 전달해도 앞 5개만 반환하며 나머지는 omitted_step_ids에 나열합니다)"},
+			"limit":     intp("요약 스트림/검색의 반환 상한(선택)"),
 		}, "intent_id"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
@@ -1841,14 +1841,14 @@ func (t *ToolSet) getWorkerTrace() actool.CoreTool {
 			_ = json.Unmarshal(in, &a)
 			id := pid(a.IntentID)
 			if id <= 0 {
-				return actool.Errorf("intent_id 必填"), nil
+				return actool.Errorf("intent_id는 필수입니다"), nil
 			}
 			intentNode, nodeErr := t.ts.GetNodeWithSources(id)
 			if nodeErr != nil {
 				return actool.Errorf(nodeErr.Error()), nil
 			}
 			if intentNode == nil || intentNode.Kind != db.KindIntent {
-				return actool.Errorf("intent_id 不属于本任务或其直接关联任务"), nil
+				return actool.Errorf("intent_id가 이 작업 또는 직접 관련된 작업에 속하지 않습니다"), nil
 			}
 			// ③ detail drill-down by step ids, thinking excluded by the store.
 			if len(a.StepIDs) > 0 {
@@ -1896,8 +1896,8 @@ func (t *ToolSet) getWorkerTrace() actool.CoreTool {
 					// whether another call is worth it; the notice states the same in prose.
 					result["omitted_step_ids"] = omitted
 					result["notice"] = fmt.Sprintf(
-						"每次最多取 %d 个步骤的完整内容，本次已返回前 %d 个（%v），未取的 %d 个为 %v。"+
-							"若这些内容已足够定位，则无需再取剩余步骤；确需继续时，用这些 step_id 再调一次。",
+						"한 번에 최대 %d개 단계의 전체 내용을 가져옵니다. 이번에는 앞 %d개(%v)를 반환했고, 가져오지 않은 %d개는 %v입니다."+
+							"이 내용으로 충분히 위치를 파악했다면 나머지 단계는 더 가져올 필요가 없습니다; 계속 필요하면 이 step_id로 한 번 더 호출하세요.",
 						maxStepIDs, len(ids), ids, len(omitted), omitted)
 				}
 				if intentNode.Inherited {
@@ -1929,12 +1929,12 @@ func (t *ToolSet) getWorkerTrace() actool.CoreTool {
 // summaries (≤100 chars), each tagged with its intent_id for follow-up drill-down.
 func (t *ToolSet) searchAllWorkerTraces() actool.CoreTool {
 	return t.readExpTool("search_all_worker_traces",
-		"【通常不推荐使用，因为系统中已经给了大部分信息了】在【本任务其他 work 的执行过程】里按关键字(q)检索——用于找回某个 worker 见过、却没写进 fact 的东西（某路径/token/报错等）。"+
-			"已自动排除你自己这条意图的步骤（那些本就在你上下文里）。"+
-			"只返回命中步骤的摘要(summary≤100字)，每条带 intent_id；据此再用 get_worker_trace(intent_id, step_ids=[...]) 取完整内容。",
+		"[대부분의 정보는 이미 시스템에서 제공되므로 보통은 사용을 권장하지 않습니다] [이 작업의 다른 work 실행 과정]에서 키워드(q)로 검색합니다——어떤 worker가 봤지만 fact에 기록하지 않은 것(특정 경로/token/오류 등)을 찾아내는 데 씁니다."+
+			"호출자 자신의 의도에 속한 단계는 이미 자동으로 제외됩니다(그것들은 원래 당신 컨텍스트에 있습니다)."+
+			"매칭된 단계의 요약(summary≤100자)만 반환하며, 각 항목에 intent_id가 붙습니다; 이를 바탕으로 get_worker_trace(intent_id, step_ids=[...])로 전체 내용을 가져오세요.",
 		obj(map[string]any{
-			"q":     str("关键字（在所有 work 步骤的摘要+完整输出里搜）"),
-			"limit": intp("返回上限，默认 100（可选）"),
+			"q":     str("키워드(모든 work 단계의 요약+전체 출력에서 검색)"),
+			"limit": intp("반환 상한, 기본값 100(선택)"),
 		}, "q"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
@@ -1943,9 +1943,9 @@ func (t *ToolSet) searchAllWorkerTraces() actool.CoreTool {
 			}
 			_ = json.Unmarshal(in, &a)
 			if strings.TrimSpace(a.Q) == "" {
-				return actool.Errorf("q 必填"), nil
+				return actool.Errorf("q는 필수입니다"), nil
 			}
-			// 排除调用者自身这条意图的步骤（worker 的自有 trace 已在其上下文里）。
+			// 호출자 자신의 의도에 속한 단계는 제외한다(worker의 자체 trace는 이미 그 컨텍스트에 있다).
 			acts, err := t.ts.ActivityTraceSearchAllWithSources(t.ownerNode, a.Q, a.Limit)
 			if err != nil {
 				return actool.Errorf(err.Error()), nil
@@ -1978,12 +1978,12 @@ func (t *ToolSet) searchAllWorkerTraces() actool.CoreTool {
 // no process to inspect).
 func (t *ToolSet) listWorkerTraces() actool.CoreTool {
 	return t.readExpTool("list_worker_traces",
-		"【通常不推荐使用，因为系统中已经给了大部分信息了】列出本任务里【已跑过的 work（意图）】索引：intent_id + 一句话方向(summary) + 状态。"+
-			"你(worker)看不到探索图，用它来发现有哪些 work 值得翻看——再用 get_worker_trace(intent_id) 看其步骤、get_worker_trace(intent_id, step_ids=[...]) 取详情。"+
-			"只列已执行的(running/done/exhausted/blocked/stopped)，不含还没跑的 open。注意：你的任务边界仍是你领到的那条意图，看别的 work 只为复用观察/避免重复劳动。",
+		"[대부분의 정보는 이미 시스템에서 제공되므로 보통은 사용을 권장하지 않습니다] 이 작업에서 [이미 실행된 work(의도)] 색인을 나열합니다: intent_id + 한 줄 방향(summary) + 상태."+
+			"당신(worker)은 탐색 그래프를 볼 수 없으므로, 이 도구로 살펴볼 가치가 있는 work가 무엇인지 찾습니다——그다음 get_worker_trace(intent_id)로 그 단계를 보고, get_worker_trace(intent_id, step_ids=[...])로 상세를 가져옵니다."+
+			"이미 실행된 것(running/done/exhausted/blocked/stopped)만 나열하며, 아직 실행되지 않은 open은 포함하지 않습니다. 주의: 당신의 작업 경계는 여전히 당신이 배정받은 그 의도이며, 다른 work를 보는 것은 관찰 재사용/중복 작업 방지만을 위한 것입니다.",
 		obj(map[string]any{
-			"q":     str("按 summary 关键字过滤（可选）"),
-			"limit": intp("返回上限，默认 50（可选）"),
+			"q":     str("summary 키워드로 필터링(선택)"),
+			"limit": intp("반환 상한, 기본값 50(선택)"),
 		}),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
@@ -2037,18 +2037,18 @@ func (t *ToolSet) PlannerTools() []actool.CoreTool {
 		t.expandDigest(),
 		t.getWorkerOutput(), t.getWorkerTrace(), t.searchAllWorkerTraces(), t.listGoals(), t.addIntent(), t.proveGoal(), t.goalMet(),
 		t.killWorkTool(), t.steerWorkTool(),
-		// report_finding：规划态势研判时若自身已确证漏洞，可直接登记（与 worker 同工具）。
+		// report_finding: 계획 수립 중 현황 분석·판단 시 자신이 이미 취약점을 확증했다면 직접 등록할 수 있다(worker와 같은 도구).
 		t.addFinding(),
-		// list_companies：查看企业列表 + scope + 资产数（拿 company_id / 理解归属范围）。
+		// list_companies: 회사 목록 + scope + 자산 수 조회(company_id 확보 / 소속 범위 파악).
 		t.listCompanies(),
-		// list_assets：规划时按 DSL 检索全资产库（配合 list_untested_assets 的"范围内未测"视角，
-		// 补上"按域名/指纹/端口/状态码等条件在整库里查"的能力）。
+		// list_assets: 계획 수립 시 DSL로 전체 자산 저장소를 검색한다(list_untested_assets의 "범위 내 미테스트" 관점과 함께,
+		// "도메인/핑거프린트/포트/상태 코드 등 조건으로 전체 저장소에서 조회"하는 능력을 보완한다).
 		t.listAssets(),
-		// add_company_scope：规划时可把域名/IP/CIDR/ICP/关键词纳入某公司的资产范围（自动认领命中资产）。
+		// add_company_scope: 계획 수립 시 도메인/IP/CIDR/ICP/키워드를 특정 회사의 자산 범위에 포함할 수 있다(매칭된 자산을 자동으로 편입).
 		t.addCompanyScope(),
-		// add_task_scope：主动把整根域/整公司/某子域/IP 纳入本任务测试范围(覆盖度分母)。
+		// add_task_scope: 루트 도메인 전체/회사 전체/특정 서브도메인/IP를 이 작업 테스트 범위(커버리지 분모)에 능동적으로 포함한다.
 		t.addTaskScope(),
-		// list_untested_assets：按需查本任务范围内未测资产(类型+分页)，自行决定补测。
+		// list_untested_assets: 필요에 따라 이 작업 범위 내 미테스트 자산(유형+페이지네이션)을 조회하고, 보충 테스트 여부를 스스로 결정한다.
 		t.listUntestedAssets(),
 	}
 }

@@ -377,7 +377,7 @@ func (t *ToolSet) insertAssets() actool.CoreTool {
 func (t *ToolSet) addCompanyScope() actool.CoreTool {
 	return writeTool(
 		"add_company_scope",
-		"도메인/IP/CIDR/ICP 등록(备案)/회사 키워드를 특정 회사의 [자산 범위]에 추가합니다. 도메인, 네트워크 및 ICP는 매칭되는 자산을 자동으로 귀속하며 키워드는 Agent에 범위 힌트로만 제공합니다.\n"+
+		"도메인/IP/CIDR/ICP 등록(备案)/회사 키워드를 특정 회사의 [자산 범위]에 추가합니다. 도메인, 네트워크 및 ICP는 매칭되는 자산을 자동으로 편입하며 키워드는 Agent에 범위 힌트로만 제공합니다.\n"+
 			"회사 이름은 고유합니다. company가 없으면 새로 만들고 이미 있으면 재사용합니다(범위만 병합).\n"+
 			"scope는 한 줄에 하나씩 입력하며 시스템이 루트 도메인 / URL / 단일 IP / CIDR 네트워크 대역 / ICP 등록(备案) / 회사 키워드를 자동으로 식별합니다.\n"+
 			"reason에 귀속 근거(whois/인증서/ASN 등)를 반드시 설명하세요.\n"+

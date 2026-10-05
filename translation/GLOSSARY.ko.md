@@ -97,6 +97,7 @@
 | 容器型资产 | — | 하위 자산을 묶는 상위 자산 | `[확정]` 이번 U5 `graphOverviewData()`의 커버리지 안내 문맥에 한정한 해석. 직접 정의가 없으므로 포함 자산 종류를 임의로 열거하거나 저장소 전체의 일반 용어로 확대 적용하지 않는다. 키·영어·식별자는 DNT |
 | 范围未锚定 | — | 범위 앵커 미설정 | `[확정]` 이번 U5 `coverage.status`의 자연어 설명값 문맥. `Denominator==0` 조건과 `pct=null`, 키·출력 구조는 보존 |
 | 兜底(连 origin fact) | default (link) | 기본 연결 | `[확정]` 이번 U5 `addOneIntent()`에서 `parent_ids`를 비워 둔 최상위 의도를 origin fact에 기본 연결하는 문맥에 한정. 기존 다른 문맥의 兜底 번역(mock=기본 처리·인터셉트=보완 판정·LLM=대체 처리·U6=최종 보호 조치)은 유지. `parent_ids`·`origin fact`·식별자는 DNT |
+| 态势研判 | situation analysis and assessment | 현황 분석·판단 | `[확정]` 이번 U5 `PlannerTools()`의 `report_finding` 주석 문맥에 한정. planner가 계획 수립 중 탐색 현황을 분석하고 판단하는 문맥. `态势`=현황(2장)과 함께 쓰되 `研判`을 "분석·판단"으로 적용. 영어·도구명·식별자는 DNT |
 
 ---
 
@@ -152,6 +153,7 @@
 | 飞书 | Feishu (Lark) | Feishu | **[확정]** 영문 제품명 그대로. 원문 "飞书(含 Lark)"는 "Feishu(Lark 포함)". 알림 채널 `feishu` |
 | 公司资产范围 | company asset scope | 회사 자산 범위 | 식별자 `scope`/`task_scope`는 DNT |
 | 范围 / 备案 | scope / ICP filing | 범위 / ICP 등록(备案) | `[확정]` 표시 문구만. 자동 분류에 쓰는 "备案"은 DNT(5.7) |
+| 认领 | claim | 편입 | `[확정]` 이번 U5 `add_company_scope`의 회사 자산 범위 설명·주석 문맥에 한정. 회사 자산 범위 규칙에 매칭된 자산을 해당 회사에 편입하는 문맥. 작업·의도를 맡거나 재할당하는 다른 문맥(예: `server/server.go`의 `重新认领`)은 변경하지 않는다. 영어·도구명·식별자·계약값은 DNT |
 | 收尾 | wrap-up | 마무리(wrap-up) | `[확정]` 예산·타임아웃 시 실행되는 정리 라운드. UI는 "마무리" |
 | 旁路(提问) | side question | 보조 질문 | `[확정]` /btw 곁다리 질문(by the way). "우회 질의" 아님. 코드 `sidequestion`·`/btw`는 DNT |
 | 渠道 / 投递 / 推送 | channel / delivery / push | 채널 / 전송 / 알림 전송 | `[확정]` |
