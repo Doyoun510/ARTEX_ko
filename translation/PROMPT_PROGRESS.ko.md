@@ -39,7 +39,17 @@
 - **관련 테스트 확인(정적 대조, 실패 미확정)**: `agent/prompt_test.go`는 `plannerSystem` 결과에 `中间产物输出规约`가 포함되는지 검사한다. 최신 브랜치에서 정적 대조한 결과, 이 생성 문자열은 **`worker.go:261/268`의 `artifactSpec`(U3, 미번역)**에서 나오며 U2는 주석만 건드려 **생성 문자열·기대값이 모두 중국어 원문 그대로** = 계약 정적 무결. 이 기록은 **테스트 실패를 확정한 것이 아니며**, 테스트 실행은 **별도 허용 전에는 하지 않는다**. ⚠️ **U3 조정 포인트(편집 담당=U3 작업자)**: U3에서 `artifactSpec`의 `中间产物输出规约`를 번역하면 `prompt_test.go` 기대값 3곳(L41·L42·L63)도 같은 커밋에서 갱신해야 한다.
 - **상태**: 번역·정적 검토 완료. **실행 검증 완료(2026-10-05)**: `go build ./agent/...` OK, `go test ./agent/` PASS(0.118s, `TestRenderSystemOverrideAndFallback` 포함 — plannerSystem+`中间产物输出规약` 계약 통과). Go 1.26.3. 1 run 스모크(실제 에이전트 구동)는 미실시.
 
-## U3~U15  [todo]
+## U3 · 워커 실행  [정적검토 done · 실행 검증 PASS(2026-10-05)]
+- **대상 파일**: `agent/worker.go`·`wrapup.go`·`compaction.go`·`noa.go`·`capture.go`·`coldgraph.go` + **관련 테스트 `agent/prompt_test.go`**(이름 다름, artifactSpec 계약 동기화).
+- **내용**: 워커 시스템 프롬프트(workerDefaultTmpl)·트래픽 블록·산출물 규약(artifactSpec/workerArtifactSpec)·의도/overview user 메시지·마무리 프롬프트(planner/mainagent/worker/generic + 작업 타임아웃)·압축 프롬프트(compressionSystemPrompt)·noa·캡처 오류 문구.
+- **계약 동기화(핵심)**: `artifactSpec`의 `中间产物输出规约` → `중간 산출물 출력 규약`으로 번역하면서 **같은 커밋에서 `prompt_test.go` 기대값 3곳(`strings.Contains(... "中间产物输出规约")`)도 함께 변경**. (U2에서 예고한 U3 조정 포인트 처리 완료)
+- **검증**: 중국어 0(의도 보존 제외) ✅ / 전각부호 0 ✅ / parity·`%verb`·`{{ }}` 보존 ✅ / **go build ./agent/... OK · go test ./agent/ PASS(0.062s, prompt_test 포함)**.
+- **의도 보존(번역 안 함)**:
+  - `wrapup.go:102` 주석의 `docs/任务级超时与收尾设计.md` — 실제 파일 경로 참조(DNT).
+  - `prompt_test.go`의 픽스처(`目标:{{.Goal}} 范围:{{.Scope}}`·`走代理`·입력 `拿下X` 등) — renderSystem 치환 **메커니즘 검증용 테스트 데이터**라 GUIDE §1대로 일괄 번역 안 함(표시 문자열 아님).
+- **DNT**: `执行者`→`worker`·`规划者`→`planner`(용어집), 도구명(insert_assets·record_fact·report_finding·traffic_search/get/blob·add_intent·prove_goal·TodoWrite 등)·키(intent_id·summary·detail·evidence·confidence·asset_ids 등)·enum(observed·inferred·met)·경로(`/tmp`·`<workDir>/...`·`@blob sha256`)·`workerChatMarker` 포맷·`{{.ProxyAddr}}` 등 전부 원문.
+
+## U4~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
 
 ### U6 · 첫 파일럿  [대상 번역·정적 검토 완료 / U6 잔여 미작업 / 실행 미검증]
