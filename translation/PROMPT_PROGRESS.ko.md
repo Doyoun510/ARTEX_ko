@@ -91,6 +91,19 @@ U9에서 확정한 `"작업 #<id>"` 라벨 계약을 사용자 지시로 처리�
 - **범위 한정**: `conversations.go`의 나머지 중국어(일반 U11)·`关联任务 #%d 不存在`류 에러 메시지는 **이번 범위 밖**(U11 본 작업에서 처리).
 - **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / `go test ./server/ -run 'TestMerge|TestFinalTrigger|TestTaskContextHeader'` PASS(6건, DB 불필요 순수 함수) ✅ / `go test ./agent/ -count=1` PASS ✅.
 
+## U11 · 서버 API (트랙 B)  [진행 중 — 묶음 A(실행 루프 코어)]
+사용자 결정으로 사람1이 U11을 하위 묶음으로 나눠 착수. 묶음 A = 실행 루프 코어(트리거→런→목표 흐름). U11엔 모델-읽기 문자열이 섞여 있어(GUIDE 명시) 문자열별로 소비자(모델/사용자/로그/계약)를 구분해 규칙 적용.
+
+### 묶음 A-1 (제어·목표·스케줄 클러스터)  [정적검토 done · 실행 검증 일부 PASS]
+- **대상(완료)**: `server/scheduler.go`·`task_control.go`·`goals.go`·`goals_api.go`·`engine_timeout.go`.
+- **문자열 분류**: 트리거 컨텍스트 마커(`[이번은 …로 트리거됨]`)·도구 오류(의도/작업 제어)·Causef Short/Text(具名原因)=모델/사용자 읽기 → 번역. 런 타이틀·writeErr·로그·Summary=표시 → 번역. 코드 키 DNT.
+- **DNT 보존**: state enum(running/paused/open/done/failed/timeout/completed/met/deleted)·Causef **code**(queued_for_admission·llm_unavailable_queued·first_run)·MaxDuration·SetTaskStatusGuarded·settling/drain/grace/deadline·도구/필드명·`task_ids`·`%s/%d/%v/%w`(개수·순서)·`docs/任务级超时与收尾设计.md`(실제 파일 경로, U3 선례와 동일 보존).
+- **용어**: 触发→트리거, 终态→종료 상태, 收尾→마무리, 墙钟→실제 경과 시간(wall-clock), 并发→동시 실행, 已排队→대기열 등록됨, 复活(reviveTask)→작업 되살리기(恢复=재개와 구분), 规划者→planner. 전각 `【】`→`[]`, `「」`→`'…'`.
+- **계약 확인**: 번역 문자열을 검사하는 테스트 없음(배치 A-1). `已截断`는 `chat_mentions.go`(별도 파일) 소유라 scheduler.go의 것과 무관. 프런트가 goal 에러(`目标不存在` 등)를 매칭하지 않음(§7.2 안전) 확인.
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 순수 서버 테스트(trigger merge 6건) PASS ✅. DB 필요 서버 테스트는 PostgreSQL 미연결로 **미검증**.
+- **주의(다음 배치/프런트)**: `conversations.go:112,443`의 `新对话`는 §5.7 프런트 매칭 계약 → **DNT 유지**(프런트 B레인 동시 변경 때 처리). 다른 파일의 동명 에러(`任务正在删除` 등)는 각자 독립 리터럴이라 해당 파일 번역 시 개별 처리.
+- **묶음 A 잔여(todo)**: `orchestration.go`(187, 도구 설명 다수=모델-읽기)·`engine.go`(139)·`conversations.go`(나머지 ~28, `新对话` 제외)·`task_llm.go`(56).
+
 ## U5~U8·U10~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
 
