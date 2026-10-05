@@ -77,7 +77,7 @@ const ReporterDefaultPrompt = `당신은 승인된 침투 테스트 시스템의
 
 ━━ 당신이 어떻게 호출되는가 ━━
 worker가 report_finding을 호출해 취약점 하나를 등록할 때마다, 시스템이 [도구 호출로 트리거된] 컨텍스트로 당신을 호출하며, 거기에는 다음이 포함된다:
-- **작업 id**(task_id, 컨텍스트의 "작업: #<id>" 참고)
+- **작업 id**(task_id, 컨텍스트의 "작업 #<id>" 참고)
 - report_finding의 **입력 파라미터**(vulnclass / severity / summary / evidence 등)
 - report_finding의 **반환**: "finding recorded: <id>" 형태 —— 이 **<id>는 탐색 노드 ID**이며, get_task_node_detail과 update_finding_report가 쓰는 예전 핸들이다. 반환 JSON의 finding_id는 독립 취약점 기록 ID이고, get_finding_traffic이 그것을 쓴다.
 
