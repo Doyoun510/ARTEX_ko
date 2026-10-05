@@ -182,13 +182,13 @@ func renderTriggers(ts *db.ExplorationStore, evs []TriggerEvent) string {
 			if len(ev.Goals) == 1 {
 				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 목표 하나를 추가: %s —— 새로 달성해야 할 목표, 이에 따라 탐색 방향을 보충하라(대응 의도가 아직 없으면).", ev.Goals[0]))
 			} else {
-				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 목표 %d개를 추가: %s —— 모두 새로 달성해야 할 목표, 대응 의도가 아직 없는 목표마다 탐색 방향을 보충하라.", len(ev.Goals), strings.Join(ev.Goals, "; ")))
+				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 목표 %d개를 추가: %s —— 모두 새로 달성해야 할 목표, 대응 의도가 아직 없는 목표마다 탐색 방향을 보충하라.", len(ev.Goals), strings.Join(ev.Goals, "；")))
 			}
 		case "hint":
 			if len(ev.Hints) == 1 {
 				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 전략 힌트 하나를 추가: %s —— 탐색 그래프에 연결됨, 이에 따라 탐색 방향을 조정/보충하라(대응 의도가 아직 없으면).", ev.Hints[0]))
 			} else {
-				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 전략 힌트 %d개를 추가: %s —— 모두 탐색 그래프에 연결됨, 하나씩 이에 따라 탐색 방향을 조정/보충하라.", len(ev.Hints), strings.Join(ev.Hints, "; ")))
+				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 전략 힌트 %d개를 추가: %s —— 모두 탐색 그래프에 연결됨, 하나씩 이에 따라 탐색 방향을 조정/보충하라.", len(ev.Hints), strings.Join(ev.Hints, "；")))
 			}
 		case "goal_deleted":
 			b.WriteString(fmt.Sprintf("\n- 사람이 이 목표를 삭제: %s —— 해당 목표가 제거됨, 이에 따라 남은 목표/방향을 재판단하라(더는 그것을 위해 의도를 파견할 필요 없음).", ev.Detail))
@@ -202,7 +202,7 @@ func renderTriggers(ts *db.ExplorationStore, evs []TriggerEvent) string {
 			if sm == "" {
 				sm = intentSummary(ts, ev.IntentID)
 			}
-			b.WriteString(fmt.Sprintf("\n- 의도 #%d가 사용자에 의해 삭제됨, 의도 내용: %s, 삭제 사유: %s. 이 의도는 삭제됨(더는 실행 안 함); 이에 따라 다시 계획하라.", ev.IntentID, sm, ev.Detail))
+			b.WriteString(fmt.Sprintf("\n- 사용자가 의도 #%d 삭제, 의도 내용: %s, 삭제 사유: %s. 이 의도는 삭제됨(더는 실행 안 함); 이에 따라 다시 계획하라.", ev.IntentID, sm, ev.Detail))
 		default: // "done"
 			b.WriteString(fmt.Sprintf("\n- 의도 #%d(%s)의 worker 종료, 출력 결론: %s", ev.IntentID, intentSummary(ts, ev.IntentID), workerOutput(ts, ev.IntentID)))
 			if fids := factIDsYielded(ts, ev.IntentID); fids != "" {
@@ -295,7 +295,7 @@ func renderGraphOverview(data map[string]any) string {
 // plannerDefaultTmpl is the built-in EDITABLE body (섹션 [A]) of the planner prompt,
 // seeded into agent_prompts. Goal is a {{.Goal}} template var; the 중간 산출물 출력 규약
 // tail is code-owned (artifactSpec) and appended by plannerSystem after rendering.
-const plannerDefaultTmpl = `당신은 사이버보안 플랫폼의 승인된 침투 테스트 시스템의 "계획자"로, 자주 깨어난다(그래프가 바뀔 때마다 깨어남). 역할: 상황 읽기 → 목표 판정 → **커버되지 않은 새 방향이 확실히 있을 때만** 탐색 의도를 보충한다. 당신은 계획자이지 실행자가 아니다: 이번 라운드의 모든 산출물은 [의도 생성/명확화] 또는 [목표 판정]뿐이며, plan 안에서 직접 일을 해서는 절대 안 된다.
+const plannerDefaultTmpl = `당신은 사이버보안 플랫폼의 승인된 침투 테스트 시스템의 "planner"로, 자주 깨어난다(그래프가 바뀔 때마다 깨어남). 역할: 상황 읽기 → 목표 판정 → **커버되지 않은 새 방향이 확실히 있을 때만** 탐색 의도를 보충한다. 당신은 planner이지 worker가 아니다: 이번 라운드의 모든 산출물은 [의도 생성/명확화] 또는 [목표 판정]뿐이며, plan 안에서 직접 일을 해서는 절대 안 된다.
 
 작업 목표: {{.Goal}}
 

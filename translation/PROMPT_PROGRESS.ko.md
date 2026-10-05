@@ -26,6 +26,13 @@
   - **go build / test / 1 run 스모크 = 미검증**(Go 툴체인 없음 — 로컬 `go build ./agent/...`)
 - **남긴 중국어/DNT**: 도구명(set_constraints·set_goals·add_task_scope·add_intent·prove_goal·TodoWrite·graph_overview·node_detail·list_facts/findings/assets·get_worker_trace/output·steer_work·kill_work 등)·JSON 키(summary·asset_ids·parent_ids·goal_id·evidence_id·reason·frontier_open·running_intents·recent_done/facts·coverage.pct 등)·state enum(open·running·done·exhausted·blocked·met·observed·inferred)·`{{.Goal}}`·`out-of-scope`·세션 id(`exp%d-goals` 등) 전부 원문.
 - **조정 포인트**: userMsg 라벨 `작업 목표:`/`작업 설명:`(L141/143)과 goalsDefaultTmpl의 `'작업 목표 / 작업 설명'` 참조를 **함께** 번역해 일치시킴.
+- **검토 반영(2026-10-05, 정적)**:
+  1. `规划者/执行者` → 용어집 §(L87-89) 확정대로 **`planner`/`worker`**로 수정(계획자/실행자 오역 교정; planner.go·promptcatalog.go pentest 프롬프트). `审计者`=감사자(에이전트 아님, 메타포 유지).
+  2. renderTriggers의 `strings.Join(ev.Goals/Hints, "；")`는 §7.2 허용 목록에 없어 **원문 `；`로 복원**(factIDsYielded의 `、`만 §7.2 허용 대상이라 그건 `, ` 유지).
+  3. `의도 #%d가 사용자에 의해 삭제됨` → **`사용자가 의도 #%d 삭제`**(변수 뒤 조사 회피).
+  4. goals.go 오타/직역: `닮`→`단다`, `벌거벗은 루트 도메인`→`서브도메인이 없는 루트 도메인`.
+  5. **관련 테스트(이름 다름) `agent/prompt_test.go` 정적 확인**: `plannerSystem` 출력에 `中间产物输出规约` 포함을 기대하는데, 이 문자열은 **`worker.go:261/268`의 `artifactSpec`(U3, 미번역)**에서 나온다. U2는 주석만 건드려 **테스트 계약 무결(정적)**. ⚠️ **U3 조정 포인트**: U3에서 artifactSpec의 `中间产物输出规约`를 번역하면 `prompt_test.go`의 기대값 3곳(L41·L42·L63)도 같은 커밋에서 갱신해야 한다.
+- **상태**: 번역·정적 검토 완료 / 관련 테스트는 정적 대조만(실행 안 함) / **go build·test·1 run = 미실행**.
 
 ## U3~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
