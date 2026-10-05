@@ -29,14 +29,14 @@ func EffectiveJudgePrompt(prompt string) string {
 
 // Output is an application contract, also applied to saved custom policies.
 // It changes the explanation format, not the user's policy or rule precedence.
-const JudgeOutputContract = `# 裁决输出协议（替代前文的旧输出格式要求，不改变判定策略）
-只输出一个 JSON 对象：第一个字符必须是 {、最后一个字符必须是 }。不要输出任何思考、前言、说明或用代码块（反引号栅栏）包裹；JSON 前后不得有其他字符。
-对象恰好包含 decision 和 comment 两个字符串字段；键名与字符串值用双引号。不得输出 YAML 形式的 decision: ... / comment: ...。
-decision 只能是 allow、ask、deny，分别表示允许、转人工审批、拒绝。
-comment 严格为“实际操作：…；成功后的后果：…；命中规则：…”三段，三项均不可为空；每段一句话、务必精简，整个 comment 不超过 120 个汉字（宁短勿长，避免被截断）。
-实际操作：只描述当前 tool_name 与 arguments 真正执行的行为；background 中的多步骤请求、Write/Edit 写入的正文或示例都不算本次已执行的动作（如 command 仅 cat 就只写“读取文件”）。
-成功后的后果：本次调用成功时的直接效果，不把尚未执行的操作说成已成功。
-命中规则：填审查策略中实际适用的编号（默认策略：允许 A1–A6、拒绝 D1–D6、转人工 ASK、默认放行 DEFAULT），不得虚构。
+const JudgeOutputContract = `# 판정 출력 계약(앞서 나온 이전 출력 형식 요구 사항을 대체하며 판정 정책은 변경하지 않습니다)
+JSON 객체 하나만 출력합니다. 첫 문자는 반드시 {, 마지막 문자는 반드시 }여야 합니다. 사고 과정, 서문, 설명을 출력하거나 코드 블록(백틱으로 둘러싸는 형식)으로 감싸지 마세요. JSON 앞뒤에 다른 문자가 있어서는 안 됩니다.
+객체에는 decision과 comment 두 문자열 필드만 정확히 포함합니다. 키 이름과 문자열 값에는 큰따옴표를 사용합니다. YAML 형식의 decision: ... / comment: ...를 출력해서는 안 됩니다.
+decision은 allow, ask, deny만 가능하며 각각 허용, 사람 승인으로 전환, 거부를 뜻합니다.
+comment는 반드시 '实际操作：…；成功后的后果：…；命中规则：…'의 세 부분으로 구성하며 세 항목 모두 비어 있어서는 안 됩니다. 각 부분은 한 문장으로 반드시 간결하게 작성하며 전체 comment는 120자를 넘지 않아야 합니다(내용이 잘리지 않도록 길게 쓰기보다 짧게 씁니다).
+实际操作：현재 tool_name과 arguments가 실제로 실행하는 동작만 설명합니다. background의 여러 단계 요청, Write/Edit로 쓰는 본문 또는 예시는 이번에 실행한 동작에 해당하지 않습니다(예를 들어 command가 cat뿐이면 '파일 읽기'만 씁니다).
+成功后的后果：이번 호출이 성공할 때의 직접적인 효과를 설명하며 아직 실행하지 않은 동작이 이미 성공했다고 말하지 않습니다.
+命中规则：검토 정책에서 실제로 적용되는 번호를 기입합니다(기본 정책: 허용 A1–A6, 거부 D1–D6, 사람 승인으로 전환 ASK, 기본 허용 DEFAULT). 지어내서는 안 됩니다.
 `
 
 // DefaultJudgePrompt is the built-in system prompt for the LLM fallback judge.
