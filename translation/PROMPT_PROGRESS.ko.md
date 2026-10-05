@@ -66,3 +66,10 @@
 - **관련 소비부·테스트 대조**: 연결 테스트 결과는 `server/server.go`에서 API 응답으로 전달되고, 할당량 판별은 `agent/provider_quota_test.go`와 `server/task_llm_test.go`, 원시 응답 캡처와 세션 헤더 동작은 `agent/provider_capture_test.go`·`agent/session_header_test.go`가 검증함을 읽기 전용으로 확인했다. 이번 번역 문자열을 직접 비교하는 테스트 기대값은 발견하지 못해 테스트 수정은 필요하지 않다.
 - **정적 검토**: 문자열 밖 코드와 식별자·설정값·숫자·포맷 지정자 및 순서·정규식·개행·이스케이프·들여쓰기를 보존했다. `terminalreason.go`·`cancelcause.go`와 관련 테스트 기대값을 포함한 U6의 세 명시 소스는 번역·정적 검토를 마쳤으며 추가 용어·계약 보류는 발견하지 못했다.
 - **실행 검증**: 설치·빌드·테스트·lint·실제 템플릿 렌더·스모크·`gofmt`·Git 훅은 **사용자 요청으로 미실행**했다. 따라서 U6 상태는 **번역·정적 검토 완료 / 실행 미검증**이며 최종 동작 검증 완료로 표시하지 않는다.
+
+### U5 · 도구 카탈로그 첫 파일  [대상 번역·정적 검토 완료 / U5 잔여 미작업 / 실행 미검증]
+- **대상·문자열 분류**: `agent/toolcatalog.go` 전체를 검토하고 내장 도구 카탈로그·DB 시드·agent 바인딩·런타임 재정의·기본 파라미터 주입을 설명하는 중국어 주석만 번역했다. 이 파일에는 번역 대상인 모델용 도구 설명·안내문이나 중국어 문자열 리터럴이 없다.
+- **계약·코드 보존**: 도구명·카탈로그 key·agent key·파라미터명·JSON-Schema 키·enum·영어·식별자와 도구 등록·조회·선택·권한·노출 범위·로드 로직을 보존했다. 번역 대상 중국어와 전각 문장부호 잔여, 추가 용어·계약 보류는 발견하지 못했다.
+- **생성부·소비부·관련 테스트 대조**: `server/assembly.go`·`server/server_mgmt.go`·`server/orchestration.go`와 `agent/assembly.go`의 시드·재정의 소비 경로를 확인했다. `agent/toolcatalog_test.go`·`server/tools_wire_test.go`·`agent/finding_workflow_test.go`는 key·바인딩·설명 전달·기본값 주입 동작을 검사하며, 번역한 주석을 비교하지 않으므로 기대값 수정은 필요하지 않다.
+- **U5 잔여**: `agent/tools.go`·`agent/tools_insert.go`·`agent/tools_digest.go`는 이번 범위 밖 미작업이다. 따라서 U5 전체를 완료로 표시하지 않으며 U1·U2와 기존 U6 상태를 유지한다.
+- **실행 검증**: 설치·빌드·테스트·lint·실제 템플릿 렌더·스모크·`gofmt`·Git 훅은 **사용자 요청으로 미실행**했다.
