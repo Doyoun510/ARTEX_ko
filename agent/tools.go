@@ -811,7 +811,7 @@ func (t *ToolSet) relatedTaskOverviews() []map[string]any {
 			}
 			item["cold_digests"] = cds
 			if len(more) > 0 {
-				item["cold_digests_more"] = more // 被截断的更旧 digest 的 id；expand_digest(id) 展开
+				item["cold_digests_more"] = more // 일부만 표시해 생략된 이전 digest의 id; expand_digest(id)로 펼치기
 			}
 		}
 		if statsErr == nil {
@@ -899,14 +899,14 @@ func compactFinding(n *db.Node) map[string]any {
 }
 
 func (t *ToolSet) listFindings() actool.CoreTool {
-	return t.readExpTool("list_findings", "列本任务及直接关联任务的【确认漏洞】(紧凑：id+task_id+intent_id+vulnclass+severity+摘要+状态)。关联任务条目带 source_task_id/inherited=true 且只读。这里只含漏洞；普通探索事实用 list_facts，详情用 node_detail(id)。",
+	return t.readExpTool("list_findings", "현재 작업과 직접 관련된 작업의 [확인된 취약점]을 나열합니다(간결한 형식: id+task_id+intent_id+vulnclass+severity+요약+상태). 관련 작업 항목에는 source_task_id/inherited=true가 포함되며 읽기 전용입니다. 여기에는 취약점만 포함됩니다. 일반 탐색 사실은 list_facts, 상세는 node_detail(id)로 조회하세요.",
 		obj(map[string]any{}),
 		func(context.Context, json.RawMessage) (actool.Result, error) {
 			f, _ := t.ts.ListByKindWithSources(db.KindFinding, 500)
 			if err := t.ts.PopulateFindingTrafficIDs(f); err != nil {
 				return actool.Errorf(err.Error()), nil
 			}
-			intentOf, _ := t.ts.FindingIntentsWithSources() // finding id -> 产生它的 intent id
+			intentOf, _ := t.ts.FindingIntentsWithSources() // finding id -> 이를 생성한 intent id
 			taskID := t.taskID
 			if taskID <= 0 {
 				taskID, _ = t.ts.TaskID()
@@ -937,11 +937,11 @@ func (t *ToolSet) listFindings() actool.CoreTool {
 const factsPageSize = 20
 
 func (t *ToolSet) listFacts() actool.CoreTool {
-	return t.readExpTool("list_facts", "分页列本任务及直接关联任务的【探索事实/结论】，最新在前(紧凑：id+摘要+状态，摘要过长会截断，全文用 node_detail(id))。参数均可选：limit(默认 20，上限 100)、before(游标，传上一页返回的 next_before 取更旧的一页；省略/0=最新一页)、q(按摘要关键词过滤)。返回 {facts, total, has_more, next_before}：total 是过滤后的总数，has_more=true 时用 next_before 继续翻页。关联任务条目带 source_task_id/inherited=true 且只读。漏洞看 list_findings。",
+	return t.readExpTool("list_facts", "현재 작업과 직접 관련된 작업의 [탐색 사실/결론]을 최신순으로 페이지 단위로 조회합니다(간결한 형식: id+요약+상태, 긴 요약은 잘리며 전체 내용은 node_detail(id)로 조회). 모든 파라미터는 선택 사항입니다: limit(기본 20, 최대 100), before(커서, 이전 응답의 next_before를 전달해 더 오래된 페이지 조회. 생략/0=최신 페이지), q(요약 키워드 필터). 반환값은 {facts, total, has_more, next_before}입니다: total은 필터 적용 후 전체 개수이며, has_more=true이면 next_before로 계속 조회하세요. 관련 작업 항목에는 source_task_id/inherited=true가 포함되며 읽기 전용입니다. 취약점은 list_findings로 조회하세요.",
 		obj(map[string]any{
-			"limit":  intp("返回条数，默认 20，上限 100"),
-			"before": intp("分页游标：只返回 id 小于该值的更旧事实；省略或 0 = 最新一页"),
-			"q":      str("按事实摘要关键词过滤（不区分大小写）；省略 = 不过滤"),
+			"limit":  intp("반환 항목 수, 기본 20, 최대 100"),
+			"before": intp("페이지네이션 커서: id가 이 값보다 작은 이전 사실만 반환합니다. 생략 또는 0 = 최신 페이지"),
+			"q":      str("사실 요약의 키워드로 필터링(대소문자 구분 없음). 생략 = 필터링하지 않음"),
 		}),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
@@ -967,7 +967,7 @@ func (t *ToolSet) listFacts() actool.CoreTool {
 			}
 			res := map[string]any{"facts": out, "total": total, "has_more": hasMore}
 			if hasMore && len(f) > 0 {
-				res["next_before"] = f[len(f)-1].ID // 传回它取下一页(更旧的)
+				res["next_before"] = f[len(f)-1].ID // 이 값을 전달해 다음 페이지(이전 항목)를 조회
 			}
 			return jsonResult(res)
 		})
@@ -990,8 +990,8 @@ func compactFact(n *db.Node) map[string]any {
 }
 
 func (t *ToolSet) nodeDetail() actool.CoreTool {
-	return t.readExpTool("node_detail", "按 id 取本任务或直接关联任务的【探索图节点】完整内容。继承节点带 source_task_id/inherited=true 且只读。仅限 list_facts/list_findings/graph_overview 返回的探索节点 id；资产请用 list_assets/asset_neighbors。",
-		obj(map[string]any{"id": idp("探索图节点 id(非资产 id)")}, "id"),
+	return t.readExpTool("node_detail", "id로 현재 작업 또는 직접 관련된 작업의 [탐색 그래프 노드] 전체 내용을 조회합니다. 상속 노드에는 source_task_id/inherited=true가 포함되며 읽기 전용입니다. list_facts/list_findings/graph_overview가 반환한 탐색 노드 id만 사용할 수 있습니다. 자산은 list_assets/asset_neighbors로 조회하세요.",
+		obj(map[string]any{"id": idp("탐색 그래프 노드 id(자산 id가 아님)")}, "id"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
 				ID json.RawMessage `json:"id"`
@@ -999,14 +999,14 @@ func (t *ToolSet) nodeDetail() actool.CoreTool {
 			_ = json.Unmarshal(in, &a)
 			id := pid(a.ID)
 			if id <= 0 {
-				return actool.Errorf("id 必填"), nil
+				return actool.Errorf("id는 필수입니다"), nil
 			}
 			n, err := t.ts.GetNodeWithSources(id)
 			if err != nil {
 				return actool.Errorf(err.Error()), nil
 			}
 			if n == nil {
-				return actool.Errorf(fmt.Sprintf("未找到探索节点 %d。若你想查的是资产，请用 list_assets / asset_neighbors（资产与探索节点是不同的 id 空间，资产 id 不能传给 node_detail）。", id)), nil
+				return actool.Errorf(fmt.Sprintf("탐색 노드를 찾지 못했습니다: %d. 자산을 조회하려면 list_assets / asset_neighbors를 사용하세요(자산과 탐색 노드는 서로 다른 id 공간을 사용하므로 자산 id를 node_detail에 전달할 수 없습니다).", id)), nil
 			}
 			if err := t.ts.PopulateFindingTrafficIDs([]*db.Node{n}); err != nil {
 				return actool.Errorf(err.Error()), nil

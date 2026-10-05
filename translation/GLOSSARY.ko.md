@@ -346,6 +346,8 @@
 | 报文 | message/packet | 메시지 | HTTP 요청/응답 원문 |
 | 数据包 | packet | 데이터 패킷 | |
 | 倒序 / 正序 | desc / asc | 내림차순 / 오름차순 | |
+| 分页 | pagination | 페이지네이션 | `[확정]` 페이지 단위 조회 문맥. 문장에서는 "페이지 단위로 조회합니다" 등으로 표현 가능. 파라미터명·JSON 키·실제 값은 DNT |
+| 游标 | cursor | 커서 | `[확정]` 이번 `before`/`next_before` 기반 페이지 조회 문맥. 파라미터명·JSON 키·실제 값은 DNT |
 | 高级筛选 | advanced filter | 고급 필터 | |
 | 深入 | deepen | 심화 | 발견 더 파기 |
 | 清空 | clear/purge | 비우기 | `删除`(삭제)와 구분 |
