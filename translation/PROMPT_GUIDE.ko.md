@@ -1,9 +1,15 @@
-# ARTEX 프롬프트 한국어화 가이드 (Stage 2·3)
+# ARTEX 한국어화 가이드 — 백엔드·프롬프트·인프라 (Stage 2·3+)
 
-UI 1단계(프런트엔드 문자열) 완료 후, **에이전트 프롬프트**를 한국어화하기 위한 작업 기준이다.
-용어·표기는 [`GLOSSARY.ko.md`](./GLOSSARY.ko.md)를 그대로 따르고, 본 문서는 **프롬프트 고유의 규칙·분할·검증**만 다룬다.
+UI 1단계(프런트엔드 문자열, `web/`) 완료 후 **저장소 나머지 전체**를 한국어화하기 위한 작업 기준이다.
+최종 목표는 **ARTEX 저장소 대부분의 중국어 한글화**이며, 빠지는 파일이 없도록 **§1 커버리지 맵**이 모든 영역을 단위로 배정한다.
+용어·표기는 [`GLOSSARY.ko.md`](./GLOSSARY.ko.md)를 그대로 따른다.
 
-프롬프트는 전부 **Go 백엔드**에 있다(`agent/`, `intercept/`, `report/`, `sidequestion/`). UI와 달리 **번역이 모델 동작을 바꿀 수 있어** 검증 비중이 훨씬 크다.
+작업은 성격에 따라 **3개 트랙**으로 나뉜다:
+- **트랙 A · 프롬프트(U1~U9)** — 에이전트가 읽는 프롬프트. **번역이 모델 동작을 바꿀 수 있어** 검증 비중이 가장 크다(§2 규칙 전체 적용).
+- **트랙 B · 백엔드 Go 비프롬프트(U10~U13)** — API 에러·DTO 주석·DB·알림 템플릿·로그. UI와 비슷한 난이도(§2 중 DNT·`%verb`·전각 규칙 적용, "모델 동작" 항목은 해당 없음).
+- **트랙 C · 스크립트·인프라·설정(U14)** — `*.sh`·Dockerfile·compose·CI·설정 예시. CLI 출력·주석.
+
+> 공통 규칙(§2)은 트랙 A에 **전부**, 트랙 B·C에는 **DNT·포맷 지정자·전각→반각·조사** 부분이 적용된다. "지시 강도·출력 언어" 같은 프롬프트 전용 항목은 트랙 A만.
 
 ---
 
@@ -16,50 +22,85 @@ UI 1단계(프런트엔드 문자열) 완료 후, **에이전트 프롬프트**�
 
 ---
 
-## 1. 작업 워크플로우 — 단위별 순서 (U1 → U9)
+## 1. 작업 단위와 커버리지 맵 (U1 → U14)
 
-**U1을 먼저 1명이 끝내 기준을 깔고**, 이후 U2~U9를 순서대로(또는 병렬) 한 번에 **한 단위씩** 번역 → 검토 → 검증 → 커밋한다. 검토 범위가 작아 문제 추적이 쉽다.
+한 번에 **한 단위씩** 번역 → 검토 → 검증 → 커밋한다. **각 단위는 "그 파일들 + 같은 이름의 `*_test.go`"를 함께** 처리한다(테스트가 번역된 문자열을 기대하면 같은 커밋에서 기댓값도 갱신하거나 사유 기록). 트랙 A는 **U1을 먼저** 끝내 기준을 깐 뒤 진행.
 
-### U1 · 공용 기반 ⭐**가장 먼저**
-- **대상**: `agent/promptcatalog.go` · `prompt.go` · `assembly.go` · `chat.go`
-- **무엇**: 모든 에이전트가 공유하는 **프롬프트 토대**다. `promptcatalog.go`에 공통 시스템 프롬프트 상수(`DefaultAssistantPrompt` 등)가 모여 있고, `prompt.go`의 `renderSystem`이 `{{.Var}}` 템플릿을 실제 프롬프트로 렌더링하며, `assembly.go`가 도구·조각을 조립하고, `chat.go`가 이 토대를 소비한다.
-- **왜 먼저**: 여기서 **"한국어로 답변" 표준 문구**(§2.5)와 공통 용어를 **확정**하면 U2~U9가 전부 그걸 참조해 일관성이 생긴다. 토대가 흔들리면 뒤 단위가 다 흔들린다.
+### 트랙 A · 프롬프트 (agent/intercept/report/sidequestion)
 
-### U2 · 플래너 계열
-- **대상**: `agent/planner.go` · `goals.go` · `constraints.go`
-- **무엇**: **계획 수립** 루프. 다음 탐색 방향(의도)을 만들고, 목표/제약을 관리하는 플래너 프롬프트. 의도·목표·제약 어휘를 공유하므로 한 묶음.
+**U1 · 공용 기반 ⭐가장 먼저** — `agent/promptcatalog.go`·`prompt.go`·`assembly.go`·`chat.go`
+모든 에이전트가 공유하는 프롬프트 토대. `promptcatalog.go`에 공통 시스템 프롬프트 상수(`DefaultAssistantPrompt` 등), `prompt.go`의 `renderSystem`이 `{{.Var}}` 템플릿 렌더링, `assembly.go`가 조립, `chat.go`가 소비. **여기서 "한국어로 답변" 표준 문구(§2.5)와 공통 용어를 확정**해 U2~U9가 참조.
 
-### U3 · 워커 실행
-- **대상**: `agent/worker.go` · `wrapup.go` · `compaction.go` · `noa.go`
-- **무엇**: **워커 1회 실행(run)의 수명주기** — 실제 침투 실행 프롬프트 + 마무리(wrapup) + 컨텍스트 압축(compaction/noa).
+**U2 · 플래너 계열** — `agent/planner.go`·`goals.go`·`constraints.go`
+계획 수립 루프(의도 생성, 목표/제약 관리).
 
-### U4 · 메인/리테스트/발견
-- **대상**: `agent/mainagent.go` · `retester.go` · `finding_workflow.go` · `finding_recorder.go`
-- **무엇**: **대화형 메인 에이전트** + 취약점 **재검증(retest)** + 발견 기록 워크플로우 프롬프트.
+**U3 · 워커 실행** — `agent/worker.go`·`wrapup.go`·`compaction.go`·`noa.go`·`capture.go`·`coldgraph.go`
+워커 1회 실행(run) 수명주기 — 실행 프롬프트 + 마무리 + 컨텍스트 압축 + 캡처/콜드그래프.
 
-### U5 · 도구 설명 **(분량 최대)**
-- **대상**: `agent/tools.go` · `tools_insert.go` · `toolcatalog.go` · `tools_digest.go`
-- **무엇**: 에이전트가 읽는 **도구 설명·카탈로그** 전체. **DNT가 가장 많다**(도구명·파라미터명·스키마 키 전부 원문). 크면 `tools.go` / `tools_insert.go`로 2분할.
+**U4 · 메인/리테스트/발견** — `agent/mainagent.go`·`retester.go`·`finding_workflow.go`·`finding_recorder.go`
+대화형 메인 에이전트 + 재검증 + 발견 기록.
 
-### U6 · 상태/사유 문자열
-- **대상**: `agent/terminalreason.go` · `cancelcause.go` · `provider.go`
-- **무엇**: 종료/취소 **사유 코드 → 사람이 읽는 설명** 맵(표시·플래너 컨텍스트용, 매칭 안 됨) + provider 주석/에러. 사유 **코드 키**는 DNT, 설명만 번역.
+**U5 · 도구 설명(분량 최대)** — `agent/tools.go`·`tools_insert.go`·`toolcatalog.go`·`tools_digest.go`
+에이전트가 읽는 도구 설명·카탈로그. DNT 최다(도구명·파라미터·스키마 키). 크면 `tools.go`/`tools_insert.go`로 2분할.
 
-### U7 · 인터셉트 판정
-- **대상**: `intercept/prompt.go` · `review_context.go`
-- **무엇**: 규칙에 안 걸린 도구 호출을 **모델이 대체 승인 판정**할 때 쓰는 심판 프롬프트. 독립 서브시스템.
+**U6 · 상태/사유 문자열** — `agent/terminalreason.go`·`cancelcause.go`·`provider.go`
+종료/취소 사유 코드→설명 맵(표시용) + provider 주석/에러. 사유 **코드 키** DNT, 설명만 번역.
 
-### U8 · 리포트 생성
-- **대상**: `report/findings.go` · `report.go`
-- **무엇**: 취약점 **리포트 생성** 프롬프트.
+**U7 · 인터셉트** — `intercept/` **패키지 전체**(prompt.go·review_context.go·intercept.go·trace.go 등)
+모델 대체 승인 심판 프롬프트 + 인터셉트 로직 주석·메시지. ⚠️ `[模型]` 접두사는 프런트(approval-records.tsx) 계약 — 바꾸면 핑.
 
-### U9 · 사이드 질문
-- **대상**: `sidequestion/*.go`
-- **무엇**: `/btw` **보조 질문** 기능의 프롬프트.
+**U8 · 리포트** — `report/` **패키지 전체**(findings.go·report.go)
+취약점 리포트 생성 프롬프트 + 로직.
 
-### 별도 트랙 (프롬프트 아님 — 섞지 말 것)
-- `notify/`(알림 템플릿) · `server/`(API 에러·DTO 주석·테스트 기댓값, 일부는 프런트 매칭 계약) · `db/`·`selfupdate/`(로그·주석).
-- **보류**: `web/src/lib/mock/data.ts` · `handler.ts`의 샘플 프롬프트(후속 단계).
+**U9 · 사이드 질문** — `sidequestion/` **패키지 전체**(context.go·request.go·service.go 등)
+`/btw` 보조 질문 프롬프트 + 오케스트레이션 로직. ⚠️ 컨텍스트 라벨 `"작업: #<id>"`가 U1 ReporterDefaultPrompt와 연동(동일 표기 유지).
+
+**U15 · 내장 스킬 번들** — `skills/` (`api-recon/SKILL.md`·`reference.md`·`scopesentry/SKILL.md` + `scripts/*`)
+에이전트가 로드하는 **스킬 지시문**(SKILL.md)·참고 문서·헬퍼 스크립트. SKILL.md 본문은 프롬프트성(트랙 A 규칙 적용)이나, **YAML 프런트매터 키·스크립트 코드·명령/경로·셀렉터는 DNT**. 스크립트는 주석만 번역.
+
+### 트랙 B · 백엔드 Go 비프롬프트
+
+**U10 · 알림 시스템** — `notify/` **전체**(~26 파일)
+알림 채널·템플릿·전송 메시지(사용자 노출 푸시 내용). ※ `notify.go` StatusLabel은 `web/src/lib/status.ts`와 **동일 용어**로.
+
+**U11 · 서버 API** — `server/` **전체**(~76 파일, 테스트 포함)
+HTTP 핸들러 에러 메시지·DTO 주석·테스트 기댓값. ⚠️ 프런트가 매칭하는 계약 문자열(`归档不存在`, `skill 已存在` 등)은 프런트(B)와 **동시 변경 or DNT 유지**. 크므로 하위 묶음(핸들러별)으로 쪼개도 됨.
+
+**U12 · 데이터/DB** — `db/` **전체**(~53 파일)
+DB 레이어 주석·기본값·마이그레이션·로그.
+
+**U13 · 그 외 백엔드 패키지** — `traffic/`·`selfupdate/`·`llmrec/`·`llmpool/`·`guard/`·`evidence/`·`mcphttp/`·`cmd/`·`config/`·`enrich/`
+각 패키지의 주석·로그·메시지. 작은 패키지라 묶어서 처리 가능.
+
+### 트랙 C · 스크립트·인프라·설정
+
+**U14 · 스크립트·인프라** — `*.sh`·`start.bat`·`Dockerfile`·`docker-compose*.yml`·`.github/workflows/*.yml`·`config.example.json`·`.env.example`·`.gitignore`
+설치·실행 스크립트의 CLI 출력/주석, 설정 예시 주석. 사용자가 직접 실행하는 `install.sh`/`start.sh` 등 우선순위 중.
+
+### 문서·메타 (단위 아님 — 결정/보류/DNT)
+- `README.md` — **현재 중국어 원문**(readme-i18n 규약상 원문 유지, 한국어판은 `README.ko.md`). 포크를 한국어 기준으로 바꿀지는 **팀 결정 필요**.
+- `CHANGELOG.md` — 과거 이력(중국어 대량). **보류/선택**(가치 낮음).
+- `docs/漏洞流量证据.md` — 설계/증거 문서(1건, ~1940줄). **파일명도 중국어** → 내용 번역 + 파일명 리네임(`취약점-트래픽-증거.md` 등) 여부는 **결정 필요**. 우선순위 중하.
+- `translation/*.md` — 우리 작업 문서. 중국어는 **용어집 원문(zh)열·예시 = DNT**(번역 대상 아님).
+- `web/src/lib/mock/data.ts`·`handler.ts` — 샘플 프롬프트 **보류**(후속).
+
+### ✅ 커버리지 체크리스트 (모든 top dir 배정 — 미할당 0)
+| 영역 | 담당 |
+|---|---|
+| `web/` | **완료**(UI 1단계), 잔여는 DNT |
+| `agent/` | U1~U6 (+ 각 `*_test.go` 동반) |
+| `intercept/` | U7 |
+| `report/` | U8 |
+| `sidequestion/` | U9 |
+| `notify/` | U10 |
+| `server/` | U11 |
+| `db/` | U12 |
+| `traffic/ selfupdate/ llmrec/ llmpool/ guard/ evidence/ mcphttp/ cmd/ config/ enrich/` | U13 |
+| `*.sh *.bat Dockerfile docker-compose*.yml .github/ config.example.json .env.example .gitignore` | U14 |
+| `skills/` | U15 |
+| `README.md` `CHANGELOG.md` `docs/` `translation/` `mock/data.ts·handler.ts` | 결정/보류/DNT (위 참고) |
+
+> 신규 파일이 생기면 위 표에 먼저 배정하고 작업한다. 번역 전 `git ls-files | xargs ... grep` 로 **미할당 중국어 파일이 있는지** 재확인(§6 NUL 주의).
 
 ---
 
