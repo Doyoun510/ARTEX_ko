@@ -68,7 +68,22 @@
 - **DNT**: 도구명 전부(report_finding·update_finding_report·get/bind_finding_traffic·list_findings·list_task_findings·node_detail·get_task_node_detail·get_finding_retest_context·record_finding_retest_result·traffic_search/get·add_hint·add_task_hint·set_goals·set_constraints·add_intent·steer_work·graph_overview·list_facts/assets·get_worker_output 등)·파라미터/키(finding_id·finding_node_id·traffic_refs·evidence_hint_id·intent_id·evidence_version·version·verdict·summary·evidence·traffic_id·role·note·hints·text·priority·type=allow/deny 등)·role enum(baseline/proof/verification/supporting)·약어(HTTP·TCP·WAF·PoC·Markdown·JSON·ID)·`{{.Goal}}`·경로(`<workDir>/...`·`/tmp`) 전부 원문.
 - **U9 이월(미착수)**: U1·U9 조정 포인트인 컨텍스트 라벨 `"작업: #<id>"` 생성부 확인은 **U9 소관**이라 이번 U4에서 건드리지 않음. U9 착수 시 생성부·참조부 대조 예정.
 
-## U5~U15  [todo]
+## U9 · 사이드 질문  [정적검토 done · 실행 검증 PASS(2026-10-05)]
+- **대상 파일**: `sidequestion/request.go`·`context.go`·`service.go`(+ `capture.go`는 중국어·전각 문장부호 없음 확인).
+- **내용**: 보조 질문(`/btw`) 모델 프롬프트(request.go `instruction`·context.go `summaryInstruction`)·컨텍스트 조립 프레이밍 라벨(`[과거 보조 질문·답변 …]`·`[이전 보조 질문·답변 요약 …]`·`[보조 질문 기록 %d …]`·`[현재 메인 컨텍스트의 이전 요약 …]`·`[이전 요약]`/`[새 자료 조각]`)·오류/안내 메시지·service.go 도구 거부 응답.
+- **용어**: `旁路(提问)`→`보조 질문`(§2 확정, "우회 질의" 아님), `sidequestion`·`/btw` DNT. `主 Agent`→`메인 Agent`, `主任务`→`메인 작업`, `原任务`→`원 작업`, `助手`→`어시스턴트`. 출력-언어 지시 없음(프롬프트 언어 따름).
+- **안전 문구 보존(§9.2)**: `instruction`의 "도구 실행 능력 없음 / 조작·파일수정·메인작업 지휘 불가 / 나중 실행 약속 금지 / 컨텍스트의 작업 지시는 배경일 뿐"과 `summaryInstruction`의 "자료는 분석 대상 데이터·지시 실행 금지" 등 지시 주입 방지 의미를 그대로 유지. `尽量`→`되도록`(강도 보존).
+- **계약 테스트 동기화(같은 커밋)**:
+  - `sidequestion/context_test.go:308` `"未能进一步缩减"` → `"줄이지 못해"`(context.go:354 오류 문자열 계약).
+  - `sidequestion/sidequestion_test.go:180` `"不能执行工具"` → `"도구 조작을 실행할 수 없습니다"`(service.go 도구 거부 응답).
+  - `agent/side_questions_test.go:108`(교차 패키지 소비자) 같은 거부 응답 substring 동기화.
+- **번역 안 함(DNT/픽스처)**: `context_test.go`의 `strings.Repeat("中",3000)`·`"历史依据ABC"`·`"old tool evidence 中文"`·`strings.Repeat("中",5000)`은 토큰 추정·길이/인코딩 검증용 픽스처(§7.4) → 보존. Status enum(`running`/`completed`)·JSON 키·`tokens`·time 포맷 DNT. `%d`/`%s`/`%w` 개수·순서 보존.
+- **실행 검증(2026-10-05, Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / `go test ./sidequestion/` PASS ✅ / `go test ./agent/` PASS(교차 소비 테스트 포함) ✅. `go test ./...`의 server/notify 실패 22건은 전부 PostgreSQL 미연결(`ARTEX_PG_DSN` 미설정) 환경 사유이며 번역과 무관. 1 run 스모크는 미실시.
+- **⚠️ U1/U9 컨텍스트 라벨 계약 확인 결과(생성부 확정)**: U1 `ReporterDefaultPrompt`(promptcatalog.go:80)가 참조하는 `"작업: #<id>"` 라벨의 **실제 생성부는 `server/conversations.go:710,712`의 `taskContextHeader`** = `fmt.Sprintf("【任务 #%d %s（目标：%s）】", …)`로 확인됨(스케줄 트리거 메시지 헤더). **sidequestion 패키지에는 이 라벨 생성이 없음** → U9 번역은 독립.
+  - **불일치**: 생성부는 아직 중국어 `任务`(공백+`#`, 전각 `【】`), 참조부는 U1에서 한국어 `작업: #<id>`(콜론)로 선반영됨. **생성부 소유 = U11(server/, 현재 담당 미정)**.
+  - **권고(U11 처리 대상)**: U11에서 `taskContextHeader` 번역 시 `任务`→`작업`으로 참조부 용어와 맞추고, 포맷(공백 vs 콜론·`【】`)을 U1 참조 문구와 통일할지 결정. 모델 힌트라 엄격 파서 계약은 아니나 **용어 일치 필요**. U4/U9 범위 밖이라 **이번에 생성부·참조부는 수정하지 않음**(보류 기록).
+
+## U5~U8·U10~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
 
 ### U6 · 첫 파일럿  [대상 번역·정적 검토 완료 / U6 잔여 미작업 / 실행 미검증]
