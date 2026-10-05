@@ -102,7 +102,15 @@ U9에서 확정한 `"작업 #<id>"` 라벨 계약을 사용자 지시로 처리�
 - **계약 확인**: 번역 문자열을 검사하는 테스트 없음(배치 A-1). `已截断`는 `chat_mentions.go`(별도 파일) 소유라 scheduler.go의 것과 무관. 프런트가 goal 에러(`目标不存在` 등)를 매칭하지 않음(§7.2 안전) 확인.
 - **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 순수 서버 테스트(trigger merge 6건) PASS ✅. DB 필요 서버 테스트는 PostgreSQL 미연결로 **미검증**.
 - **주의(다음 배치/프런트)**: `conversations.go:112,443`의 `新对话`는 §5.7 프런트 매칭 계약 → **DNT 유지**(프런트 B레인 동시 변경 때 처리). 다른 파일의 동명 에러(`任务正在删除` 등)는 각자 독립 리터럴이라 해당 파일 번역 시 개별 처리.
-- **묶음 A 잔여(todo)**: `orchestration.go`(187, 도구 설명 다수=모델-읽기)·`engine.go`(139)·`conversations.go`(나머지 ~28, `新对话` 제외)·`task_llm.go`(56).
+### 묶음 A-2 (대화·작업 LLM 클러스터)  [정적검토 done · 실행 검증 일부 PASS]
+- **대상(완료)**: `server/conversations.go`(나머지, `新对话` 제외)·`task_llm.go`.
+- **conversations.go**: 대화/메시지 HTTP writeErr·첨부/재검증 상태 문구·트리거 behavior 주석. `附件消息`→첨부 메시지, 复测→재검증.
+- **task_llm.go**: 작업 LLM 설정 체인·같은 provider 안전 윈도우 재시도 로직 주석·로그·LLM 감사 라벨(`설정 #%d`·`기본 설정`·할당량/전환 요약). failover·committed·profile·provider·model_error·doStream·HTTP 코드 등 DNT.
+- **DNT/보존**: `新对话`(§5.7 프런트 계약)·L561 `已手动停止`(norma SDK가 내보내는 문자열 참조, §5.5 DNT)는 **원문 유지**. `%s/%d/%v`·manual/failed/stopped enum 보존. 전각 `（）：`→반각.
+- **계약 확인**: 번역 문자열을 검사하는 테스트 없음. 프런트가 이 에러/제목 문자열을 매칭하지 않음(§7.2) 확인.
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅. DB 필요 서버 테스트는 미검증.
+
+- **묶음 A 잔여(todo)**: `orchestration.go`(187, 도구 설명 다수=모델-읽기, U5급 주의)·`engine.go`(139).
 
 ## U5~U8·U10~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
