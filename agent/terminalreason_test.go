@@ -77,7 +77,7 @@ func TestTerminalTextAbortedNamesCauseAndHangingTool(t *testing.T) {
 	if !strings.Contains(summary, "规划者") || strings.Contains(summary, "\n") {
 		t.Fatalf("unexpected summary: %q", summary)
 	}
-	for _, want := range []string{"killed_by_planner", "aborted_tools", "7 轮", "Bash", "未返回结果", "1200"} {
+	for _, want := range []string{"killed_by_planner", "aborted_tools", "7회", "Bash", "결과 미반환", "1200"} {
 		if !strings.Contains(detail, want) {
 			t.Errorf("detail missing %q:\n%s", want, detail)
 		}
@@ -118,7 +118,7 @@ func TestTerminalTextCompletedToolNotBlamed(t *testing.T) {
 	trace.start("tu_1", "Read", `{"path":"/etc/hosts"}`)
 	trace.done("tu_1")
 	_, detail := terminalText(ctx, &harness.Terminal{Reason: harness.ReasonAbortedStreaming}, trace)
-	if strings.Contains(detail, "未返回结果") || !strings.Contains(detail, "已正常返回") {
+	if strings.Contains(detail, "결과 미반환") || !strings.Contains(detail, "정상 반환 완료") {
 		t.Fatalf("completed tool was blamed:\n%s", detail)
 	}
 }
@@ -126,7 +126,7 @@ func TestTerminalTextCompletedToolNotBlamed(t *testing.T) {
 func TestTerminalTextNonAbortReasons(t *testing.T) {
 	trace := &runTrace{startedAt: time.Now()}
 	summary, _ := terminalText(context.Background(), &harness.Terminal{Reason: harness.ReasonMaxTurns}, trace)
-	if !strings.Contains(summary, "运行预算上限") || strings.Contains(summary, "中断") {
+	if !strings.Contains(summary, "실행 예산 상한") || strings.Contains(summary, "중단") {
 		t.Fatalf("unexpected max_turns summary: %q", summary)
 	}
 	summary, detail := terminalText(context.Background(), &harness.Terminal{
