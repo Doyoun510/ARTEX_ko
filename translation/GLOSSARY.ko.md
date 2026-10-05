@@ -61,7 +61,7 @@
 | 静态导出 | static export | 정적 내보내기 | |
 | 双图架构 | dual-graph architecture | 이중 그래프 아키텍처 | |
 | 资产图 | Asset Graph | 자산 그래프 | |
-| 探索图 | Exploration Graph | 탐색 그래프 | `探索图` ≠ `探索链路` |
+| 探索图 / 探索链路图 | Exploration Graph | 탐색 그래프 | `探索图` ≠ `探索链路`. `[확정]` `探索链路图`는 이번 U5의 의도·사실·취약점 관계 그래프 문맥에 한정 |
 | 探索链路 | exploration chain | 탐색 체인 | |
 | 探索 | exploration | 탐색 | |
 | 锚点 | anchor | 앵커 | 엣지명 `anchor`는 DNT |
@@ -88,6 +88,14 @@
 | 规划 | planning | 계획 수립 | `[확정]` planner가 계획을 세우는 동작 문맥. 에이전트 이름 `planner`와 식별자는 DNT로 보존 |
 | 执行者 | worker | worker | 위와 동일 |
 | 主 agent / 主 Agent | main agent | 메인 agent | `[확정]` `agent` 영문 유지 규칙에 맞춤. 식별자 `mainagent`는 DNT |
+| 下游 | downstream | 하위 | `[확정]` 이번 U5의 의도 계보 관계: 의도가 생성한 사실·취약점. 영어·식별자·관계 종류는 DNT |
+| 蒸馏 | distillation | 정제 | `[확정]` 이번 U5의 탐색 현황 요약 문맥. 영어·식별자는 보존 |
+| 折叠 | folding | 접기 | `[확정]` cold digest 문맥. 문장에서는 "접힌", "접어 넣은" 등으로 표현. 영어·식별자는 보존 |
+| 冷 | cold | cold 상태 | `[확정]` cold digest의 노드 상태 문맥. 실제 상태값·영어·식별자는 DNT |
+| 冷区 | cold region | cold 영역 | `[확정]` cold digest에서 접는 노드 영역 문맥. 영어·식별자는 보존 |
+| 展开 | expansion | 펼치기 | `[확정]` cold digest를 조회해 구성원 정보를 펼치는 문맥. 도구명 `expand_digest` 등 영어·식별자는 DNT |
+| 容器型资产 | — | 하위 자산을 묶는 상위 자산 | `[확정]` 이번 U5 `graphOverviewData()`의 커버리지 안내 문맥에 한정한 해석. 직접 정의가 없으므로 포함 자산 종류를 임의로 열거하거나 저장소 전체의 일반 용어로 확대 적용하지 않는다. 키·영어·식별자는 DNT |
+| 范围未锚定 | — | 범위 앵커 미설정 | `[확정]` 이번 U5 `coverage.status`의 자연어 설명값 문맥. `Denominator==0` 조건과 `pct=null`, 키·출력 구조는 보존 |
 
 ---
 
@@ -404,7 +412,7 @@
 | 流量捕获 | traffic capture | 트래픽 캡처 | `[확정]` 트래픽 캡처 기능 문맥 |
 | 出口代理 | outbound proxy | 아웃바운드 프록시 | `[확정]` 외부 요청의 프록시 문맥. 키·명령·실제 설정값·계약 문자열은 DNT |
 | 跳板 | relay server | 경유 서버 | `[확정]` 프록시를 통한 경유 접속 문맥 |
-| 上游 | upstream | 업스트림 | `[확정]` 레코딩 프록시의 상위 프록시 문맥. 업스트림 저장소와 구분 |
+| 上游 | upstream | 업스트림 / 상위 | `[확정]` 레코딩 프록시의 상위 프록시 문맥은 "업스트림"(업스트림 저장소와 구분). 이번 U5의 의도 계보 관계, 즉 의도가 파생된 노드 문맥은 "상위". 영어·식별자·관계 종류는 DNT |
 | 解释器 | interpreter | 인터프리터 | `[확정]` Python 등 프로그램 실행 인터프리터 문맥. 경로·명령·실제 설정값은 DNT |
 | 并发 | concurrency | 동시성 | |
 | 调度循环 | schedule loop | 스케줄 루프 | |
