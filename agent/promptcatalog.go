@@ -28,7 +28,7 @@ const autoDefaultTmpl = `당신은 **Auto**, 이 침투 테스트 플랫폼의 '
 // the orchestration roles (goals/planner/worker), it runs standalone via the chat page
 // and is its own planner + executor + auditor. Default tools: list_assets / insert_assets
 // / report_finding / list_findings (bound in toolcatalog + seedPentestDefaultBindings).
-const pentestDefaultTmpl = `당신은 승인된 침투 테스트 시스템의 "독립 침투 agent"다. 당신은 **혼자서 처음부터 끝까지** 수행한다: 정찰 → 공격면 찾기 → 심화 익스플로잇 → 검증 → 마무리. 당신은 자신의 계획자이자 실행자다——아무도 당신에게 일을 배정하지 않고, 아무도 대신 검수해 주지 않으며, 모든 판단과 실행을 당신이 한다. 그렇기에 당신은 **능동적으로 관점을 전환**해야 한다: 넓혀야 할 때는 계획자처럼 여러 경로를 펼치고, 실행할 때는 실행자처럼 한 경로를 끝까지 파고들며, 검증할 때는 감사자처럼 자신의 결론을 의심한다.
+const pentestDefaultTmpl = `당신은 승인된 침투 테스트 시스템의 "독립 침투 agent"다. 당신은 **혼자서 처음부터 끝까지** 수행한다: 정찰 → 공격면 찾기 → 심화 익스플로잇 → 검증 → 마무리. 당신은 자신의 planner이자 worker다——아무도 당신에게 일을 배정하지 않고, 아무도 대신 검수해 주지 않으며, 모든 판단과 실행을 당신이 한다. 그렇기에 당신은 **능동적으로 관점을 전환**해야 한다: 넓혀야 할 때는 planner처럼 여러 경로를 펼치고, 실행할 때는 worker처럼 한 경로를 끝까지 파고들며, 검증할 때는 감사자처럼 자신의 결론을 의심한다.
 
 
 **승인된 범위 내에서만 동작한다. 범위 밖 대상은 일절 건드리지 않는다.**
@@ -77,7 +77,7 @@ const ReporterDefaultPrompt = `당신은 승인된 침투 테스트 시스템의
 
 ━━ 당신이 어떻게 호출되는가 ━━
 worker가 report_finding을 호출해 취약점 하나를 등록할 때마다, 시스템이 [도구 호출로 트리거된] 컨텍스트로 당신을 호출하며, 거기에는 다음이 포함된다:
-- **작업 id**(task_id, 컨텍스트의 "작업: #<id>" 참고)
+- **작업 id**(task_id, 컨텍스트의 "작업 #<id>" 참고)
 - report_finding의 **입력 파라미터**(vulnclass / severity / summary / evidence 등)
 - report_finding의 **반환**: "finding recorded: <id>" 형태 —— 이 **<id>는 탐색 노드 ID**이며, get_task_node_detail과 update_finding_report가 쓰는 예전 핸들이다. 반환 JSON의 finding_id는 독립 취약점 기록 ID이고, get_finding_traffic이 그것을 쓴다.
 

@@ -57,7 +57,7 @@ const goalsScopeTail = `
 - 목표가 URL 또는 호스트명이 있는 주소(예: https://xxx.example.com/path, app.example.com) → 그 **완전한 호스트명**을 취해 kind=subdomain, value=완전한 호스트명.
   예: 목표 https://a1b2c3.lab.example.net/path → kind=subdomain, value=a1b2c3.lab.example.net(**example.net가 아님**).
   서브도메인이 있는 호스트명을 루트 도메인으로 줄이는 것을 **엄금**한다——xxx.example.com을 보고 example.com 전체를 등록하면 범위가 사용자 목표 밖으로 확장돼 최소 범위 원칙에 위배된다.
-- 사용자가 준 것이 **벌거벗은 루트 도메인이고 어떤 서브도메인도 없을 때**(예: example.com을 그대로 씀), 또는 '전체 사이트 / 모든 서브도메인 / 전체 도메인'이라고 명시할 때만 → kind=root_domain, value=example.com을 쓴다.
+- 사용자가 준 것이 **서브도메인이 없는 루트 도메인일 때**(예: example.com을 그대로 씀), 또는 '전체 사이트 / 모든 서브도메인 / 전체 도메인'이라고 명시할 때만 → kind=root_domain, value=example.com을 쓴다.
 - 순수 IP 또는 네트워크 대역 → kind=ip / cidr, value=IP 또는 CIDR.
 - 회사 범위(company)를 등록하지 **마라**——작업이 막 생성돼 자산 시스템에 보통 아직 이 회사가 없어 등록되지 않으며, 회사 수준 범위는 이후 plan 단계가 처리한다.
 기타 규칙:
@@ -112,7 +112,7 @@ func DecomposeGoalsWithProvider(ctx context.Context, prov llm.Provider, dataDir,
 		return nil
 	}
 	// 목표 분해는 일회성 호출: transcript store를 달지 않으므로 agentcore가 ctx에
-	// session id를 달지 않음(writer가 있을 때만 닮, agentcore.Prompt 참고). 한편 session-id 헤더로
+	// session id를 달지 않음(writer가 있을 때만 단다, agentcore.Prompt 참고). 한편 session-id 헤더로
 	// 프롬프트 캐시/고정 라우팅을 하는 게이트웨이(opencode zen은 x-opencode-session이 없으면 바로 400
 	// MissingSessionID)가 읽는 게 바로 ctx의 이 값이다——안 채우면 '대화는 정상, 분해는 400'이 된다.
 	// 안정적인 id를 명시적으로 단다: 같은 탐색의 분해 요청이 이를 공유(캐시 히트에 유리)하고, 명명이
