@@ -96,6 +96,7 @@
 | 展开 | expansion | 펼치기 | `[확정]` cold digest를 조회해 구성원 정보를 펼치는 문맥. 도구명 `expand_digest` 등 영어·식별자는 DNT |
 | 容器型资产 | — | 하위 자산을 묶는 상위 자산 | `[확정]` 이번 U5 `graphOverviewData()`의 커버리지 안내 문맥에 한정한 해석. 직접 정의가 없으므로 포함 자산 종류를 임의로 열거하거나 저장소 전체의 일반 용어로 확대 적용하지 않는다. 키·영어·식별자는 DNT |
 | 范围未锚定 | — | 범위 앵커 미설정 | `[확정]` 이번 U5 `coverage.status`의 자연어 설명값 문맥. `Denominator==0` 조건과 `pct=null`, 키·출력 구조는 보존 |
+| 兜底(连 origin fact) | default (link) | 기본 연결 | `[확정]` 이번 U5 `addOneIntent()`에서 `parent_ids`를 비워 둔 최상위 의도를 origin fact에 기본 연결하는 문맥에 한정. 기존 다른 문맥의 兜底 번역(mock=기본 처리·인터셉트=보완 판정·LLM=대체 처리·U6=최종 보호 조치)은 유지. `parent_ids`·`origin fact`·식별자는 DNT |
 
 ---
 

@@ -1017,7 +1017,7 @@ func (t *ToolSet) nodeDetail() actool.CoreTool {
 
 // --- planner write tools ---
 
-// intentItem 是 add_intent 批量/单条的一条探索方向。
+// intentItem은 add_intent의 일괄/단건 입력에서 하나의 탐색 방향을 나타낸다.
 type intentItem struct {
 	Summary   string            `json:"summary"`
 	AssetIDs  []json.RawMessage `json:"asset_ids"`
@@ -1025,23 +1025,23 @@ type intentItem struct {
 	Priority  int               `json:"priority"`
 }
 
-// addOneIntent 创建一条意图节点并连上游血缘，返回 id。
-// 约束：意图只能锚在已确认知识上——每个 parent_id 必须是已存在的 fact/finding
-// 节点（不能挂在别的意图/目标/提示上）。顶层全新方向留空 parent_ids，兜底连 origin fact。
-// 这样"每个意图都连到 fact 节点、且是发现驱动而非凭空规划"从创建路径上被强制。
+// addOneIntent은 의도 노드를 하나 생성하고 상위 계보를 연결한 뒤 id를 반환한다.
+// 제약: 의도는 이미 확인된 지식에만 앵커로 걸 수 있다——각 parent_id는 이미 존재하는 fact/finding
+// 노드여야 한다(다른 의도/목표/힌트에 걸 수 없다). 최상위의 완전히 새로운 방향은 parent_ids를 비워 두며, 기본적으로 origin fact에 연결한다.
+// 이렇게 해서 '모든 의도는 fact 노드에 연결되며, 발견에 기반하고 근거 없이 계획하지 않는다'가 생성 경로에서 강제된다.
 func (t *ToolSet) addOneIntent(it intentItem) (int64, error) {
 	if strings.TrimSpace(it.Summary) == "" {
-		return 0, fmt.Errorf("summary 不能为空")
+		return 0, fmt.Errorf("summary 값을 비워 둘 수 없습니다")
 	}
-	// 先校验锚点（建节点前，避免坏锚点留下孤儿意图）。
+	// 먼저 앵커를 검증한다(노드 생성 전에, 잘못된 앵커가 고아 의도를 남기지 않도록).
 	parents := pidList(it.ParentIDs)
 	for _, pidv := range parents {
 		n, err := t.ts.GetNodeWithSources(pidv)
 		if err != nil || n == nil {
-			return 0, fmt.Errorf("parent_id %d 不存在于本任务或直接关联任务：parent_ids 必须是已存在的【事实(fact)/发现(finding)】节点 id；顶层全新方向请留空 parent_ids", pidv)
+			return 0, fmt.Errorf("parent_id %d: 이 작업 또는 직접 관련된 작업에 존재하지 않습니다. parent_ids는 이미 존재하는 [사실(fact)/발견(finding)] 노드 id여야 합니다. 최상위의 완전히 새로운 방향은 parent_ids를 비워 두세요", pidv)
 		}
 		if n.Kind != db.KindFact && n.Kind != db.KindFinding {
-			return 0, fmt.Errorf("parent_id %d 是 %q 节点，不能作为意图锚点：意图只能锚在已确认的【事实(fact)/发现(finding)】上，不能挂在意图/目标/提示上；顶层全新方向请留空 parent_ids", pidv, n.Kind)
+			return 0, fmt.Errorf("parent_id %d: %q 노드여서 의도 앵커로 쓸 수 없습니다. 의도는 이미 확인된 [사실(fact)/발견(finding)]에만 앵커로 걸 수 있고, 의도/목표/힌트에는 걸 수 없습니다. 최상위의 완전히 새로운 방향은 parent_ids를 비워 두세요", pidv, n.Kind)
 		}
 	}
 	priority := it.Priority
@@ -1049,15 +1049,15 @@ func (t *ToolSet) addOneIntent(it intentItem) (int64, error) {
 		priority = 5
 	}
 	anchors := pidList(it.AssetIDs)
-	// 资产拦截：意图绑定的资产若命中系统资产拦截规则，则禁止下发该意图。
+	// 자산 인터셉트: 의도에 바인딩된 자산이 시스템 자산 인터셉트 규칙에 매칭되면 해당 의도의 발행을 금지한다.
 	if t.as != nil && len(anchors) > 0 {
 		hits, err := t.as.CheckAssetsIntercept(t.taskID, anchors)
 		if err != nil {
-			return 0, fmt.Errorf("资产拦截校验失败：%w", err)
+			return 0, fmt.Errorf("자산 인터셉트 검증 실패: %w", err)
 		}
 		if len(hits) > 0 {
 			var b strings.Builder
-			fmt.Fprintf(&b, "意图「%s」绑定的资产未通过测试范围校验，请停止对相关资产进行测试：", it.Summary)
+			fmt.Fprintf(&b, "'%s' 의도에 바인딩된 자산이 테스트 범위 검증을 통과하지 못했습니다. 관련 자산에 대한 테스트를 중지하세요:", it.Summary)
 			for _, h := range hits {
 				fmt.Fprintf(&b, "\n - %s", h.Describe())
 			}
@@ -1089,19 +1089,19 @@ func (t *ToolSet) addOneIntent(it intentItem) (int64, error) {
 }
 
 func (t *ToolSet) addIntent() actool.CoreTool {
-	return t.writeExpTool("add_intent", "生成【探索方向】写入 frontier，并连入探索链路。意图是开放的探索方向，不是固定类型——用 summary 一句话自由描述要探索/验证/利用什么。\n"+
-		"★优先批量：一轮筛出的多个新方向放进 intents 数组一次提交（比逐条调用省往返）。返回 ids 数组，与 intents 等长同序（失败项 id=0，详情见 errors）。单条则省略 intents 直接给顶层 summary。",
+	return t.writeExpTool("add_intent", "[탐색 방향]을 생성해 frontier에 기록하고 탐색 체인에 연결합니다. 의도는 열린 탐색 방향이며 고정된 유형이 아닙니다——무엇을 탐색/검증/익스플로잇할지 summary에 한 문장으로 자유롭게 설명합니다.\n"+
+		"★일괄 우선: 한 라운드에서 선별한 여러 새 방향을 intents 배열에 담아 한 번에 제출합니다(하나씩 호출하는 것보다 왕복이 줄어듭니다). ids 배열을 반환하며, intents와 길이가 같고 순서도 같습니다(실패한 항목은 id=0, 자세한 내용은 errors 참고). 단건이면 intents를 생략하고 최상위 summary를 바로 전달합니다.",
 		obj(map[string]any{
-			"intents":    map[string]any{"type": "array", "description": "【优先用这个】要新增的探索方向数组，按顺序处理。每个元素字段同下方顶层字段（summary/asset_ids/parent_ids/priority）。返回 ids 与本数组等长、同序。", "items": map[string]any{"type": "object"}},
-			"summary":    str("[单条] 一句话描述这个探索方向：做什么+为什么。已写清方向即可，不依赖资产 id。"),
-			"asset_ids":  map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "本方向要测试/攻击的【目标资产 id】（**尽量传**，0/1/多个；是 list_assets 返回的资产 id，不是探索节点 id）：这条探索方向针对哪些资产（站点/接口/参数/主机等）。只要方向围绕某些具体资产就务必传上——它是「这条探索打哪些目标」的结构化标记，用于覆盖去重、把意图连入资产链路。仅当纯全局侦察、确实没有具体目标资产时才留空。"},
-			"parent_ids": map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "上游锚点 id（可选，0/1/多个）：本方向由哪些【已确认的事实(fact)/发现(finding)】综合得出。**只能填已存在的 fact/finding 节点 id,不能填意图/目标/提示**——意图必须锚在已确认知识上,发现驱动而非凭空规划。多个事实共同产生一个新意图就传多个;顶层全新侦察方向请留空（会自动挂到任务起点 origin fact）。"},
-			"priority":   intp("优先级 0-10，默认5"),
+			"intents":    map[string]any{"type": "array", "description": "[이것을 우선 사용] 새로 추가할 탐색 방향 배열이며 순서대로 처리됩니다. 각 요소의 필드는 아래 최상위 필드(summary/asset_ids/parent_ids/priority)와 동일합니다. ids는 이 배열과 길이가 같고 순서도 같습니다.", "items": map[string]any{"type": "object"}},
+			"summary":    str("[단건] 이 탐색 방향을 한 문장으로 설명합니다: 무엇을+왜. 방향만 명확히 적으면 되며, 자산 id에 의존하지 않습니다."),
+			"asset_ids":  map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "이 방향에서 테스트/공격할 [대상 자산 id](**가능하면 전달**, 0/1/여러 개. list_assets가 반환하는 자산 id이며, 탐색 노드 id가 아닙니다): 이 탐색 방향이 어떤 자산(사이트/엔드포인트/파라미터/호스트 등)을 대상으로 하는지. 방향이 특정 구체 자산을 중심으로 한다면 반드시 전달해야 합니다——이는 '이 탐색이 어떤 대상을 공격하는지'를 나타내는 구조화된 표식이며, 커버리지 중복 제거와 의도를 자산 체인에 연결하는 데 사용됩니다. 순수한 전역 정찰이고 구체적인 대상 자산이 정말 없을 때만 비워 둡니다."},
+			"parent_ids": map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "상위 앵커 id(선택, 0/1/여러 개): 이 방향이 어떤 [이미 확인된 사실(fact)/발견(finding)]을 종합해 도출되는지. **이미 존재하는 fact/finding 노드 id만 넣을 수 있고, 의도/목표/힌트는 넣을 수 없습니다**——의도는 반드시 이미 확인된 지식에 앵커로 걸어야 하며, 발견에 기반하고 근거 없이 계획하지 않습니다. 여러 사실이 함께 하나의 새 의도를 만들어 내면 여러 개를 전달하고, 최상위의 완전히 새로운 정찰 방향은 비워 두세요(작업 시작점 origin fact에 자동으로 연결됩니다)."},
+			"priority":   intp("우선순위 0-10, 기본값 5"),
 		}),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
 				Intents    []intentItem `json:"intents"`
-				intentItem              // 单条模式：顶层 summary/asset_ids/parent_ids/priority
+				intentItem              // 단건 모드: 최상위 summary/asset_ids/parent_ids/priority
 			}
 			_ = json.Unmarshal(in, &a)
 			batch := len(a.Intents) > 0
@@ -1123,15 +1123,15 @@ func (t *ToolSet) addIntent() actool.CoreTool {
 				createdAny = true
 			}
 
-			// 人经主 agent 直投意图 → 若任务已 done（无 open 目标的 goalless 分支），把它
-			// 拉回 running，worker 才能领这条意图执行。resumeTask 仅由主 agent 的 Chat 接入
-			// (SetResumeTask)；planner 的 ToolSet 为 nil，故 planner 自己调 add_intent 时此段
-			// no-op，不影响其正常产意图。意图节点已在上面建好(open)，复活时不会被误判抽干。
+			// 사람이 메인 agent를 통해 의도를 직접 투입하면 → 작업이 이미 done 상태일 때(open 목표가 없는 goalless 분기)는 그것을
+			// running으로 되돌려야 worker가 이 의도를 받아 실행할 수 있다. resumeTask는 메인 agent의 Chat에서만 연결되며
+			// (SetResumeTask), planner의 ToolSet에서는 resumeTask가 nil이므로 planner가 직접 add_intent를 호출할 때 이 구간은
+			// no-op이고, 정상적인 의도 생성에는 영향을 주지 않는다. 의도 노드는 위에서 이미 생성(open)되어 있어, 작업을 재개할 때 실행할 의도가 없는 것으로 잘못 판단되지 않는다.
 			if createdAny && t.resumeTask != nil {
 				t.resumeTask()
 			}
 
-			if !batch { // 单条：保持原返回
+			if !batch { // 단건: 원래 반환 유지
 				if e, bad := errs["0"]; bad {
 					return actool.Errorf(e), nil
 				}
@@ -1146,7 +1146,7 @@ func (t *ToolSet) addIntent() actool.CoreTool {
 }
 
 func (t *ToolSet) listGoals() actool.CoreTool {
-	return t.readExpTool("list_goals", "列出本任务的目标节点及其状态（open/met），用于判断是否达成。",
+	return t.readExpTool("list_goals", "이 작업의 목표 노드와 그 상태(open/met)를 나열하며, 달성 여부 판단에 사용합니다.",
 		obj(map[string]any{}),
 		func(context.Context, json.RawMessage) (actool.Result, error) {
 			g, _ := t.ts.ListByKind(db.KindGoal, 100)
@@ -1155,11 +1155,11 @@ func (t *ToolSet) listGoals() actool.CoreTool {
 }
 
 func (t *ToolSet) proveGoal() actool.CoreTool {
-	return t.writeExpTool("prove_goal", "当你判断某个发现/事实证明了某个目标达成时调用：把证据节点连到目标节点，并标记目标 met。",
+	return t.writeExpTool("prove_goal", "어떤 발견/사실이 특정 목표의 달성을 증명한다고 판단할 때 호출합니다: 증거 노드를 목표 노드에 연결하고 목표를 met으로 표시합니다.",
 		obj(map[string]any{
-			"goal_id":     idp("目标节点 id"),
-			"evidence_id": idp("证明它的发现/事实节点 id"),
-			"reason":      str("为什么这个证据满足该目标"),
+			"goal_id":     idp("목표 노드 id"),
+			"evidence_id": idp("그것을 증명하는 발견/사실 노드 id"),
+			"reason":      str("이 증거가 해당 목표를 만족시키는 이유"),
 		}, "goal_id", "evidence_id"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
@@ -1170,20 +1170,20 @@ func (t *ToolSet) proveGoal() actool.CoreTool {
 			_ = json.Unmarshal(in, &a)
 			goal, ev := pid(a.GoalID), pid(a.EvidenceID)
 			if goal == 0 || ev == 0 {
-				return actool.Errorf("goal_id 和 evidence_id 必填"), nil
+				return actool.Errorf("goal_id와 evidence_id는 필수입니다"), nil
 			}
 			goalNode, err := t.ts.GetNode(goal)
 			if err != nil || goalNode == nil || goalNode.Kind != db.KindGoal {
-				return actool.Errorf("goal_id 必须是本任务的目标节点（关联任务目标只读）"), nil
+				return actool.Errorf("goal_id는 이 작업의 목표 노드여야 합니다(관련 작업의 목표는 읽기 전용)"), nil
 			}
 			evidenceNode, err := t.ts.GetNodeWithSources(ev)
 			if err != nil || evidenceNode == nil || (evidenceNode.Kind != db.KindFact && evidenceNode.Kind != db.KindFinding) {
-				return actool.Errorf("evidence_id 必须是本任务或直接关联任务的事实/漏洞节点"), nil
+				return actool.Errorf("evidence_id는 이 작업 또는 직접 관련된 작업의 사실/취약점 노드여야 합니다"), nil
 			}
 			_ = t.ts.Link(ev, db.RelProves, goal)
 			_ = t.ts.SetNodeState(goal, "met")
-			// 每标记一个目标 met，就检查本任务是否【所有目标】都已 met；若是，自动判定
-			// 任务完成（置 GoalMet），无需再依赖模型显式调 goal_met。
+			// 목표 하나를 met으로 표시할 때마다 이 작업의 [모든 목표]가 met 상태인지 확인하고, 그렇다면 자동으로
+			// 작업 완료로 판정한다(GoalMet 설정). 모델이 goal_met을 명시적으로 호출하는 데 더는 의존하지 않는다.
 			if goals, err := t.ts.ListByKind(db.KindGoal, 1000); err == nil && len(goals) > 0 {
 				allMet := true
 				for _, g := range goals {
@@ -1194,8 +1194,8 @@ func (t *ToolSet) proveGoal() actool.CoreTool {
 				}
 				if allMet {
 					t.GoalMet = true
-					t.Reason = fmt.Sprintf("所有 %d 个目标均已 met（最后由 goal %d 触发）", len(goals), goal)
-					return actool.Text(fmt.Sprintf("goal %d marked met；本任务所有目标均已达成，任务自动判定完成", goal)), nil
+					t.Reason = fmt.Sprintf("%d개 목표가 모두 met 상태입니다(마지막으로 goal %d에서 트리거됨)", len(goals), goal)
+					return actool.Text(fmt.Sprintf("goal %d marked met. 이 작업의 모든 목표가 달성되어 작업이 자동으로 완료 판정되었습니다", goal)), nil
 				}
 			}
 			return actool.Text(fmt.Sprintf("goal %d marked met", goal)), nil
@@ -1203,8 +1203,8 @@ func (t *ToolSet) proveGoal() actool.CoreTool {
 }
 
 func (t *ToolSet) goalMet() actool.CoreTool {
-	return writeTool("goal_met", "【立即结束整个任务】——仅当你确认任务的【全部目标都已真正达成、整体收官】时才调（注意是任务【整体】完成；仅仅达成了其中某一个目标/某一个 flag/某一个漏洞【不算】——那种情况用 prove_goal 标记该目标即可）。⚠️它不是用来“结束本轮规划”的：本轮没有新意图要派、或在等 worker 产出，都【直接结束本轮即可，不要调本工具】（0 个意图是完全正常的）。正常判定优先用 prove_goal 逐个证明目标；goal_met 只是绕过逐个证明、直接从全局收官的手段。",
-		obj(map[string]any{"reason": str("达成理由（必须是目标真正达成的证据，不能是“本轮无新方向”这类结束本轮的理由）")}, "reason"),
+	return writeTool("goal_met", "[작업 전체를 즉시 종료]——작업의 [모든 목표가 실제로 달성되어 전체가 마무리되었음]을 확인했을 때만 호출합니다(작업 [전체] 완료를 말합니다. 그중 어느 한 목표/하나의 flag/하나의 취약점만 달성한 것은 [해당하지 않습니다]——그런 경우에는 prove_goal로 해당 목표를 표시하면 됩니다). ⚠️이 도구는 '이번 라운드의 계획 수립을 끝내기' 위한 것이 아닙니다: 이번 라운드에 새로 보낼 의도가 없거나 worker의 산출을 기다리는 중이라면, 모두 [이번 라운드만 바로 끝내면 되며 이 도구를 호출하지 마세요](의도가 0개인 것은 완전히 정상입니다). 정상적인 판정에서는 prove_goal로 목표를 하나씩 증명하는 것을 우선하고, goal_met은 하나씩 증명하는 과정을 건너뛰고 전체 차원에서 바로 마무리하는 수단일 뿐입니다.",
+		obj(map[string]any{"reason": str("달성 사유(반드시 목표가 실제로 달성되었다는 증거여야 하며, '이번 라운드에 새 방향 없음' 같은 이번 라운드 종료 사유여서는 안 됩니다)")}, "reason"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct{ Reason string }
 			_ = json.Unmarshal(in, &a)
