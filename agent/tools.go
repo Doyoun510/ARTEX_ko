@@ -1217,13 +1217,13 @@ func (t *ToolSet) goalMet() actool.CoreTool {
 // --- worker write tools ---
 
 func (t *ToolSet) addFinding() actool.CoreTool {
-	return writeTool("report_finding", "记录确认的漏洞，用 evidence 提供命令输出、日志等可验证证据。任务上下文传当前 intent_id。返回的 finding_id 是独立漏洞记录 ID，finding_node_id 是探索节点 ID（第一行保留该节点编号）。", obj(map[string]any{
-		"vulnclass": str("漏洞类别"), "name": str("漏洞名称"), "severity": str("critical|high|medium|low"), "summary": str("发现摘要"),
-		"intent_id": idp("当前任务的意图 id"), "asset_ids": map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "受影响资产 id"},
-		"evidence":         str("证据/PoC 文本"),
-		"evidence_hint_id": idp("可选：本任务中对应此漏洞的提示节点 ID，自动携带其结构化 traffic_refs；不能引用继承提示或其他漏洞的提示"),
-		"traffic_refs": map[string]any{"type": "array", "description": "可选；HTTP/HTTPS 漏洞先检索并逐条核实请求/响应确实支持漏洞结论，再按复现顺序填写真实 ID。TCP 等非 HTTP 漏洞、未采集或找不到确切记录时省略或传 []，不阻止上报；可在 evidence 说明原因并提供其他可验证证据。不要猜测 ID、按域名/时间推定关联或仅为补包重复探测。用途 baseline 正常对照 / proof 漏洞证明 / verification 补充验证 / supporting 辅助证据。",
-			"items": obj(map[string]any{"traffic_id": str("traffic_search 返回的真实流量 ID"), "role": map[string]any{"type": "string", "enum": []string{"baseline", "proof", "verification", "supporting"}}, "note": str("该流量如何支持漏洞结论")}, "traffic_id")},
+	return writeTool("report_finding", "확인된 취약점을 기록하며, evidence에 명령 출력·로그 등 검증 가능한 증거를 제공합니다. 작업 컨텍스트에서는 현재 intent_id를 전달합니다. 반환되는 finding_id는 독립 취약점 기록 ID이고, finding_node_id는 탐색 노드 ID입니다(첫 줄에 해당 노드 번호를 유지합니다).", obj(map[string]any{
+		"vulnclass": str("취약점 유형"), "name": str("취약점 이름"), "severity": str("critical|high|medium|low"), "summary": str("발견 요약"),
+		"intent_id": idp("현재 작업의 의도 id"), "asset_ids": map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "영향받는 자산 id"},
+		"evidence":         str("증거/PoC 텍스트"),
+		"evidence_hint_id": idp("선택: 이 작업에서 이 취약점에 대응하는 힌트 노드 ID이며, 그 구조화된 traffic_refs를 자동으로 가져옵니다. 상속된 힌트나 다른 취약점의 힌트는 참조할 수 없습니다"),
+		"traffic_refs": map[string]any{"type": "array", "description": "선택. HTTP/HTTPS 취약점은 먼저 검색하고 요청/응답이 실제로 취약점 결론을 뒷받침하는지 한 건씩 확인한 뒤, 재현 순서에 따라 실제 ID를 적습니다. TCP 등 비 HTTP 취약점이거나 수집되지 않았거나 정확한 기록을 찾을 수 없으면 생략하거나 []를 전달하며, 보고를 막지 않습니다. evidence에 이유를 설명하고 다른 검증 가능한 증거를 제공할 수 있습니다. ID를 추측하거나, 도메인/시간으로 연관을 추정하거나, 패킷 보충만을 위해 반복 탐지해서는 안 됩니다. 용도 baseline 정상 대조 / proof 취약점 증명 / verification 보충 검증 / supporting 보조 증거.",
+			"items": obj(map[string]any{"traffic_id": str("traffic_search가 반환한 실제 트래픽 ID"), "role": map[string]any{"type": "string", "enum": []string{"baseline", "proof", "verification", "supporting"}}, "note": str("이 트래픽이 취약점 결론을 어떻게 뒷받침하는지")}, "traffic_id")},
 	}, "vulnclass", "severity", "summary"), func(ctx context.Context, in json.RawMessage) (actool.Result, error) {
 		var a struct {
 			VulnClass, Name, Severity, Summary, Evidence string
@@ -1236,18 +1236,18 @@ func (t *ToolSet) addFinding() actool.CoreTool {
 			return actool.Errorf(err.Error()), nil
 		}
 		if t.ts == nil {
-			return actool.Errorf("report_finding 需要任务上下文；平台对话请通过 add_task_hint 向对应任务交接漏洞，并在提示中携带已有的 traffic_refs，由任务 Agent 登记。已登记漏洞可用 bind_finding_traffic 补绑。"), nil
+			return actool.Errorf("report_finding에는 작업 컨텍스트가 필요합니다. 플랫폼 대화에서는 add_task_hint로 해당 작업에 취약점을 인계하고, 힌트에 기존 traffic_refs를 담아 작업 Agent가 등록하도록 하세요. 이미 등록된 취약점은 bind_finding_traffic으로 보완 바인딩할 수 있습니다."), nil
 		}
 		// Auto-binding off: ignore the evidence params instead of rejecting the call.
 		// stripTrafficParameters already removes them from the advertised schema, but
 		// models routinely emit fields anyway — failing here would discard a confirmed
 		// finding over a stray parameter. The success path below reports evidence_status
-		// "not_bound" with the "已关闭，可在页面人工关联" note, which is what the caller needs.
+		// "not_bound" with the "비활성화되어 있어, 페이지에서 수동으로 트래픽을 연관" note, which is what the caller needs.
 		if !findingTrafficBindingEnabled() {
 			a.TrafficRefs, a.EvidenceHintID = nil, nil
 		}
 		if len(a.EvidenceHintID) > 0 && pid(a.EvidenceHintID) <= 0 {
-			return actool.Errorf("evidence_hint_id 必须为有效的提示节点 ID；无交接提示时省略"), nil
+			return actool.Errorf("evidence_hint_id는 유효한 힌트 노드 ID여야 합니다. 인계 힌트가 없으면 생략하세요"), nil
 		}
 		refs, err := t.findingRefsFromHint(pid(a.EvidenceHintID), a.TrafficRefs)
 		if err != nil {
@@ -1258,7 +1258,7 @@ func (t *ToolSet) addFinding() actool.CoreTool {
 		if t.findingRecorder != nil {
 			recorded, err = t.findingRecorder.Record(ctx, input, refs)
 		} else if len(refs) > 0 {
-			return actool.Errorf("流量证据存储不可用；未登记漏洞"), nil
+			return actool.Errorf("트래픽 증거 저장소를 사용할 수 없습니다. 취약점을 등록하지 않았습니다"), nil
 		} else {
 			recorded, err = t.ts.RecordFinding(ctx, input)
 		}
@@ -1287,9 +1287,9 @@ func (t *ToolSet) addFinding() actool.CoreTool {
 		}{RecordedFinding: recorded, EvidenceStatus: "bound"}
 		if len(recorded.Traffic.Bindings) == 0 {
 			result.EvidenceStatus = "not_bound"
-			result.EvidenceNote = "漏洞已保存，未绑定流量。TCP/无包情形可正常继续；若已有核实的 HTTP 流量，请用可用的 bind_finding_traffic 或漏洞页面补绑，再完成证据交接。不要重复创建漏洞。"
+			result.EvidenceNote = "취약점이 저장되었으나 트래픽은 바인딩되지 않았습니다. TCP/패킷 없음 상황에서는 정상적으로 계속할 수 있습니다. 확인된 HTTP 트래픽이 이미 있으면 사용 가능한 bind_finding_traffic이나 취약점 페이지로 보완 바인딩한 뒤 증거 인계를 완료하세요. 취약점을 중복 생성하지 마세요."
 			if !findingTrafficBindingEnabled() {
-				result.EvidenceNote = "漏洞已保存。Agent 自动绑定流量已关闭，可在页面人工关联流量。"
+				result.EvidenceNote = "취약점이 저장되었습니다. Agent 자동 트래픽 바인딩이 비활성화되어 있어, 페이지에서 수동으로 트래픽을 연관할 수 있습니다."
 			}
 		}
 		raw, _ := json.Marshal(result)
@@ -1302,21 +1302,21 @@ func (t *ToolSet) addFinding() actool.CoreTool {
 // This is the home for observations and — importantly — negative results
 // ("port closed", "param not injectable", "no login found"). Such conclusions
 // must NOT be stuffed into the asset graph via upsert_asset.
-// factItem 是 record_fact 批量/单条的一条事实。
+// factItem은 record_fact의 일괄/단건 입력에서 하나의 사실을 나타낸다.
 type factItem struct {
 	Summary    string            `json:"summary"`
 	Detail     string            `json:"detail"`
-	Evidence   string            `json:"evidence"`   // 一行关键证据（命令+关键输出行），支撑结论、便于事后核对
-	Confidence string            `json:"confidence"` // observed（直接看到）| inferred（据现象推断）
+	Evidence   string            `json:"evidence"`   // 핵심 증거 한 줄(명령+핵심 출력 줄)로, 결론을 뒷받침하고 사후 확인에 편리하다
+	Confidence string            `json:"confidence"` // observed(직접 관찰) | inferred(현상으로 추론)
 	IntentID   json.RawMessage   `json:"intent_id"`
 	AssetIDs   []json.RawMessage `json:"asset_ids"`
 }
 
-// recordOneFact 写一条 fact 节点并连到意图（intent→yields→fact）。defaultIntent 为
-// 批量时的默认意图（本条未给 intent_id 时用）。
+// recordOneFact은 fact 노드를 하나 써서 의도에 연결한다(intent→yields→fact). defaultIntent는
+// 일괄 처리 시의 기본 의도다(이 항목에 intent_id가 없을 때 사용).
 func (t *ToolSet) recordOneFact(it factItem, defaultIntent int64) (int64, error) {
 	if strings.TrimSpace(it.Summary) == "" {
-		return 0, fmt.Errorf("summary 不能为空")
+		return 0, fmt.Errorf("summary 값을 비워 둘 수 없습니다")
 	}
 	payload := map[string]any{"summary": it.Summary}
 	if it.Detail != "" {
@@ -1335,7 +1335,7 @@ func (t *ToolSet) recordOneFact(it factItem, defaultIntent int64) (int64, error)
 	if intent > 0 {
 		node, err := t.ts.GetNode(intent)
 		if err != nil || node == nil || node.Kind != db.KindIntent {
-			return 0, fmt.Errorf("intent_id 必须是本任务的意图（关联任务意图只读）")
+			return 0, fmt.Errorf("intent_id는 이 작업의 의도여야 합니다(관련 작업의 의도는 읽기 전용)")
 		}
 	}
 	// a fact is its OWN node kind (distinct from a vuln finding).
@@ -1351,26 +1351,26 @@ func (t *ToolSet) recordOneFact(it factItem, defaultIntent int64) (int64, error)
 }
 
 func (t *ToolSet) recordFact() actool.CoreTool {
-	return t.writeExpTool("record_fact", "把探索【事实/结论】写入探索图，连到产生它的意图（intent_id）。用于记录探索结果——包括指纹/枚举等【正向结论】，和'端口关闭'/'参数不可注入'/'未发现登录入口'等【否定结论】。\n"+
-		"⚠️一次探索的多个观察要【汇总成一条事实】，不要拆成多条，可以合并成一条事实的就尽量用一条事实表示：summary=对本次结论的总结性一句话，detail=相关细节（可含多个具体项）。例：指纹意图→一条事实 {summary:'识别了 X 站点的技术栈与响应特征', detail:'nginx 1.25 / Vue3 / 200 / title=.. / body_len=..'}，而不是状态码、指纹、标题各记一条。一条意图通常只产出一条事实，拆太碎会让图谱无限膨胀。\n"+
-		"★facts 数组用于一次写多条【彼此不同】的结论（每条可省略 intent_id，默认用顶层 intent_id）。返回 ids 数组，与 facts 等长同序。\n"+
-		"⚠️只写你在工具输出里【真实看到】的结论，不要脑补。evidence 与 confidence 用来防止不准确的结论污染图谱：\n"+
-		"  · evidence=支撑本结论的【一行】关键证据（命令+最能证明的那一两行输出），**务必简洁**——细节已在 detail，这里不要再粘大段输出。\n"+
-		"  · confidence=observed（输出里直接看到）| inferred（据现象推断）。\n"+
-		"  · **否定类结论**（不可注入/端口关闭/未发现入口等）只写\"观察 + 试探性读法\"——陈述你实际看到什么，方向是否放弃由规划者综合全局定；务必给 evidence，手段没穷尽或证据弱（含只探一次、看起来像）标 inferred，确已穷尽且直接看到才标 observed。",
+	return t.writeExpTool("record_fact", "탐색 [사실/결론]을 탐색 그래프에 쓰고, 그것을 만들어 낸 의도(intent_id)에 연결합니다. 탐색 결과를 기록하는 데 쓰며——핑거프린트/열거 등 [긍정 결론]과 '포트 닫힘'/'파라미터 인젝션 불가'/'로그인 입구 미발견' 등 [부정 결론]을 포함합니다.\n"+
+		"⚠️한 번의 탐색에서 나온 여러 관찰은 [하나의 사실로 통합]해야 하며, 여러 개로 쪼개지 말고, 하나의 사실로 합칠 수 있으면 가능한 한 하나의 사실로 표현합니다: summary=이번 결론을 요약한 한 문장, detail=관련 세부 사항(구체적인 항목 여러 개 포함 가능). 예: 핑거프린트 의도→사실 하나 {summary:'X 사이트의 기술 스택과 응답 특징을 식별함', detail:'nginx 1.25 / Vue3 / 200 / title=.. / body_len=..'}이며, 상태 코드·핑거프린트·제목을 각각 하나씩 기록하지 않습니다. 하나의 의도는 보통 사실 하나만 산출하며, 너무 잘게 쪼개면 그래프가 무한히 커집니다.\n"+
+		"★facts 배열은 서로 [다른] 결론 여러 개를 한 번에 쓸 때 사용합니다(각 항목은 intent_id를 생략할 수 있고, 기본값으로 최상위 intent_id를 사용합니다). ids 배열을 반환하며, facts와 길이가 같고 순서도 같습니다.\n"+
+		"⚠️도구 출력에서 [실제로 본] 결론만 쓰고, 지어내지 마세요. evidence와 confidence는 부정확한 결론이 그래프를 오염시키는 것을 막는 데 사용됩니다:\n"+
+		"  · evidence=이 결론을 뒷받침하는 [한 줄] 핵심 증거(명령+가장 잘 증명하는 한두 줄 출력), **반드시 간결하게**——세부 사항은 이미 detail에 있으므로 여기에 긴 출력을 다시 붙이지 마세요.\n"+
+		"  · confidence=observed(출력에서 직접 봄) | inferred(현상으로 추론).\n"+
+		"  · **부정형 결론**(인젝션 불가/포트 닫힘/입구 미발견 등)은 \"관찰 + 시험적 해석\"만 씁니다——실제로 무엇을 보았는지 진술하고, 방향을 포기할지는 planner가 전체를 종합해 정합니다. 반드시 evidence를 제시하고, 수단을 다 쓰지 않았거나 증거가 약하면(한 번만 탐지함·그렇게 보임 포함) inferred로 표시하고, 확실히 다 썼고 직접 본 경우에만 observed로 표시합니다.",
 		obj(map[string]any{
-			"facts":      map[string]any{"type": "array", "description": "【有多条不同结论时用】事实数组，元素字段同下方顶层字段（summary/detail/evidence/confidence/intent_id/asset_ids）；省略 intent_id 则用顶层 intent_id。返回 ids 与本数组等长、同序。", "items": map[string]any{"type": "object"}},
-			"summary":    str("对本次探索结论的【总结性一句话】（是对 detail 的概括）"),
-			"intent_id":  idp("产生本事实的意图 id（你领到的意图；批量时作为各条默认）"),
-			"detail":     str("本事实的相关细节：把这次探索的多个观察事实都写进这里"),
-			"evidence":   str("【一行】关键证据：命令 + 最能证明结论的那一两行输出。务必简洁，不要粘大段输出（细节放 detail）。"),
-			"confidence": str("observed（输出里直接看到）| inferred（据现象推断）。否定结论务必如实标注。"),
-			"asset_ids":  map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "相关资产 id（可选，0/1/多个）：该事实涉及哪些资产"},
+			"facts":      map[string]any{"type": "array", "description": "[서로 다른 결론이 여러 개일 때 사용] 사실 배열이며, 요소 필드는 아래 최상위 필드(summary/detail/evidence/confidence/intent_id/asset_ids)와 동일합니다. intent_id를 생략하면 최상위 intent_id를 사용합니다. ids는 이 배열과 길이가 같고 순서도 같습니다.", "items": map[string]any{"type": "object"}},
+			"summary":    str("이번 탐색 결론에 대한 [요약 한 문장](detail을 개괄한 것)"),
+			"intent_id":  idp("이 사실을 만들어 낸 의도 id(당신이 받은 의도. 일괄 처리 시 각 항목의 기본값)"),
+			"detail":     str("이 사실의 관련 세부 사항: 이번 탐색의 여러 관찰 사실을 모두 여기에 씁니다"),
+			"evidence":   str("[한 줄] 핵심 증거: 명령 + 결론을 가장 잘 증명하는 한두 줄 출력. 반드시 간결하게, 긴 출력을 붙이지 마세요(세부 사항은 detail에 넣습니다)."),
+			"confidence": str("observed(출력에서 직접 봄) | inferred(현상으로 추론). 부정 결론은 반드시 사실대로 표시합니다."),
+			"asset_ids":  map[string]any{"type": "array", "items": map[string]any{"type": "integer"}, "description": "관련 자산 id(선택, 0/1/여러 개): 이 사실이 어떤 자산과 관련되는지"},
 		}),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
 				Facts    []factItem `json:"facts"`
-				factItem            // 单条模式 + 批量默认 intent_id
+				factItem            // 단건 모드 + 일괄 기본 intent_id
 			}
 			_ = json.Unmarshal(in, &a)
 			batch := len(a.Facts) > 0
@@ -1378,7 +1378,7 @@ func (t *ToolSet) recordFact() actool.CoreTool {
 			if !batch {
 				items = []factItem{a.factItem}
 			}
-			defaultIntent := pid(a.factItem.IntentID) // 顶层 intent_id = 批量默认
+			defaultIntent := pid(a.factItem.IntentID) // 최상위 intent_id = 일괄 기본값
 
 			ids := make([]int64, len(items))
 			errs := map[string]string{}
@@ -1391,7 +1391,7 @@ func (t *ToolSet) recordFact() actool.CoreTool {
 				ids[i] = id
 			}
 
-			if !batch { // 单条：保持原返回
+			if !batch { // 단건: 원래 반환 유지
 				if e, bad := errs["0"]; bad {
 					return actool.Errorf(e), nil
 				}
