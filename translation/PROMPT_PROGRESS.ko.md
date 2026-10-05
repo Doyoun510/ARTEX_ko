@@ -141,7 +141,13 @@ U9에서 확정한 `"작업 #<id>"` 라벨 계약을 사용자 지시로 처리�
 - **⚠️ §5.7 계약 위치 확인(묶음 B 핵심)**: 프런트가 substring 매칭하는 `已存在`는 **`web/src/.../system/skills/page.tsx:370`(`msg.includes("已存在")`)** 한 곳뿐이며, 이를 먹이는 백엔드는 **`server_mgmt.go`의 skill 생성 HTTP 에러**. 묶음 B-1 파일에는 해당 HTTP 계약 문자열이 없음. **B-2(server_mgmt.go) 번역 시 그 `已存在`는 DNT 유지 or 프런트(B레인) 동시 변경 필요.**
 - **DNT**: 도구/파라미터/상태 enum·`docs/自定义工具设计.md`(파일 경로)·포맷 지정자 보존.
 - **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 테스트 커플링 없음. DB 필요 서버 테스트는 미검증.
-- **묶음 B 잔여(todo)**: `server_mgmt.go`(85, §5.7 `已存在` 계약)·`server.go`(227, §5.7 `意图`/`提示` fallbackChat 등).
+### 묶음 B-2a (관리 API: server_mgmt.go)  [정적검토 done · 실행 검증 일부 PASS]
+- **대상(완료)**: `server/server_mgmt.go`(agent/도구/MCP/skill/LLM 설정·재시도 정책 관리 HTTP 핸들러).
+- **⚠️ §5.7 계약 보존**: skill 업로드 중복 에러(L1361)는 프런트 `system/skills/page.tsx:370`의 `msg.includes("已存在")` 덮어쓰기 플로우가 매칭 → **`已存在`를 앵커로 보존**(한국어 번역문 안에 `(已存在)` 병기). agent 생성 에러(L266 `该 key 已存在`)는 프런트 매칭 없어 전문 번역.
+- **번역**: HTTP writeErr·로그·JSON 필드 주석·프롬프트 템플릿 변수 설명(Now/DataDir)·재시도 정책 주석. `段 [A]`→`섹션 [A]`.
+- **DNT**: `已存在` 앵커(L1361)·식별자(llm_profile_id·profile·SetAgentTriggerBehavior·Chat Completions·anthropic·openai·Registry·GBK/RLO/NBSP)·`{{.Var}}`·`SKILL.md`·포맷 지정자.
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / 테스트·프런트(기타 에러) 커플링 없음. DB 필요 서버 테스트 미검증.
+- **묶음 B 잔여(todo)**: `server.go`(227, §5.7 `意图`/`提示` fallbackChat HasPrefix 등).
 
 ## U5~U8·U10·U12~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
