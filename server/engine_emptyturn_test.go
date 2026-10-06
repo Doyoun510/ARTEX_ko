@@ -72,7 +72,7 @@ func (f fakeHooks) Stop(context.Context, []llm.Message) (bool, []string, string)
 func TestSteerHooksStopNudgesEmptyTurn(t *testing.T) {
 	empty := []llm.Message{assistantThinking("我应该先枚举子域名")}
 
-	t.Run("空转回合注入续跑指令", func(t *testing.T) {
+	t.Run("무진행 턴에 실행 재개 지시 추가", func(t *testing.T) {
 		h := steerHooks{nudges: &atomic.Int64{}, limit: defaultEmptyTurnNudges, label: "worker-1 · #1"}
 		prevent, blocking, _ := h.Stop(context.Background(), empty)
 		if prevent {
@@ -83,7 +83,7 @@ func TestSteerHooksStopNudgesEmptyTurn(t *testing.T) {
 		}
 	})
 
-	t.Run("有正文或工具时不介入", func(t *testing.T) {
+	t.Run("본문이나 도구가 있으면 개입하지 않음", func(t *testing.T) {
 		h := steerHooks{nudges: &atomic.Int64{}, limit: defaultEmptyTurnNudges}
 		normal := []llm.Message{{
 			Role:    llm.RoleAssistant,
@@ -97,7 +97,7 @@ func TestSteerHooksStopNudgesEmptyTurn(t *testing.T) {
 		}
 	})
 
-	t.Run("达到上限后放行收场", func(t *testing.T) {
+	t.Run("상한에 도달하면 마무리를 허용", func(t *testing.T) {
 		const limit = 5 // 사용자가 '빈 응답 재시도 횟수'를 5로 설정합니다.
 		h := steerHooks{nudges: &atomic.Int64{}, limit: limit}
 		for i := 1; i <= limit; i++ {
@@ -111,14 +111,14 @@ func TestSteerHooksStopNudgesEmptyTurn(t *testing.T) {
 	})
 
 	// '빈 응답 재시도 횟수'를 -1로 설정하면 이 계층을 끄며, emptyTurnNudgeLimit는 0으로 해석됩니다.
-	t.Run("配置关闭时不介入", func(t *testing.T) {
+	t.Run("설정이 비활성화되면 개입하지 않음", func(t *testing.T) {
 		h := steerHooks{nudges: &atomic.Int64{}, limit: 0}
 		if _, blocking, _ := h.Stop(context.Background(), empty); blocking != nil {
 			t.Fatalf("비활성화했는데도 추가하고 있습니다: %v", blocking)
 		}
 	})
 
-	t.Run("inner 决定硬停时不叠加", func(t *testing.T) {
+	t.Run("inner가 강제 중지를 결정하면 추가하지 않음", func(t *testing.T) {
 		h := steerHooks{inner: fakeHooks{prevent: true, msg: "guard 拒绝收场"}, nudges: &atomic.Int64{}, limit: defaultEmptyTurnNudges}
 		prevent, blocking, msg := h.Stop(context.Background(), empty)
 		if !prevent || msg != "guard 拒绝收场" || blocking != nil {
@@ -129,7 +129,7 @@ func TestSteerHooksStopNudgesEmptyTurn(t *testing.T) {
 		}
 	})
 
-	t.Run("inner 已要续跑时不叠加", func(t *testing.T) {
+	t.Run("inner가 이미 계속 실행을 요구하면 추가하지 않음", func(t *testing.T) {
 		h := steerHooks{inner: fakeHooks{blocking: []string{"guard 的续跑理由"}}, nudges: &atomic.Int64{}, limit: defaultEmptyTurnNudges}
 		_, blocking, _ := h.Stop(context.Background(), empty)
 		if len(blocking) != 1 || blocking[0] != "guard 的续跑理由" {
@@ -137,7 +137,7 @@ func TestSteerHooksStopNudgesEmptyTurn(t *testing.T) {
 		}
 	})
 
-	t.Run("未装计数器时行为不变", func(t *testing.T) {
+	t.Run("카운터가 없으면 동작을 바꾸지 않음", func(t *testing.T) {
 		h := steerHooks{limit: defaultEmptyTurnNudges} // 예를 들어 이후 다른 호출 지점에서 nudges 전달을 빠뜨리는 경우입니다.
 		if _, blocking, _ := h.Stop(context.Background(), empty); blocking != nil {
 			t.Fatalf("카운터가 없을 때는 추가하면 안 됩니다: %v", blocking)
