@@ -36,7 +36,7 @@ type notifyChannelDTO struct {
 	SecretKeys []string `json:"secret_keys"`
 }
 
-// notifyDeliveryDTO는 전달 이력의 외부 표현.
+// notifyDeliveryDTO는 전송 이력의 외부 표현.
 type notifyDeliveryDTO struct {
 	ID          int64      `json:"id"`
 	FindingID   int64      `json:"finding_id,string"`
@@ -217,16 +217,16 @@ func (s *Server) notifyCreateChannel(w http.ResponseWriter, r *http.Request) {
 		ch.Mode = *req.Mode
 	}
 	if req.RatePerMin != nil {
-		// 명시적으로 값을 주면 그대로 사용 —— 0 포함, 0은 '레이트 리밋 없음'을 뜻하는 합법 설정.
+		// 명시적으로 값을 주면 그대로 사용 —— 0 포함, 0은 '전송 속도 제한 없음'을 뜻하는 합법 설정.
 		if *req.RatePerMin < 0 {
-			writeErr(w, 400, "레이트 리밋 값은 음수일 수 없습니다")
+			writeErr(w, 400, "전송 속도 제한 값은 음수일 수 없습니다")
 			return
 		}
 		ch.RatePerMin = *req.RatePerMin
 	}
 	// '필드 생략'일 때만 채널 기본값을 적용. 기본값은 db 레이어가 아니라 여기서 결정해야 한다:
 	// 요청 본문만이 '이 필드를 안 보냄'과 '명시적으로 0을 보냄'을 구분할 수 있고, 둘의 의미는 완전히 다르다
-	// (전자=기본값 사용, 후자=레이트 리밋 없음). db 레이어는 0도 미지정으로 취급해, 레이트 리밋 없음 설정이 도달 불가해진다.
+	// (전자=기본값 사용, 후자=전송 속도 제한 없음). db 레이어는 0도 미지정으로 취급해, 전송 속도 제한 없음 설정이 도달 불가해진다.
 	if req.RatePerMin == nil {
 		ch.RatePerMin = channel.DefaultRatePerMin()
 	}
@@ -333,7 +333,7 @@ func (s *Server) notifyUpdateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.RatePerMin != nil {
 		if *req.RatePerMin < 0 {
-			writeErr(w, 400, "레이트 리밋 값은 음수일 수 없습니다")
+			writeErr(w, 400, "전송 속도 제한 값은 음수일 수 없습니다")
 			return
 		}
 		ch.RatePerMin = *req.RatePerMin
@@ -348,7 +348,7 @@ func (s *Server) notifyUpdateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// SaveNotificationChannel이 아니라 SetNotificationChannelEnabled 경로를 타는 건,
-	// '비활성화'가 동시에 기존 발송 대기 전달을 skipped로 표시해, 다시 활성화할 때
+	// '비활성화'가 동시에 기존 전송 대기 항목을 skipped로 표시해, 다시 활성화할 때
 	// 이미 낡은 적체 메시지를 한 무더기 받는 것을 방지하기 위해서다.
 	enabledChanged := ch.Enabled != nil && current.Enabled != nil && *ch.Enabled != *current.Enabled
 	if enabledChanged {
@@ -393,8 +393,8 @@ func (s *Server) notifyDeleteChannel(w http.ResponseWriter, r *http.Request) {
 
 // notifyTestChannel은 현재 저장된 설정으로 테스트 메시지 하나를 보낸다.
 //
-// 전달 큐를 거치지 않고 채널 Send를 직접 호출: 테스트의 목적은 사용자에게 '이 설정이
-// 발송되는지'를 즉시 알리는 것이고, 큐를 타면 결과가 전달 이력에 숨어 사용자가 다시 뒤져야 성공 여부를 안다.
+// 전송 큐를 거치지 않고 채널 Send를 직접 호출: 테스트의 목적은 사용자에게 '이 설정이
+// 전송되는지'를 즉시 알리는 것이고, 큐를 타면 결과가 전송 이력에 숨어 사용자가 다시 뒤져야 성공 여부를 안다.
 // 따라서 이 인터페이스는 **동기**이며, 타임아웃 상한은 notify 패키지 HTTP 클라이언트가 결정(15초).
 func (s *Server) notifyTestChannel(w http.ResponseWriter, r *http.Request) {
 	pg := s.pg(w)
@@ -495,7 +495,7 @@ func (s *Server) notifyRetryDelivery(w http.ResponseWriter, r *http.Request) {
 	}
 	id, ok := pathInt(r, "id")
 	if !ok {
-		writeErr(w, 400, "전달 id가 유효하지 않습니다")
+		writeErr(w, 400, "전송 id가 유효하지 않습니다")
 		return
 	}
 	if err := pg.RetryNotificationDelivery(r.Context(), id); err != nil {

@@ -29,7 +29,7 @@ var ErrNotificationChannelNotFound = errors.New("알림 채널이 존재하지 �
 
 // 전송 상태.
 const (
-	NotifyStatePending = "pending" // 발송 대기
+	NotifyStatePending = "pending" // 전송 대기
 	NotifyStateSending = "sending" // 어떤 dispatcher가 획득, lease 미만료
 	NotifyStateSent    = "sent"    // 전송됨
 	NotifyStateFailed  = "failed"  // 재시도 소진 또는 영구 실패, 수동 재전송 가능
@@ -133,12 +133,12 @@ func (d *DB) SaveNotificationChannel(ctx context.Context, c *NotificationChannel
 	// 예전엔 `if c.RatePerMin <= 0 { c.RatePerMin = 기본값 }`로 썼는데, 의도는 '미지정 시
 	// 안전 기본값 제공'이었지만 그건 '명시적으로 0 설정'도 함께 삼켜버렸다 —— 문서·UI 안내·
 	// takeTokens 모두 0을 전송 속도 제한 없음으로 해석하는데, 여기서만 몰래 20(DingTalk/WeCom/Telegram)
-	// 또는 100(Feishu)으로 바꿔, 조작자는 리밋을 풀었다고 여기지만 실제로는 20/분에 막히고 아무 안내도 없었다.
+	// 또는 100(Feishu)으로 바꿔, 조작자는 전송 속도 제한을 풀었다고 여기지만 실제로는 20/분에 막히고 아무 안내도 없었다.
 	//
 	// '미지정'과 '명시적 0'의 구분은 호출자만 안다(요청 본문의 필드 누락 vs 명시적 0 전달),
 	// 그래서 기본값은 server 레이어가 필드 누락 시 채운다. notifyCreateChannel 참조.
 	if c.RatePerMin < 0 {
-		return 0, errors.New("레이트 리밋 값은 음수일 수 없습니다")
+		return 0, errors.New("전송 속도 제한 값은 음수일 수 없습니다")
 	}
 	if c.Config == nil {
 		c.Config = json.RawMessage(`{}`)
@@ -170,7 +170,7 @@ WHERE id=$1`,
 
 // SetNotificationChannelEnabled는 활성/비활성을 전환한다.
 //
-// 채널을 비활성화할 때 아직 보내지 않은 전달을 함께 skipped로 표시한다: 안 그러면 재활성화 후
+// 채널을 비활성화할 때 아직 보내지 않은 전송을 함께 skipped로 표시한다: 안 그러면 재활성화 후
 // '비활성 기간에 쌓인' 구 취약점을 한꺼번에 받게 되어, 시의성이 사라지고 신규로 오판되기 쉽다.
 func (d *DB) SetNotificationChannelEnabled(ctx context.Context, id int64, enabled bool) error {
 	return d.WithEvidenceTx(ctx, func(tx *sql.Tx) error {
@@ -192,7 +192,7 @@ WHERE channel_id=$1 AND state IN ($4,$5)`,
 	})
 }
 
-// DeleteNotificationChannel은 채널을 삭제한다. 그 전달 이력은 외래 키 캐스케이드로 삭제된다
+// DeleteNotificationChannel은 채널을 삭제한다. 그 전송 이력은 외래 키 캐스케이드로 삭제된다
 // (채널 설정이 없어지면 이력을 해석할 수 없다).
 func (d *DB) DeleteNotificationChannel(ctx context.Context, id int64) error {
 	res, err := d.ExecContext(ctx, `DELETE FROM notification_channels WHERE id=$1`, id)
@@ -259,8 +259,8 @@ func (d *DB) AddNotificationEvent(ctx context.Context, kind string, findingID in
 	return id, err
 }
 
-// FanOutPendingEvents는 아직 분배되지 않은 취약점 이벤트를 현재 활성 채널에 따라 전달 작업으로 펼치고,
-// 이번 라운드에 처리한 이벤트 수와 새로 만든 전달 수를 반환한다.
+// FanOutPendingEvents는 아직 분배되지 않은 취약점 이벤트를 현재 활성 채널에 따라 전송 작업으로 펼치고,
+// 이번 라운드에 처리한 이벤트 수와 새로 만든 전송 수를 반환한다.
 //
 // 한 라운드 전체가 한 트랜잭션 안에서: 이벤트는 FOR UPDATE SKIP LOCKED로 획득하므로, 여러 프로세스가 동시에 돌아도
 // 각자 다른 행을 획득한다(프로젝트의 아카이브 큐 획득이 같은 기법을 쓴다,
@@ -302,7 +302,7 @@ WHERE NOT fanned_out ORDER BY id FOR UPDATE SKIP LOCKED LIMIT $1`, limit)
 			return 0, 0, err
 		}
 		var snap notify.Snapshot
-		// 스냅샷은 우리가 직접 쓴 것이라 이론상 반드시 파싱 가능하다; 파싱 실패는 전달 흐름을 막지 않지만,
+		// 스냅샷은 우리가 직접 쓴 것이라 이론상 반드시 파싱 가능하다; 파싱 실패는 전송 흐름을 막지 않지만,
 		// 이 이벤트는 필드가 전부 비어 필터 조건이 있는 모든 채널이 건너뛴다 —— 차라리 하나 덜 보낼지언정
 		// 나쁜 행 하나가 전체 큐를 막게 하지 않는다.
 		_ = json.Unmarshal(ev.Snapshot, &snap)
@@ -382,7 +382,7 @@ FROM notification_channels WHERE enabled ORDER BY id`)
 // NotificationAssetNames는 자산 id를 짧은 표시명으로 해석하며, 푸시 메시지에 쓴다.
 //
 // 반환 순서는 입력 인자와 동일하고, 길이는 입력보다 작을 수 있다(존재하지 않는 id는 건너뜀). 입력 순서를 유지하는 것은
-// 같은 취약점의 메시지가 여러 전달에서 자산 순서가 안정되게 하려는 것이다 —— 안 그러면 재시도 후 받은 메시지에서
+// 같은 취약점의 메시지가 여러 전송에서 자산 순서가 안정되게 하려는 것이다 —— 안 그러면 재시도 후 받은 메시지에서
 // 자산 순서가 바뀌어 '자산이 바뀌었다'로 오독된다.
 func (d *DB) NotificationAssetNames(ctx context.Context, ids []int64) ([]string, error) {
 	if len(ids) == 0 {
@@ -528,7 +528,7 @@ type NotificationStats struct {
 	Pending      int   `json:"pending"`
 	Failed       int   `json:"failed"`
 	SentToday    int   `json:"sent_today"`
-	BacklogAgeMS int64 `json:"backlog_age_ms"` // 가장 오래된 발송 대기 전달의 현재까지 밀리초
+	BacklogAgeMS int64 `json:"backlog_age_ms"` // 가장 오래된 전송 대기 항목의 현재까지 밀리초
 }
 
 // NotificationStatsSnapshot은 알림 시스템의 건강도를 집계한다.

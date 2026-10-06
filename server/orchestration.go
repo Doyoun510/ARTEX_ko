@@ -40,7 +40,7 @@ func jsonResult(v any) (actool.Result, error) {
 func (s *Server) hostTools() ([]actool.CoreTool, map[string][]string) {
 	tools := append(s.m.HostTools(), s.orchestrationTools()...)
 	tools = append(tools, s.findingRetestTools()...)
-	tools = append(tools, s.platformTools()...) // 플랫폼 조작 도구(skill/도구/MCP 생성·수정, Auto용)
+	tools = append(tools, s.platformTools()...) // 플랫폼 동작 도구(skill/도구/MCP 생성·수정, Auto용)
 	custom, err := s.customTools()
 	if err != nil {
 		log.Printf("[custom-tool] 로드 실패: %v", err)

@@ -663,7 +663,7 @@ export const api = {
   findingLineage: (id: string) => get<{ nodes: TaskNode[]; edges: Edge[] }>(`/exploration/findings/${id}/lineage`),
   setFindingStatus: (id: string, status: FindingStatus) => patch<Finding>(`/exploration/findings/${id}`, { status }),
   setFindingSeverity: (id: string, severity: Severity) => patch<Finding>(`/exploration/findings/${id}`, { severity }),
-  // 취약점의 이름/유형/심각 등급을 한 번에 저장(발견 리스트 행 내 편집용), 나타난 필드만 전달.
+  // 취약점의 이름/유형/심각도 등급을 한 번에 저장(발견 리스트 행 내 편집용), 나타난 필드만 전달.
   updateFinding: (
     id: string,
     fields: { name?: string; vulnclass?: string; severity?: Severity; status?: FindingStatus },

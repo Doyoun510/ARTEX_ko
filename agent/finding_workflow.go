@@ -65,7 +65,7 @@ func findingWorkflowTools(agentKey string, tools []actool.CoreTool) ([]actool.Co
 	}
 	guidance := ""
 	if has["report_finding"] || has["add_task_hint"] || has["add_hint"] {
-		guidance = "\n\n**트래픽 증거 인계(선택)**: 자동 바인딩은 기본적으로 보고서 Agent 가 취약점을 입고한 뒤, 보고서를 작성하기 전에 완료한다. 보고자는 evidence 에 검증 명령, 핵심 출력, 이미 있는 실제 트래픽 ID 및 그 용도를 남기고, 작업에서는 intent_id 를 함께 넣어 보고서 Agent 가 추적하기 쉽게 한다; 바인딩을 위해 따로 패킷을 조회할 필요는 없다. Auto / Planner 가 대신 보고할 때 worker 가 이미 가진 참조를 버리지 마라. add_hint / add_task_hint 로 traffic_refs 를 인계할 수 있다; 명시적 즉시 바인딩은 여전히 report_finding 의 traffic_refs / evidence_hint_id 를 호환한다. TCP 이거나 무패킷일 때는 정상적으로 등록하고, ID 를 추측하지 말며, 패킷을 보충하려고 중복 탐지하지도 마라."
+		guidance = "\n\n**트래픽 증거 인계(선택)**: 자동 바인딩은 기본적으로 보고서 Agent 가 취약점을 등록한 뒤, 보고서를 작성하기 전에 완료한다. 보고자는 evidence 에 검증 명령, 핵심 출력, 이미 있는 실제 트래픽 ID 및 그 용도를 남기고, 작업에서는 intent_id 를 함께 넣어 보고서 Agent 가 추적하기 쉽게 한다; 바인딩을 위해 따로 패킷을 조회할 필요는 없다. Auto / Planner 가 대신 보고할 때 worker 가 이미 가진 참조를 버리지 마라. add_hint / add_task_hint 로 traffic_refs 를 인계할 수 있다; 명시적 즉시 바인딩은 여전히 report_finding 의 traffic_refs / evidence_hint_id 를 호환한다. TCP 이거나 무패킷일 때는 정상적으로 등록하고, ID 를 추측하지 말며, 패킷을 보충하려고 중복 탐지하지도 마라."
 		if has["add_task_hint"] && !has["add_hint"] {
 			guidance += "\n플랫폼 대화에 작업 컨텍스트가 없을 때는 report_finding 을 직접 호출하지 말고; add_task_hint 로 이미 있는 해당 작업에 인계하여 작업 Agent 가 등록하게 하고, list_task_findings 로 결과를 대조한다."
 		}

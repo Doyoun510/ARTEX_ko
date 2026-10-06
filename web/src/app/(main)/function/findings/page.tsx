@@ -633,7 +633,7 @@ export default function FindingsPage() {
 // 펼칠 때 finding_id로 한 번만 가져온다. done인데 텍스트가 비어 있으면 = 이 취약점은 아직 보고서가 없다.
   const [reports, setReports] = React.useState<Record<string, FindingReport>>({});
 
-// 행 내 편집 버퍼: 현재 펼친 행의 이름/유형/심각 등급. 펼칠 때 해당 행 데이터로 초기화하고 접으면 비운다.
+// 행 내 편집 버퍼: 현재 펼친 행의 이름/유형/심각도 등급. 펼칠 때 해당 행 데이터로 초기화하고 접으면 비운다.
 // 한 번에 한 행만 펼치므로 버퍼 하나면 충분하다.
   const [edit, setEdit] = React.useState<FindingEdit | null>(null);
   const [saving, setSaving] = React.useState(false);
@@ -660,7 +660,7 @@ export default function FindingsPage() {
     [expanded, reports],
   );
 
-// saveEdit은 현재 펼친 행의 이름/유형/심각 등급을 저장하고 로컬 리스트에 반영한 뒤 통계를 새로고침한다(유형 드롭다운/심각 개수가 바뀔 수 있음).
+// saveEdit은 현재 펼친 행의 이름/유형/심각도 등급을 저장하고 로컬 리스트에 반영한 뒤 통계를 새로고침한다(유형 드롭다운/심각 개수가 바뀔 수 있음).
   const saveEdit = React.useCallback(
     async (f: Finding) => {
       if (!f.finding_id || !edit) return;

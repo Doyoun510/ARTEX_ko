@@ -24,7 +24,7 @@ import (
 // 전송 엔진이 아니라 여기에 정의한다: 상태 기계 자체의 정책이고, 엔진은 실행자일 뿐이다.
 const MaxNotifyAttempts = 3
 
-// MaxDigestBatchSize는 단일 요약 배치가 한 번에 병합할 수 있는 최대 전달 건수다.
+// MaxDigestBatchSize는 단일 요약 배치가 한 번에 병합할 수 있는 최대 전송 건수다.
 //
 // 존재 이유는 자원이다: 한 요약 주기에 취약점 수만 개가 나오면(충분히 가능 —— 전량 스캔
 // 한 번이면 된다), 상한이 없으면 획득이 전체 행을 메모리에 읽어 초장문 메시지로 렌더링하고,
@@ -61,7 +61,7 @@ type NotificationDelivery struct {
 const notificationDeliveryCols = `d.id, d.event_id, d.channel_id, d.state, d.attempts, d.next_attempt_at,
        d.last_error, d.batch_id, d.created_at, d.sent_at`
 
-// joinedDeliveryQuery는 전달 행의 통합 읽기 형태다: 전달 + 이벤트 스냅샷 + 채널 설정.
+// joinedDeliveryQuery는 전송 행의 통합 읽기 형태다: 전송 + 이벤트 스냅샷 + 채널 설정.
 // 메시지 하나를 렌더링하려면 셋 다 필수라, 따로 조회하면 왕복이 세 번이 된다.
 const joinedDeliveryQuery = `SELECT ` + notificationDeliveryCols + `,
        e.snapshot, e.kind, e.finding_id,
@@ -110,16 +110,16 @@ type claimQuery struct {
 	args []any
 }
 
-// ClaimRealtimeDeliveries는 어떤 채널의 만기된 실시간 전달 한 묶음을 획득한다(최대 limit건).
+// ClaimRealtimeDeliveries는 어떤 채널의 만기된 실시간 전송 한 묶음을 획득한다(최대 limit건).
 //
-// 일부러 **단일 채널** 단위로 획득한다, '전역으로 한 묶음 획득 후 골라 보내기'가 아니다: 레이트 리밋 게이트는 전달 엔진에서 채널별로
-// 유지되므로, 이 채널이 이번 라운드에 몇 건 더 보낼 수 있는지 먼저 알고 그만큼만 행을 획득해야 레이트 리밋이
-// 재시도 횟수를 소모하지 않는다. 반대로 먼저 획득하고 버리면, 레이트 리밋에 막힌 행은 이미 attempts가 한 번 계산되어
+// 일부러 **단일 채널** 단위로 획득한다, '전역으로 한 묶음 획득 후 골라 보내기'가 아니다: 전송 속도 제한 게이트는 전송 엔진에서 채널별로
+// 유지되므로, 이 채널이 이번 라운드에 몇 건 더 보낼 수 있는지 먼저 알고 그만큼만 행을 획득해야 전송 속도 제한이
+// 재시도 횟수를 소모하지 않는다. 반대로 먼저 획득하고 버리면, 전송 속도 제한에 막힌 행은 이미 attempts가 한 번 계산되어
 // 3회 예산이 순전히 대기로 소진되어 결국 failed로 떨어진다.
 //
 // 조건에 'lease 만료된 sending'을 포함한다 —— 그게 크래시 자가 치유의 지점이다. lease는 단일
-// 전달의 최악 소요 시간(채널 HTTP 클라이언트 타임아웃 15초)보다 훨씬 커야 한다, 안 그러면 같은 행을 두 dispatcher가
-// 동시에 전달한다. 비활성 채널도 함께 차단한다: 비활성화 작업이 기존 전달을 skipped로 표시하지만,
+// 전송의 최악 소요 시간(채널 HTTP 클라이언트 타임아웃 15초)보다 훨씬 커야 한다, 안 그러면 같은 행을 두 dispatcher가
+// 동시에 전송한다. 비활성 채널도 함께 차단한다: 비활성화 작업이 기존 전송을 skipped로 표시하지만,
 // 여기서 한 번 더 막아 비활성화와 획득이 동시에 일어날 때의 누락을 방지한다.
 func (d *DB) ClaimRealtimeDeliveries(ctx context.Context, channelID int64, limit int, lease time.Duration) ([]*NotificationDelivery, error) {
 	if limit <= 0 {
@@ -137,10 +137,10 @@ LIMIT $5`,
 	}, nil)
 }
 
-// DigestBatchDue는 이 채널이 만기 배치를 충분히 모았는지 보고한다: 발송 대기 전달이 있고, **가장 오래된 것**의
+// DigestBatchDue는 이 채널이 만기 배치를 충분히 모았는지 보고한다: 전송 대기 항목이 있고, **가장 오래된 것**의
 // 나이가 요약 주기에 도달했는지.
 //
-// 판정 근거는 벽시계가 아니라 가장 오래된 전달의 나이다: 그래서 막 만든 채널이 정시 정렬 때문에
+// 판정 근거는 벽시계가 아니라 가장 오래된 전송의 나이다: 그래서 막 만든 채널이 정시 정렬 때문에
 // 한 건짜리 '요약'을 즉시 뱉지 않고, 오래 적체된 배치도 한 라운드를 더 헛되이 기다리지 않는다.
 //
 // ClaimDigestBatch와 분리한 것은 의미가 다르기 때문이다: 이 함수는 '보낼지 말지'만 답하고,
@@ -158,14 +158,14 @@ func (d *DB) DigestBatchDue(ctx context.Context, channelID int64, minAge time.Du
 	return due, err
 }
 
-// ClaimDigestBatch는 어떤 채널의 현재 만기된 발송 대기 전달을 하나의 요약 배치로 획득한다,
+// ClaimDigestBatch는 어떤 채널의 현재 만기된 전송 대기 항목을 하나의 요약 배치로 획득한다,
 // 한 배치 최대 MaxDigestBatchSize건.
 //
-// 같은 배치의 모든 전달이 batch_id를 공유한다, 집합의 최소 id를 배치 번호로 쓴다(안정·가독·
+// 같은 배치의 모든 전송이 batch_id를 공유한다, 집합의 최소 id를 배치 번호로 쓴다(안정·가독·
 // 추가 시퀀스 불필요). 재시도 시 COALESCE로 원래 배치 번호를 보존해, '이 배치 N건은 함께 보냈다'가
 // 여러 번 재시도 후에도 성립한다.
 //
-// id 오름차순으로 앞 N건을 취한다(무작위 아님): 가장 먼저 생긴 전달이 먼저 나가, 적체 시
+// id 오름차순으로 앞 N건을 취한다(무작위 아님): 가장 먼저 생긴 전송이 먼저 나가, 적체 시
 // '새 취약점 먼저, 오래된 취약점은 영원히 뒤'라는 기아가 생기지 않는다.
 func (d *DB) ClaimDigestBatch(ctx context.Context, channelID int64, limit int, lease time.Duration) ([]*NotificationDelivery, error) {
 	if limit <= 0 {
@@ -174,11 +174,11 @@ func (d *DB) ClaimDigestBatch(ctx context.Context, channelID int64, limit int, l
 	// limit는 **메모리 상한**이고, 호출자가 MaxDigestBatchSize를 전달한다; 여기서 한 번 더 조여,
 	// 호출자가 더 큰 값을 넘기는 것을 방지한다.
 	//
-	// 일부러 '레이트 리밋 할당량'을 배치 크기로 받지 않는다: 레이트 리밋 단위는 메시지 건수다 —— 한 배치는
+	// 일부러 '전송 속도 제한 할당량'을 배치 크기로 받지 않는다: 전송 속도 제한 단위는 메시지 건수다 —— 한 배치는
 	// 메시지 한 건만 보내고 토큰 하나를 소비하며, server 레이어의 takeTokens가 차감한다 —— '한 배치에 취약점
 	// 몇 건'과는 다른 차원이다. 예전엔 rate_per_min을 digest에 적용하려고 매 라운드
 	// 요청 예산을 배치 크기로 넘겼는데, 결과적으로 rate=20/min 채널은 배치당 취약점 1건만 담아,
-	// digest가 요약 문구가 붙은 실시간 푸시로 퇴화했다. 레이트 리밋을 바꾸려면 takeTokens의 want를 바꾸고,
+	// digest가 요약 문구가 붙은 실시간 푸시로 퇴화했다. 전송 속도 제한을 바꾸려면 takeTokens의 want를 바꾸고,
 	// 여기는 건들지 마라.
 	if limit > MaxDigestBatchSize {
 		limit = MaxDigestBatchSize
@@ -278,7 +278,7 @@ func loadDeliveriesTx(ctx context.Context, tx *sql.Tx, ids []int64) ([]*Notifica
 	return out, rows.Err()
 }
 
-// MarkDeliveriesSent는 전달 한 묶음을 전달됨으로 표시한다.
+// MarkDeliveriesSent는 전송 한 묶음을 전달됨으로 표시한다.
 func (d *DB) MarkDeliveriesSent(ctx context.Context, ids []int64) error {
 	ph, args := placeholders(2, ids)
 	if len(args) == 0 {
@@ -289,7 +289,7 @@ SET state=$1, sent_at=now(), last_error='' WHERE id IN (`+ph+`)`, append([]any{N
 	return err
 }
 
-// RescheduleDeliveries는 전달 한 묶음을 pending으로 되돌리고 재시도 시간을 미룬다.
+// RescheduleDeliveries는 전송 한 묶음을 pending으로 되돌리고 재시도 시간을 미룬다.
 //
 // 새 중간 상태를 도입하지 않고 pending으로 되돌리는 것은, '기회가 몇 번 남았나'를 한 곳에서만
 // 표현하기 위함이다(MaxNotifyAttempts). 상태 기계 분기가 재시도 정책에 따라 팽창하는 것을 막는다.
@@ -305,7 +305,7 @@ WHERE id IN (`+ph+`)`,
 	return err
 }
 
-// DeferDeliveries는 전달 한 묶음을 pending으로 되돌려 즉시 재획득 가능하게 하고, **획득 시 계산한 그 시도 한 번을 취소**한다.
+// DeferDeliveries는 전송 한 묶음을 pending으로 되돌려 즉시 재획득 가능하게 하고, **획득 시 계산한 그 시도 한 번을 취소**한다.
 //
 // 용도는 하나뿐이다: 요약 메시지를 채널 길이 상한에 맞춰 분할 전송할 때, 이 건에 못 담은 항목은 다음 배치로 남겨야 한다.
 // 그건 실패가 아니라서 재시도 예산을 소모해선 안 된다 —— 획득 시 attempts가 낙관적으로 +1 되었으니,
@@ -326,7 +326,7 @@ WHERE id IN (`+ph+`)`,
 	return err
 }
 
-// FailDeliveries는 전달 한 묶음을 최종 실패로 표시하고, 전달 이력에서 수동 재전송을 기다린다.
+// FailDeliveries는 전송 한 묶음을 최종 실패로 표시하고, 전송 이력에서 수동 재전송을 기다린다.
 func (d *DB) FailDeliveries(ctx context.Context, ids []int64, errMsg string) error {
 	// 자리표시자는 $3부터 시작한다: $1은 state, $2는 last_error.
 	ph, args := placeholders(3, ids)
@@ -338,7 +338,7 @@ func (d *DB) FailDeliveries(ctx context.Context, ids []int64, errMsg string) err
 	return err
 }
 
-// RetryNotificationDelivery는 전달 하나를 수동 재전송한다: pending으로 재설정·재시도 카운트 0으로·
+// RetryNotificationDelivery는 전송 하나를 수동 재전송한다: pending으로 재설정·재시도 카운트 0으로·
 // 즉시 만기. 카운트 초기화는 의도적이다 —— 사람이 '재전송'을 누른 것은 이전 실패 원인이 처리됐다는 뜻이라,
 // 구 카운트로 다시 제한하는 것은 말이 안 된다.
 func (d *DB) RetryNotificationDelivery(ctx context.Context, id int64) error {
@@ -349,12 +349,12 @@ WHERE id=$1 AND state IN ($3,$4)`, id, NotifyStatePending, NotifyStateFailed, No
 		return err
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
-		return fmt.Errorf("전달 %d이(가) 존재하지 않거나 현재 상태에서 재전송할 수 없습니다", id)
+		return fmt.Errorf("전송 %d이(가) 존재하지 않거나 현재 상태에서 재전송할 수 없습니다", id)
 	}
 	return nil
 }
 
-// NotificationDeliveryFilter는 전달 이력의 조회 조건이다.
+// NotificationDeliveryFilter는 전송 이력의 조회 조건이다.
 type NotificationDeliveryFilter struct {
 	ChannelID int64
 	State     string
@@ -382,7 +382,7 @@ func (f NotificationDeliveryFilter) where() (string, []any) {
 	return " WHERE " + strings.Join(conds, " AND "), args
 }
 
-// ListNotificationDeliveries는 전달 이력을 페이지네이션으로 반환한다, 새 것이 앞.
+// ListNotificationDeliveries는 전송 이력을 페이지네이션으로 반환한다, 새 것이 앞.
 func (d *DB) ListNotificationDeliveries(ctx context.Context, f NotificationDeliveryFilter, page, pageSize int) ([]*NotificationDelivery, int, error) {
 	if page < 1 {
 		page = 1

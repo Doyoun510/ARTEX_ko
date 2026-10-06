@@ -12,7 +12,7 @@ import (
 	actool "github.com/Autumn-27/norma/tool"
 )
 
-// 플랫폼 조작 도구(내장 Auto agent용): skill·커스텀 도구·MCP 생성/수정. 모두 host 도구,
+// 플랫폼 동작 도구(내장 Auto agent용): skill·커스텀 도구·MCP 생성/수정. 모두 host 도구,
 // tools 테이블에 seed되고, 기본 바인딩 auto, hostTools로 주입. 기존 db/파일시스템 로직 재사용.
 
 func (s *Server) platformTools() []actool.CoreTool {

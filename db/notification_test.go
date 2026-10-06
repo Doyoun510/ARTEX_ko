@@ -46,7 +46,7 @@ func newTestChannel(t *testing.T, d *DB, kind, mode string, filter string) *Noti
 	return ch
 }
 
-// addTestEvent는 이벤트를 하나 직접 쓴다(finding 경유 안 함), 분배·전달 테스트용.
+// addTestEvent는 이벤트를 하나 직접 쓴다(finding 경유 안 함), 분배·전송 테스트용.
 func addTestEvent(t *testing.T, d *DB, kind string, findingID int64, snap notify.Snapshot) int64 {
 	t.Helper()
 	snap.Kind = kind
@@ -185,12 +185,12 @@ func TestFanOutRoutesEventsByFilter(t *testing.T) {
 				t.Fatal(err)
 			}
 			if exists != tc.want {
-				t.Fatalf("전달 존재 여부: 기대 %v 얻음 %v", tc.want, exists)
+				t.Fatalf("전송 존재 여부: 기대 %v 얻음 %v", tc.want, exists)
 			}
 		})
 	}
 
-	// 다시 분배해도 중복 전달이 생기면 안 된다(fanned_out 멱등).
+	// 다시 분배해도 중복 전송이 생기면 안 된다(fanned_out 멱등).
 	events, deliveries, err := d.FanOutPendingEvents(ctx, 100)
 	if err != nil {
 		t.Fatal(err)
@@ -214,7 +214,7 @@ func TestFanOutMarksEventsWithNoMatchingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 	if deliveries != 0 {
-		t.Fatalf("전달이 생기면 안 됨, 얻음 %d", deliveries)
+		t.Fatalf("전송이 생기면 안 됨, 얻음 %d", deliveries)
 	}
 	var fanned bool
 	if err := d.QueryRowContext(ctx, `SELECT fanned_out FROM notification_events WHERE id=$1`, ev).Scan(&fanned); err != nil {
@@ -256,7 +256,7 @@ func TestClaimRealtimeDeliveriesHonorsLeaseAndMode(t *testing.T) {
 		t.Fatalf("finding id가 이벤트에서 전달되지 않음, 얻음 %d", got[0].FindingID)
 	}
 
-	// lease 미만료라 두 번째 획득은 비어야 한다 —— 이것이 '같은 행을 두 dispatcher가 동시에 전달하지 않음'
+	// lease 미만료라 두 번째 획득은 비어야 한다 —— 이것이 '같은 행을 두 dispatcher가 동시에 전송하지 않음'
 	// 의 보장이다.
 	again, err := d.ClaimRealtimeDeliveries(ctx, realtime.ID, 10, time.Minute)
 	if err != nil {
@@ -266,18 +266,18 @@ func TestClaimRealtimeDeliveriesHonorsLeaseAndMode(t *testing.T) {
 		t.Fatalf("lease 기간 내 중복 획득은 안 됨, 얻음 %d건", len(again))
 	}
 
-	// digest 채널의 전달은 실시간 획득에 걸리면 안 된다.
+	// digest 채널의 전송은 실시간 획득에 걸리면 안 된다.
 	left, err := d.ClaimRealtimeDeliveries(ctx, digest.ID, 10, time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(left) != 0 {
-		t.Fatalf("실시간 획득은 digest 채널 전달을 가져오면 안 됨, 얻음 %d건", len(left))
+		t.Fatalf("실시간 획득은 digest 채널 전송을 가져오면 안 됨, 얻음 %d건", len(left))
 	}
 }
 
-// TestClaimExpiredLeaseRecovers는 크래시 자가 치유를 다룬다: 프로세스가 전달 도중 죽으면 sending
-// 행이 남는데, lease 만료 후 다시 획득될 수 있어야 한다, 안 그러면 이 전달은 영원히 막힌다.
+// TestClaimExpiredLeaseRecovers는 크래시 자가 치유를 다룬다: 프로세스가 전송 도중 죽으면 sending
+// 행이 남는데, lease 만료 후 다시 획득될 수 있어야 한다, 안 그러면 이 전송은 영원히 막힌다.
 func TestClaimExpiredLeaseRecovers(t *testing.T) {
 	d := notifyTestDB(t)
 	ctx := context.Background()
@@ -314,7 +314,7 @@ func TestClaimSkipsDisabledChannel(t *testing.T) {
 	if _, _, err := d.FanOutPendingEvents(ctx, 100); err != nil {
 		t.Fatal(err)
 	}
-	// 비활성화는 기존 발송 대기 전달을 함께 skipped로 표시한다.
+	// 비활성화는 기존 전송 대기 항목을 함께 skipped로 표시한다.
 	if err := d.SetNotificationChannelEnabled(ctx, ch.ID, false); err != nil {
 		t.Fatal(err)
 	}
@@ -323,7 +323,7 @@ func TestClaimSkipsDisabledChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 	if state != NotifyStateSkipped {
-		t.Fatalf("비활성화 채널의 기존 발송 대기 전달은 skipped로 표시되어야 함, 얻음 %s", state)
+		t.Fatalf("비활성화 채널의 기존 전송 대기 항목은 skipped로 표시되어야 함, 얻음 %s", state)
 	}
 	got, err := d.ClaimRealtimeDeliveries(ctx, ch.ID, 10, time.Minute)
 	if err != nil {
@@ -354,7 +354,7 @@ func TestDigestBatchDueAndStableBatchID(t *testing.T) {
 		t.Fatal("막 생긴 배치는 즉시 만기되면 안 됨")
 	}
 
-	// 세 전달의 생성 시간을 함께 과거로 밀어, 주기를 충분히 채운 배치를 시뮬레이션한다.
+	// 세 전송의 생성 시간을 함께 과거로 밀어, 주기를 충분히 채운 배치를 시뮬레이션한다.
 	if _, err := d.Exec(`UPDATE notification_deliveries SET created_at = now() - interval '40 minutes' WHERE channel_id=$1`, ch.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -386,7 +386,7 @@ func TestDigestBatchDueAndStableBatchID(t *testing.T) {
 	// 이 배치를 **전체** 실패 재배치 후 다시 획득해도 batch_id는 원래 값을 유지해야 한다(COALESCE의 역할):
 	// 안 그러면 한 번의 재시도로 '이 배치는 함께 보냈다'는 사실이 지워진다.
 	//
-	// 한 건만이 아니라 배치 전체를 재배치해야 한다 —— 전달 엔진이 요약 메시지를 보낼 때 그렇게 처리한다
+	// 한 건만이 아니라 배치 전체를 재배치해야 한다 —— 전송 엔진이 요약 메시지를 보낼 때 그렇게 처리한다
 	// (메시지 하나가 배치 전체를 대표하므로 성패를 함께한다). 한 건만 재배치하면 나머지는 아직 lease 기간 내라,
 	// 재획득이 당연히 그 한 건만 가져온다.
 	allIDs := make([]int64, 0, len(batch))
@@ -463,12 +463,12 @@ func TestDeliveryStateTransitions(t *testing.T) {
 		t.Fatal("재전송은 즉시 획득 가능해야 함")
 	}
 
-	// 전달됨 상태의 전달은 재전송되면 안 된다.
+	// 전달됨 상태의 전송은 재전송되면 안 된다.
 	if err := d.MarkDeliveriesSent(ctx, []int64{id}); err != nil {
 		t.Fatal(err)
 	}
 	if err := d.RetryNotificationDelivery(ctx, id); err == nil {
-		t.Fatal("전달됨 상태의 전달은 재전송을 허용하면 안 됨")
+		t.Fatal("전달됨 상태의 전송은 재전송을 허용하면 안 됨")
 	}
 }
 
@@ -515,7 +515,7 @@ func TestListNotificationDeliveriesPagingAndFilter(t *testing.T) {
 		t.Fatal(err)
 	}
 	if totalPending != 0 || len(pending) != 0 {
-		t.Fatalf("pending 전달이 없어야 함, 얻음 %d건 (total=%d)", len(pending), totalPending)
+		t.Fatalf("pending 전송이 없어야 함, 얻음 %d건 (total=%d)", len(pending), totalPending)
 	}
 }
 
@@ -616,9 +616,9 @@ func TestNotificationStatsSnapshot(t *testing.T) {
 		t.Fatalf("채널 카운트가 틀림: %+v", stats)
 	}
 	if stats.Pending < 1 {
-		t.Fatalf("발송 대기 전달이 집계되어야 함: %+v", stats)
+		t.Fatalf("전송 대기 항목이 집계되어야 함: %+v", stats)
 	}
-	// 막 생긴 전달의 적체 나이는 0에 가까워야 하며, 음수나 거대한 값이면 안 된다.
+	// 막 생긴 전송의 적체 나이는 0에 가까워야 하며, 음수나 거대한 값이면 안 된다.
 	if stats.BacklogAgeMS < 0 || stats.BacklogAgeMS > int64(time.Hour/time.Millisecond) {
 		t.Fatalf("적체 나이가 유효하지 않음: %d ms", stats.BacklogAgeMS)
 	}
@@ -696,18 +696,18 @@ func TestNotificationChannelCRUDRoundTrip(t *testing.T) {
 }
 
 // TestSaveNotificationChannelKeepsExplicitZeroRate는 예전에 잘못 쓴 곳을 고정한다:
-// **0은 유효한 설정이며 '레이트 리밋 없음'을 의미하므로, db 레이어가 '미지정'으로 보고 기본값으로 덮어써선 안 된다**.
+// **0은 유효한 설정이며 '전송 속도 제한 없음'을 의미하므로, db 레이어가 '미지정'으로 보고 기본값으로 덮어써선 안 된다**.
 //
 // 과거 버그: SaveNotificationChannel에 `if RatePerMin <= 0 { 기본값 사용 }`이 있었고,
-// 그래서 문서·UI 안내·takeTokens는 모두 '0=레이트 리밋 없음'으로 해석하는데, 저장 레이어에서만 몰래
-// 20(DingTalk/WeCom/Telegram) 또는 100(Feishu)으로 바꿨다 —— 조작자는 리밋을 풀었다고 여기지만 실제로는 막히고,
+// 그래서 문서·UI 안내·takeTokens는 모두 '0=전송 속도 제한 없음'으로 해석하는데, 저장 레이어에서만 몰래
+// 20(DingTalk/WeCom/Telegram) 또는 100(Feishu)으로 바꿨다 —— 조작자는 전송 속도 제한을 풀었다고 여기지만 실제로는 막히고,
 // 아무 안내도 없었다. '미지정'과 '명시적 0'의 구분은 요청 본문만 표현할 수 있으므로,
 // 기본값은 server 레이어가 채우고(notifyCreateChannel 참조), db 레이어는 저장만 한다.
 func TestSaveNotificationChannelKeepsExplicitZeroRate(t *testing.T) {
 	d := notifyTestDB(t)
 	ctx := context.Background()
 
-	// 명시적 0(레이트 리밋 없음): 반드시 원래대로 저장해야 한다.
+	// 명시적 0(전송 속도 제한 없음): 반드시 원래대로 저장해야 한다.
 	unlimited := &NotificationChannel{
 		Name: "不限流", Kind: notify.KindDingTalk, RatePerMin: 0,
 		Config: json.RawMessage(`{"webhook":"https://example.com/h"}`),
@@ -722,7 +722,7 @@ func TestSaveNotificationChannelKeepsExplicitZeroRate(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.RatePerMin != 0 {
-		t.Fatalf("명시적 0은 레이트 리밋 없음을 뜻하므로 원래대로 저장해야 함, 얻음 %d", got.RatePerMin)
+		t.Fatalf("명시적 0은 전송 속도 제한 없음을 뜻하므로 원래대로 저장해야 함, 얻음 %d", got.RatePerMin)
 	}
 	if got.Mode != NotifyModeRealtime {
 		t.Fatalf("기본 모드는 realtime이어야 함, 얻음 %s", got.Mode)
@@ -734,11 +734,11 @@ func TestSaveNotificationChannelKeepsExplicitZeroRate(t *testing.T) {
 		Config: json.RawMessage(`{"webhook":"https://example.com/h"}`),
 	}
 	if _, err := d.SaveNotificationChannel(ctx, bad); err == nil {
-		t.Fatal("음수 레이트 리밋은 거부되어야 함")
+		t.Fatal("음수 전송 속도 제한은 거부되어야 함")
 	}
 }
 
-// TestDeleteChannelCascadesDeliveries는 외래 키 동작을 고정한다: 채널 삭제 후 그 전달 이력도 함께 사라지지만
+// TestDeleteChannelCascadesDeliveries는 외래 키 동작을 고정한다: 채널 삭제 후 그 전송 이력도 함께 사라지지만
 // (설정이 없어지면 이력을 해석할 수 없음), 이벤트 자체는 남아야 한다 —— 다른 채널이 여전히 참조할 수 있다.
 func TestDeleteChannelCascadesDeliveries(t *testing.T) {
 	d := notifyTestDB(t)
@@ -753,7 +753,7 @@ func TestDeleteChannelCascadesDeliveries(t *testing.T) {
 		t.Fatal(err)
 	}
 	if before == 0 {
-		t.Fatal("전제 조건 불성립: 전달이 생기지 않음")
+		t.Fatal("전제 조건 불성립: 전송이 생기지 않음")
 	}
 	if err := d.DeleteNotificationChannel(ctx, ch.ID); err != nil {
 		t.Fatal(err)
@@ -763,7 +763,7 @@ func TestDeleteChannelCascadesDeliveries(t *testing.T) {
 		t.Fatal(err)
 	}
 	if after != 0 {
-		t.Fatalf("채널 삭제 후 그 전달은 캐스케이드 삭제되어야 함, 여전히 %d건", after)
+		t.Fatalf("채널 삭제 후 그 전송은 캐스케이드 삭제되어야 함, 여전히 %d건", after)
 	}
 	var evExists bool
 	if err := d.QueryRow(`SELECT EXISTS(SELECT 1 FROM notification_events WHERE id=$1)`, ev).Scan(&evExists); err != nil {
@@ -793,7 +793,7 @@ func TestClaimDigestBatchHonorsCallerLimit(t *testing.T) {
 		t.Fatalf("획득 실패: %v", err)
 	}
 	if len(got) != 3 {
-		t.Fatalf("호출자 레이트 리밋 할당량에 따라 3건만 획득해야 함, 얻음 %d", len(got))
+		t.Fatalf("호출자 전송 속도 제한 할당량에 따라 3건만 획득해야 함, 얻음 %d", len(got))
 	}
 	// limit=0은 이번 라운드 할당량 소진을 뜻한다: 한 건도 획득하면 안 되고, 오류도 내면 안 된다.
 	if got, err := d.ClaimDigestBatch(ctx, ch.ID, 0, time.Minute); err != nil || len(got) != 0 {
