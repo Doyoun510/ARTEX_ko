@@ -129,7 +129,7 @@ func TestPrepareConfigUpdateBlocksDestinationSwap(t *testing.T) {
 		wantMissing string
 	}{
 		{
-			name: "通用 Webhook 改地址想沿用 Authorization 头",
+			name: "일반 Webhook 주소를 변경하면서 Authorization 헤더를 계속 사용하려 함",
 			kind: KindWebhook,
 			stored: map[string]any{
 				"url":     "https://legit.example.com/hook",
@@ -139,21 +139,21 @@ func TestPrepareConfigUpdateBlocksDestinationSwap(t *testing.T) {
 			wantMissing: "headers",
 		},
 		{
-			name:        "Telegram 改 base_url 想把 Bot Token 发到自己的端点",
+			name:        "Telegram base_url을 변경해 Bot Token을 자신의 엔드포인트로 보내려 함",
 			kind:        KindTelegram,
 			stored:      map[string]any{"bot_token": "123456:REAL", "chat_id": "1", "base_url": "https://api.telegram.org"},
 			incoming:    map[string]any{"base_url": "https://attacker.tld"},
 			wantMissing: "bot_token",
 		},
 		{
-			name:        "邮件改 SMTP 主机想交出密码",
+			name:        "메일 SMTP 호스트를 변경해 비밀번호를 보내려 함",
 			kind:        KindEmail,
 			stored:      map[string]any{"host": "smtp.corp.com", "port": 587, "password": "REALPW", "from": "a@b.c", "to": []any{"d@e.f"}},
 			incoming:    map[string]any{"host": "smtp.attacker.tld"},
 			wantMissing: "password",
 		},
 		{
-			name:        "邮件关掉 TLS 也必须重新表态密码",
+			name:        "메일에서 TLS를 꺼도 비밀번호를 다시 명시해야 함",
 			kind:        KindEmail,
 			stored:      map[string]any{"host": "smtp.corp.com", "port": 587, "tls": false, "password": "REALPW", "from": "a@b.c", "to": []any{"d@e.f"}},
 			incoming:    map[string]any{"tls": true},
@@ -161,14 +161,14 @@ func TestPrepareConfigUpdateBlocksDestinationSwap(t *testing.T) {
 		},
 		{
 			// 마스킹된 값 = "기존 자격 증명 사용"이며, 주소 변경 문맥에서는 마찬가지로 반드시 거부해야 합니다.
-			name:        "回传掩码凭据 + 新地址",
+			name:        "마스킹된 자격 증명 반환 + 새 주소",
 			kind:        KindTelegram,
 			stored:      map[string]any{"bot_token": "123456:REAL", "chat_id": "1", "base_url": "https://api.telegram.org"},
 			incoming:    map[string]any{"base_url": "https://attacker.tld", "bot_token": MaskedValue("123456:REAL")},
 			wantMissing: "bot_token",
 		},
 		{
-			name:        "钉钉改 Webhook 想沿用加签密钥",
+			name:        "DingTalk Webhook을 변경하면서 서명 키를 계속 사용하려 함",
 			kind:        KindDingTalk,
 			stored:      map[string]any{"webhook": "https://oapi.dingtalk.com/robot/send?access_token=OLD", "secret": "REALSEC"},
 			incoming:    map[string]any{"webhook": "https://attacker.tld/hook"},
@@ -212,37 +212,37 @@ func TestPrepareConfigUpdateAllowsLegitimateEdits(t *testing.T) {
 		incoming map[string]any
 	}{
 		{
-			name:     "只改名字（配置原样回传）",
+			name:     "이름만 변경(설정은 그대로 반환)",
 			kind:     KindWebhook,
 			stored:   map[string]any{"url": "https://legit.example.com/hook", "headers": map[string]any{"Authorization": "Bearer REAL"}},
 			incoming: map[string]any{"url": MaskedValue("https://legit.example.com/hook")},
 		},
 		{
-			name:     "只改请求方法，地址与凭据都不动",
+			name:     "요청 방법만 변경, 주소와 자격 증명은 유지",
 			kind:     KindWebhook,
 			stored:   map[string]any{"url": "https://legit.example.com/hook", "method": "POST"},
 			incoming: map[string]any{"method": "PUT"},
 		},
 		{
-			name:     "换地址并**同时**给新凭据",
+			name:     "주소를 바꾸고 **동시에** 새 자격 증명 제공",
 			kind:     KindWebhook,
 			stored:   map[string]any{"url": "https://old.example.com/hook", "headers": map[string]any{"Authorization": "Bearer OLD"}},
 			incoming: map[string]any{"url": "https://new.example.com/hook", "headers": map[string]any{"Authorization": "Bearer NEW"}},
 		},
 		{
-			name:     "换地址并显式声明不再需要凭据",
+			name:     "주소를 바꾸고 자격 증명이 더 이상 필요 없음을 명시",
 			kind:     KindWebhook,
 			stored:   map[string]any{"url": "https://old.example.com/hook", "headers": map[string]any{"Authorization": "Bearer OLD"}},
 			incoming: map[string]any{"url": "https://new.example.com/hook", "headers": ""},
 		},
 		{
-			name:     "Telegram 改 chat_id（不是目的地）",
+			name:     "Telegram chat_id 변경(대상 주소 아님)",
 			kind:     KindTelegram,
 			stored:   map[string]any{"bot_token": "t", "chat_id": "1", "base_url": "https://api.telegram.org"},
 			incoming: map[string]any{"chat_id": "-100200"},
 		},
 		{
-			name:     "邮件改收件人（不是目的地）",
+			name:     "메일 수신자 변경(대상 주소 아님)",
 			kind:     KindEmail,
 			stored:   map[string]any{"host": "smtp.corp.com", "port": 587, "password": "PW", "from": "a@b.c", "to": []any{"x@y.z"}},
 			incoming: map[string]any{"to": []any{"new@y.z"}},

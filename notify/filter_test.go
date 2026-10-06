@@ -10,11 +10,11 @@ func TestParseFilterMalformedFallsBackToMatchAll(t *testing.T) {
 		name string
 		raw  string
 	}{
-		{"空输入", ""},
-		{"非法 JSON", `{not json`},
-		{"截断的 JSON", `{"min_severity":`},
-		{"类型不匹配", `{"min_severity": 123, "task_ids": "abc"}`},
-		{"顶层是数组", `[1,2,3]`},
+		{"빈 입력", ""},
+		{"유효하지 않은 JSON", `{not json`},
+		{"잘린 JSON", `{"min_severity":`},
+		{"타입 불일치", `{"min_severity": 123, "task_ids": "abc"}`},
+		{"최상위가 배열", `[1,2,3]`},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -74,14 +74,14 @@ func TestMatchScopeRestrictions(t *testing.T) {
 		filter Filter
 		expect bool
 	}{
-		{"空范围=不限", Filter{}, true},
-		{"任务命中", Filter{TaskIDs: []int64{7}}, true},
-		{"任务未命中", Filter{TaskIDs: []int64{8}}, false},
-		{"任务多选含命中", Filter{TaskIDs: []int64{8, 7}}, true},
-		{"资产有交集", Filter{AssetIDs: []int64{20, 99}}, true},
-		{"资产无交集", Filter{AssetIDs: []int64{99}}, false},
-		{"任务与资产同时命中", Filter{TaskIDs: []int64{7}, AssetIDs: []int64{10}}, true},
-		{"任务命中但资产未命中", Filter{TaskIDs: []int64{7}, AssetIDs: []int64{99}}, false},
+		{"빈 범위=제한 없음", Filter{}, true},
+		{"작업 매칭", Filter{TaskIDs: []int64{7}}, true},
+		{"작업 미매칭", Filter{TaskIDs: []int64{8}}, false},
+		{"여러 작업 선택에 매칭 포함", Filter{TaskIDs: []int64{8, 7}}, true},
+		{"자산 교집합 있음", Filter{AssetIDs: []int64{20, 99}}, true},
+		{"자산 교집합 없음", Filter{AssetIDs: []int64{99}}, false},
+		{"작업과 자산 모두 매칭", Filter{TaskIDs: []int64{7}, AssetIDs: []int64{10}}, true},
+		{"작업은 매칭되지만 자산은 미매칭", Filter{TaskIDs: []int64{7}, AssetIDs: []int64{99}}, false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -102,20 +102,20 @@ func TestMatchVulnClassKeywords(t *testing.T) {
 		class  string
 		expect bool
 	}{
-		{"include 为空=全收", Filter{}, "任意类型", true},
-		{"include 命中", Filter{VulnClassInclude: []string{"SQL"}}, "SQL注入", true},
-		{"include 未命中", Filter{VulnClassInclude: []string{"命令执行"}}, "SQL注入", false},
-		{"include 多词任一命中", Filter{VulnClassInclude: []string{"命令执行", "SQL"}}, "SQL注入", true},
-		{"大小写不敏感", Filter{VulnClassInclude: []string{"sql"}}, "SQL注入", true},
-		{"exclude 命中即排除", Filter{VulnClassExclude: []string{"信息泄露"}}, "信息泄露", false},
-		{"exclude 未命中则放行", Filter{VulnClassExclude: []string{"信息泄露"}}, "SQL注入", true},
+		{"include 비어 있음=모두 수신", Filter{}, "任意类型", true},
+		{"include 매칭", Filter{VulnClassInclude: []string{"SQL"}}, "SQL注入", true},
+		{"include 미매칭", Filter{VulnClassInclude: []string{"命令执行"}}, "SQL注入", false},
+		{"include 여러 단어 중 하나라도 매칭", Filter{VulnClassInclude: []string{"命令执行", "SQL"}}, "SQL注入", true},
+		{"대소문자 구분 안 함", Filter{VulnClassInclude: []string{"sql"}}, "SQL注入", true},
+		{"exclude 매칭 시 제외", Filter{VulnClassExclude: []string{"信息泄露"}}, "信息泄露", false},
+		{"exclude 미매칭 시 허용", Filter{VulnClassExclude: []string{"信息泄露"}}, "SQL注入", true},
 		// 제외가 포함보다 우선하며, 동시에 매칭되면 제외해야 합니다.
-		{"排除优先于包含", Filter{
+		{"제외가 포함보다 우선", Filter{
 			VulnClassInclude: []string{"SQL"},
 			VulnClassExclude: []string{"注入"},
 		}, "SQL注入", false},
 		// 공백뿐인 키워드는 무시해야 합니다. 그렇지 않으면 "공백을 포함한 모든 문자열에 매칭"하게 됩니다.
-		{"空白关键词被忽略", Filter{VulnClassInclude: []string{"", "  "}}, "SQL注入", false},
+		{"공백 키워드 무시", Filter{VulnClassInclude: []string{"", "  "}}, "SQL注入", false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

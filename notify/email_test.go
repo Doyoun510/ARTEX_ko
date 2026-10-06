@@ -203,11 +203,11 @@ func TestEmailSendClassifiesSMTPReplies(t *testing.T) {
 		mailReply string
 		permanent bool
 	}{
-		{"收件人被 550 永久拒绝", "550 5.1.1 User unknown", "250 OK", true},
-		{"收件人遇 450 灰名单", "450 4.7.1 Greylisting in action", "250 OK", false},
-		{"收件人遇 452 邮箱满", "452 4.2.2 Mailbox full", "250 OK", false},
-		{"发件人被 553 永久拒绝", "250 OK", "553 5.1.3 Bad address", true},
-		{"发件人遇 451 临时错误", "250 OK", "451 4.3.0 Temporary failure", false},
+		{"수신자가 550으로 영구 거부됨", "550 5.1.1 User unknown", "250 OK", true},
+		{"수신자에게 450 Greylisting 응답", "450 4.7.1 Greylisting in action", "250 OK", false},
+		{"수신자에게 452 메일함 가득 참 응답", "452 4.2.2 Mailbox full", "250 OK", false},
+		{"발신자가 553으로 영구 거부됨", "250 OK", "553 5.1.3 Bad address", true},
+		{"발신자에게 451 일시적 오류", "250 OK", "451 4.3.0 Temporary failure", false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -261,11 +261,11 @@ func TestEmailValidateReportsMissingFields(t *testing.T) {
 		name string
 		cfg  map[string]any
 	}{
-		{"缺 host", map[string]any{"port": float64(25), "from": "a@b.c", "to": []any{"d@e.f"}}},
-		{"缺 port", map[string]any{"host": "smtp.example.com"}},
-		{"port 越界", map[string]any{"host": "h", "port": float64(70000), "from": "a@b.c", "to": []any{"d@e.f"}}},
-		{"缺 from", map[string]any{"host": "h", "port": float64(25), "to": []any{"d@e.f"}}},
-		{"缺 to", map[string]any{"host": "h", "port": float64(25), "from": "a@b.c"}},
+		{"host 누락", map[string]any{"port": float64(25), "from": "a@b.c", "to": []any{"d@e.f"}}},
+		{"port 누락", map[string]any{"host": "smtp.example.com"}},
+		{"port 범위 초과", map[string]any{"host": "h", "port": float64(70000), "from": "a@b.c", "to": []any{"d@e.f"}}},
+		{"from 누락", map[string]any{"host": "h", "port": float64(25), "to": []any{"d@e.f"}}},
+		{"to 누락", map[string]any{"host": "h", "port": float64(25), "from": "a@b.c"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

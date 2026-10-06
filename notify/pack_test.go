@@ -119,7 +119,7 @@ func TestMarkdownEscapesUntrustedContent(t *testing.T) {
 		wrong []string // 결과에 나타나서는 안 됨(이스케이프하지 않은 형태)
 	}{
 		{
-			name: "标题里的换行 + 外链",
+			name: "제목 안의 줄바꿈 + 외부 링크",
 			item: Item{
 				Severity: "high",
 				Name:     "登录口 SQL 注入\n[紧急：点此验证账号](http://attacker.tld)",
@@ -130,7 +130,7 @@ func TestMarkdownEscapesUntrustedContent(t *testing.T) {
 			wrong: []string{"\n[紧急", "\n\n[紧急"},
 		},
 		{
-			name: "标题里的图片信标",
+			name: "제목 안의 외부 이미지 삽입",
 			item: Item{
 				Severity: "high",
 				Name:     "漏洞 ![](http://attacker.tld/beacon)",
@@ -139,7 +139,7 @@ func TestMarkdownEscapesUntrustedContent(t *testing.T) {
 			wrong: []string{"![]("},
 		},
 		{
-			name: "资产名里的强调与引用",
+			name: "자산 이름 안의 강조와 인용",
 			item: Item{
 				Severity: "high",
 				Name:     "普通标题",
@@ -149,7 +149,7 @@ func TestMarkdownEscapesUntrustedContent(t *testing.T) {
 			wrong: []string{"*注入*"},
 		},
 		{
-			name: "摘要里的反引号与竖线",
+			name: "요약 안의 백틱과 세로줄",
 			item: Item{
 				Severity: "high",
 				Name:     "标题",
