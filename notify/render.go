@@ -7,14 +7,14 @@ import (
 
 const ellipsis = "…"
 
-// TruncateBytes 把 s 截断到不超过 max 字节，保证结果是合法 UTF-8 且不切断字符。
+// TruncateBytes는 s를 max바이트 이하로 자르며, 결과가 유효한 UTF-8이고 문자가 잘리지 않도록 보장합니다.
 //
-// 为什么必须按字符边界切：企微群机器人的 markdown 有 4096 **字节**硬上限（不是
-// 字符数），而中文一个字 3 字节。直接按字节切片会把一个汉字切成两半，产出非法
-// UTF-8——平台侧要么整条拒收，要么显示成乱码方块。这里的做法是先从预算位置
-// 往前回退到最近的 rune 起始字节（utf8.RuneStart 判定续字节 0b10xxxxxx）。
+// 문자 경계에서 잘라야 하는 이유: WeCom(기업용 위챗) 그룹 봇의 markdown에는 4096 **바이트**의 엄격한 상한이 있으며(문자 수가
+// 아님), 중국어 한 글자는 3바이트입니다. 바이트 단위로 바로 자르면 한 글자를 반으로 잘라 유효하지 않은
+// UTF-8이 됩니다. 플랫폼에서 메시지 전체를 거부하거나 깨진 네모로 표시합니다. 여기서는 예산 위치부터
+// 가장 가까운 rune 시작 바이트까지 뒤로 이동합니다(utf8.RuneStart로 연속 바이트 0b10xxxxxx 판정).
 //
-// max<=0 表示不限制。截断后追加省略号，除非 max 小到装不下省略号。
+// max<=0이면 제한하지 않습니다. max가 말줄임표조차 담지 못할 만큼 작지 않으면 자른 뒤 말줄임표를 덧붙입니다.
 func TruncateBytes(s string, max int) string {
 	if max <= 0 || len(s) <= max {
 		return s
@@ -22,7 +22,7 @@ func TruncateBytes(s string, max int) string {
 	budget := max - len(ellipsis)
 	suffix := ellipsis
 	if budget < 0 {
-		// max 比省略号还短：放弃省略号，纯截断，避免结果反而超出 max。
+		// max가 말줄임표보다 짧으면 말줄임표 없이 자르기만 하여, 결과가 오히려 max를 넘는 것을 막습니다.
 		budget = max
 		suffix = ""
 	}
@@ -33,20 +33,20 @@ func TruncateBytes(s string, max int) string {
 	return s[:cut] + suffix
 }
 
-// OneLine 把多行文本压成单行：折叠所有空白，再按字符数截断。
-// 用于 IM 消息的标题行——摘要里常有换行，直接塞进表格/标题会撑坏排版。
-// max<=0 表示不限制长度。
+// OneLine은 여러 줄 텍스트를 한 줄로 압축합니다. 모든 공백을 합친 뒤 문자 수에 따라 자릅니다.
+// IM 메시지 제목 줄에 사용합니다. 요약에는 줄바꿈이 많아 표/제목에 바로 넣으면 레이아웃이 깨질 수 있습니다.
+// max<=0이면 길이를 제한하지 않습니다.
 func OneLine(s string, max int) string {
 	s = strings.Join(strings.Fields(s), " ")
 	return TruncateRunes(s, max)
 }
 
-// TruncateRunes 把 s 截断到不超过 max 个字符（而非字节），超出时追加省略号。
-// max<=0 表示不限制。
+// TruncateRunes는 s를 max문자 이하로 자릅니다(바이트가 아님). 초과하면 말줄임표를 덧붙입니다.
+// max<=0이면 제한하지 않습니다.
 //
-// 与 TruncateBytes 的区别在于平台口径：企微按字节限长，Telegram 按字符数限长。
-// 用错口径不会报错，只会让消息被切得远比预期短（中文 1 字 = 3 字节，
-// 按字节切 4096 只剩约 1365 字），所以两个函数都必须保留、按渠道选用。
+// TruncateBytes와의 차이는 플랫폼 기준입니다. WeCom은 바이트 수로, Telegram은 문자 수로 길이를 제한합니다.
+// 잘못된 기준을 사용해도 오류가 나지 않고 예상보다 메시지가 훨씬 짧아집니다(중국어 1글자 = 3바이트이며,
+// 4096바이트로 자르면 약 1365글자만 남음). 따라서 두 함수를 모두 유지하며 채널별로 선택해야 합니다.
 func TruncateRunes(s string, max int) string {
 	if max <= 0 {
 		return s
@@ -61,46 +61,46 @@ func TruncateRunes(s string, max int) string {
 	return string(runes[:max-1]) + ellipsis
 }
 
-// TruncateHTML 按字符数截断 HTML 片段，并保证不产生半截标签。
+// TruncateHTML은 HTML 조각을 문자 수에 따라 자르며, 태그가 중간에서 잘리지 않도록 보장합니다.
 //
-// 直接对 HTML 做字符截断会切出 `<a href="htt` 这种残缺标签，平台解析器要么
-// 报错拒收整条、要么把后续正文当成属性值吞掉。这里的做法是：先按字符截断，
-// 再检查尾部是否有未闭合的 `<`，有就退到它之前。
+// HTML을 바로 문자 단위로 자르면 `<a href="htt`와 같은 불완전한 태그가 생겨, 플랫폼 파서가
+// 오류로 메시지 전체를 거부하거나 뒤의 본문을 속성값으로 해석할 수 있습니다. 여기서는 먼저 문자 수에 따라 자른 뒤,
+// 끝부분에 닫히지 않은 `<`가 있는지 확인하여 있으면 그 앞까지 되돌립니다.
 //
-// 不做标签配平（补全 </b> 之类）：Telegram 的 HTML 解析器会自动闭合未闭合标签，
-// 而自己实现配平要处理属性里的引号、注释、自闭合标签，复杂度与收益不成比例。
+// 태그 짝 맞추기(</b> 등을 보충)는 하지 않습니다. Telegram의 HTML 파서는 닫히지 않은 태그를 자동으로 닫으며,
+// 직접 구현하면 속성의 따옴표·주석·스스로 닫는 태그까지 처리해야 하므로 복잡도에 비해 이점이 적습니다.
 func TruncateHTML(s string, max int) string {
 	if max <= 0 || len([]rune(s)) <= max {
 		return s
 	}
 	cut := TruncateRunes(s, max)
-	// 尾部若是 `<` 开头的残片（最后出现 `<` 之后没有 `>`），退回 `<` 之前。
+	// 끝부분이 `<`로 시작하는 조각이면(마지막 `<` 뒤에 `>`가 없음), `<` 앞까지 되돌립니다.
 	if lt := strings.LastIndex(cut, "<"); lt >= 0 && !strings.Contains(cut[lt:], ">") {
 		cut = cut[:lt]
 	}
-	// 尾部若是被切断的 HTML 实体（如 `&amp;` 被切成 `&amp`），同样要退回去。
-	// 实体残片在一个只认实体的解析器里可能让**整条消息**被拒收——一条超过
-	// 长度上限的汇总消息本来就常见，不值得为此丢掉整条通知。
+	// 끝부분에 잘린 HTML 엔티티가 있으면(`&amp;`가 `&amp`로 잘린 경우 등), 마찬가지로 되돌립니다.
+	// 엔티티 조각으로 인해 엔티티만 인식하는 파서가 **메시지 전체**를 거부할 수 있습니다. 길이
+	// 상한을 넘는 모아 보내기 메시지는 흔하며, 그 때문에 알림 전체를 잃을 이유는 없습니다.
 	if amp := strings.LastIndex(cut, "&"); amp >= 0 && !strings.Contains(cut[amp:], ";") {
 		cut = cut[:amp]
 	}
 	return cut
 }
 
-// packItemCount 计算在预算内能**完整**放下多少条，供汇总消息按整条打包。
+// packItemCount는 예산 안에 **완전히** 담을 수 있는 건수를 계산하며, 모아 보내기 메시지를 항목 전체 단위로 묶는 데 사용합니다.
 //
-// 为什么要按整条而不是渲染完整篇再截断：截断会让后半截条目凭空消失，
-// 而它们的投递记录仍会被标记为已送达——消息里看不出来、投递历史里也看不出来，
-// 漏洞就这么没了。按整条打包后，装不下的条目留在库里成为下一批，
-// 调用方拿到的 kept 就是本条消息真正送达的条数。
+// 전체를 렌더링한 뒤 자르는 대신 항목 전체 단위로 묶는 이유: 자르면 뒤쪽 항목이 사라지지만,
+// 전송 기록은 여전히 전달됨으로 표시됩니다. 메시지에도 없고 전송 이력에서도 확인할 수 없어,
+// 취약점이 사라집니다. 항목 전체 단위로 묶으면 담지 못한 항목은 DB에 남아 다음 배치가 되며,
+// 호출자가 받는 kept는 이번 메시지에 실제로 전달한 건수입니다.
 //
-// 参数：maxSize<=0 表示不限制；reserve 是给消息头部/尾部预留的量；
-// size 负责计量（各平台口径不同：企微/钉钉按字节，Telegram 按字符数——
-// 用错口径不会报错，只会让中文消息被压到远小于上限）；
-// render 把第 idx 条渲染成它的实际文本——长度因内容而异，不能靠估算。
+// 파라미터: maxSize<=0이면 제한 없음. reserve는 메시지 머리/꼬리에 미리 할당한 양입니다.
+// size는 크기를 측정합니다(플랫폼마다 기준이 다름: WeCom/DingTalk은 바이트, Telegram은 문자 수.
+// 잘못된 기준을 사용해도 오류가 나지 않고 중국어 메시지가 상한보다 훨씬 작아질 뿐입니다).
+// render는 idx번째 항목을 실제 텍스트로 렌더링합니다. 길이는 내용마다 달라 추정으로 처리할 수 없습니다.
 //
-// 至少返回 1（只要还有条目）。单条极端超长时也要发出这一条、由调用方的
-// 最终截断兜底，否则一条超长漏洞会把整批永久卡在原地。
+// 항목이 남아 있으면 최소 1을 반환합니다. 단일 항목이 매우 길어도 전송하고 호출자가
+// 최종 잘림 처리로 보호해야 합니다. 그렇지 않으면 긴 취약점 한 건이 배치 전체를 영구히 멈추게 합니다.
 func packItemCount(items []Item, maxSize, reserve int, footer string, size func(string) int, render func(Item, int) string) int {
 	if maxSize <= 0 {
 		return len(items)
@@ -119,24 +119,24 @@ func packItemCount(items []Item, maxSize, reserve int, footer string, size func(
 	return len(items)
 }
 
-// byteSize / runeSize 是 packItemCount 的两种计量口径，命名出来避免调用处
-// 出现裸的 func(s string) int 闭包，否则很难一眼看出用的是哪种口径。
+// byteSize / runeSize는 packItemCount의 두 가지 크기 측정 기준입니다. 이름을 붙여 호출 위치에
+// 이름 없는 func(s string) int 클로저가 나타나지 않도록 하며, 사용하는 기준을 쉽게 알아볼 수 있게 합니다.
 func byteSize(s string) int { return len(s) }
 func runeSize(s string) int { return utf8.RuneCountInString(s) }
 
-// assetLine 把资产列表渲染成一行展示文本，超过 limit 个时省略其余并标注总数。
-// 一个漏洞可能锚定几十个资产，全列出来会挤爆消息。
+// assetLine은 자산 목록을 한 줄의 표시 텍스트로 렌더링합니다. limit개를 넘으면 나머지를 생략하고 총수를 표시합니다.
+// 취약점 하나가 자산 수십 개에 연결될 수 있어, 전부 나열하면 메시지가 너무 커집니다.
 func assetLine(assets []string, limit int) string {
 	if len(assets) == 0 {
 		return ""
 	}
 	if limit <= 0 || len(assets) <= limit {
-		return strings.Join(assets, "、")
+		return strings.Join(assets, ", ")
 	}
-	return strings.Join(assets[:limit], "、") + " 等 " + itoa(len(assets)) + " 个"
+	return strings.Join(assets[:limit], ", ") + " 등 총 " + itoa(len(assets)) + "개"
 }
 
-// itoa 是 strconv.Itoa 的短别名，仅用于拼接展示文本，避免到处 import strconv。
+// itoa는 strconv.Itoa의 짧은 별칭이며, 표시 텍스트를 조합할 때만 사용하여 곳곳에서 import strconv를 하는 일을 피합니다.
 func itoa(n int) string {
 	if n == 0 {
 		return "0"
