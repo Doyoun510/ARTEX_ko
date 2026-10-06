@@ -115,86 +115,86 @@ description: 웹사이트 API 엔드포인트를 수집할 때 이 skill을 호�
 
 ---
 
-## 执行路线图
+## 실행 로드맵
 
 ```
-Phase 0 分类 + OUTDIR
-  → 门禁 A → Phase 1 harvest（★ 立刻运行 ★）
-  → Phase 1b 参数逆向
-  → Phase 2 鉴权三道门 → config.json
-  → 门禁 B → Phase 3 运行时 + 参数矩阵
-  → Phase 4 权限树（必要时）→ 重跑 Phase 3
-  → Phase 5 合并报告 + insert_assets批量插入所有发现的服务、端点api资产，无论如何插入时不允许漏掉已发现的资产
+Phase 0 분류 + OUTDIR
+  → 실행 전 필수 확인 A → Phase 1 harvest(★ 즉시 실행 ★)
+  → Phase 1b 파라미터 역분석
+  → Phase 2 인증·인가 확인의 세 관문 → config.json
+  → 실행 전 필수 확인 B → Phase 3 런타임 + 파라미터 매트릭스
+  → Phase 4 권한 트리(필요한 경우)→ Phase 3 다시 실행
+  → Phase 5 보고서 병합 + insert_assets로 발견한 모든 서비스·엔드포인트 api 자산을 일괄 등록하며, 어떤 경우에도 등록 시 발견한 자산을 누락해서는 안 됩니다
 ```
 
-按序勾选；**前一项未完成不得进入下一 Phase**。
+순서대로 체크합니다. **앞 항목을 완료하지 않으면 다음 Phase로 넘어가서는 안 됩니다**.
 
-1. [ ] **Phase 0**：初探 SPA/MPA；创建 `OUTDIR` → [Phase 0](#phase-0--分类)
-2. [ ] **门禁 A + Phase 1**：复制脚本 → **立刻** harvest → `wc -l` 校验 → [Phase 1](#phase-1--静态)
-3. [ ] **Phase 1b**：锚点扩窗 + 绑定层 → `param_candidates.json` → [Phase 1b](#phase-1b--参数逆向)
-4. [ ] **Phase 2**：鉴权三道门 → `config.json` → [Phase 2](#phase-2--鉴权三道门)
-5. [ ] **门禁 B**：调整 runtime 脚本 → [Phase 3](#phase-3--运行时)
-6. [ ] **Phase 3**：depth / coverage / both；确认进壳；参数触发矩阵 → `param_samples.json`
-7. [ ] **Phase 4**（若需要）：权限树 → patch stubs → 重跑 Phase 3 → [Phase 4](#phase-4--权限树还原)
-8. [ ] **Phase 5**：合并产出 + 报告 + `insert_assets` → [Phase 5](#phase-5--合并与报告)
+1. [ ] **Phase 0**: SPA/MPA 초기 조사, `OUTDIR` 생성 → [Phase 0](#phase-0--분류)
+2. [ ] **실행 전 필수 확인 A + Phase 1**: 스크립트 복사 → **즉시** harvest → `wc -l` 확인 → [Phase 1](#phase-1--정적)
+3. [ ] **Phase 1b**: 앵커 주변 검색 범위 확대 + 바인딩 계층 → `param_candidates.json` → [Phase 1b](#phase-1b--파라미터-역분석)
+4. [ ] **Phase 2**: 인증·인가 확인의 세 관문 → `config.json` → [Phase 2](#phase-2--인증인가-확인의-세-관문)
+5. [ ] **실행 전 필수 확인 B**: runtime 스크립트 수정 → [Phase 3](#phase-3--运行时)
+6. [ ] **Phase 3**: depth / coverage / both, 로그인 후 화면 진입 확인, 파라미터 트리거 매트릭스 → `param_samples.json`
+7. [ ] **Phase 4**(필요한 경우): 권한 트리 → patch stubs → Phase 3 다시 실행 → [Phase 4](#phase-4--权限树还原)
+8. [ ] **Phase 5**: 산출물 병합 + 보고서 + `insert_assets` → [Phase 5](#phase-5--合并与报告)
 
 ---
 
-## Phase 0 — 分类
+## Phase 0 — 분류
 
-拉取入口 HTML，**创建 `OUTDIR`**（勿改 skill 内 `scripts/`）：
+진입점 HTML을 가져오고 **`OUTDIR`을 생성합니다**(skill 안의 `scripts/`를 수정하지 마세요):
 
-- **SPA**：空壳 + `<div id=app>` + chunk → Phase 1–5
-- **MPA**：SSR + `<form>`、无 endpoint bundle → 门禁 A 后：
+- **SPA**: 빈 기본 화면 + `<div id=app>` + chunk → Phase 1–5
+- **MPA**: SSR + `<form>`, endpoint bundle 없음 → 실행 전 필수 확인 A 후:
 
 ```bash
 python3 recon/spider_mpa.py <BASE_URL> <OUTDIR> [--cookie "session=..."] [--max 300] [--depth 5] [--exclude "logout|delete|destroy"]
 ```
 
-产出 `forms.txt`、`links.txt`、`api_inline.txt`。SPA 若 forms ≈ 0 → 切 Phase 1。
+산출물: `forms.txt`, `links.txt`, `api_inline.txt`. SPA에서 forms ≈ 0이면 → Phase 1로 전환합니다.
 
 ---
 
-## Phase 1 — 静态
+## Phase 1 — 정적
 
-遵守 [脚本与门禁](#스크립트와-실행-전-필수-확인) · [工具与输出约束](#도구와-출력-제약-조건)。
+[스크립트와 실행 전 필수 확인](#스크립트와-실행-전-필수-확인) · [도구와 출력 제약 조건](#도구와-출력-제약-조건)을 준수합니다.
 
 ```bash
 python3 recon/harvest_static.py <BASE_URL> <OUTDIR>
 ```
 
-harvest：解析 HTML script → webpack/Vite manifest → 下载全部 lazy chunk → 产出 `js/`、`api_static.txt`、`routes.txt`、`chunkmap.txt`。
+harvest: HTML script 파싱 → webpack/Vite manifest → 모든 lazy chunk 다운로드 → `js/`, `api_static.txt`, `routes.txt`, `chunkmap.txt` 생성.
 
 ```bash
 wc -l OUTDIR/api_static.txt OUTDIR/routes.txt
 ls OUTDIR/js | wc -l
 ```
 
-- chunk 数 vs manifest：404 须改 harvest 重试，勿手工 curl 逐个 chunk
-- `api_static.txt` 过少 → 放宽 OUTDIR 内 endpoint 正则后重跑（见 reference）
+- chunk 개수 vs manifest: 404이면 반드시 harvest를 수정해 재시도해야 합니다. curl로 각 chunk를 직접 가져오지 마세요
+- `api_static.txt`가 너무 적으면 → OUTDIR 안의 endpoint 정규 표현식을 넓힌 뒤 다시 실행합니다(reference 참조)
 
-### Phase 1b — 参数逆向
+### Phase 1b — 파라미터 역분석
 
-path 来自 Phase 1；参数字段须单独 recon。grep 规则见 [工具与输出约束](#도구와-출력-제약-조건)。
+path는 Phase 1에서 가져옵니다. 파라미터 필드는 별도로 recon해야 합니다. grep 규칙은 [도구와 출력 제약 조건](#도구와-출력-제약-조건)을 참조합니다.
 
-**完成标准**：重要接口能答——字段名、传输位置、类型推断、是否必填、样本值、置信度。
+**완료 기준**: 중요한 엔드포인트의 필드명, 전송 위치, 타입 추론, 필수 여부, 샘플값, 신뢰도를 설명할 수 있어야 합니다.
 
-#### 1b.0 — 传输形态
+#### 1b.0 — 전송 형태
 
-| 形态 | 参数在哪 | 静态优先看 |
+| 형태 | 파라미터 위치 | 정적 분석에서 먼저 확인할 것 |
 |---|---|---|
-| REST JSON | body + query | path 锚点旁 `(params\|data\|body)\s*:\s*\{` |
-| GraphQL | `variables` | gql 模板、`$page: Int` |
-| 传统 form | urlencoded | `<form>`、`FormData` |
-| 文件上传 | multipart | `FormData.append` |
-| 路径参数 | `/user/:id` | 路由表 + `useParams` / `$route.params` |
-| 加密/签名 | 包进 `sign`/`data` | Hook 加密函数入参（reference D 节） |
+| REST JSON | body + query | path 앵커 옆 `(params\|data\|body)\s*:\s*\{` |
+| GraphQL | `variables` | gql 템플릿, `$page: Int` |
+| 기존 form | urlencoded | `<form>`, `FormData` |
+| 파일 업로드 | multipart | `FormData.append` |
+| 경로 파라미터 | `/user/:id` | 라우트 표 + `useParams` / `$route.params` |
+| 암호화/서명 | `sign`/`data`에 포함 | Hook으로 암호화 함수의 입력 파라미터 관찰(reference D절) |
 
-产出：每接口标注 `transport: query|json|form|graphql|encrypted`。
+산출물: 각 엔드포인트에 `transport: query|json|form|graphql|encrypted`를 표시합니다.
 
-#### 1b.1 — 锚点扩窗
+#### 1b.1 — 앵커 주변 검색 범위 확대
 
-以已知 path 为锚，扩窗口找组包对象：
+알려진 path를 앵커로 삼아 주변 검색 범위를 넓혀 요청 구성 객체를 찾습니다:
 
 ```bash
 grep -n '"/api/user/list"' OUTDIR/js/*.js | head -20
@@ -202,77 +202,77 @@ grep -rhoaE '.{0,120}("/api[^"]+").{0,200}' OUTDIR/js/*.js | head -20
 grep -rhoaE '(params|data|body|payload)\s*:\s*\{' OUTDIR/js/*.js | head -20
 ```
 
-| 包装层 | 参数线索 |
+| 래퍼 계층 | 파라미터 단서 |
 |---|---|
-| axios 实例 | `data` / `params` |
-| 统一 request | 拦截器注入全局字段 |
-| OpenAPI 客户端 | 生成 method 签名 |
-| React Query / SWR | hook 第二参数 |
-| Vue composable | composable 入参 |
+| axios 인스턴스 | `data` / `params` |
+| 공통 request | 인터셉터가 전역 필드를 추가 |
+| OpenAPI 클라이언트 | method 시그니처 생성 |
+| React Query / SWR | hook의 두 번째 파라미터 |
+| Vue composable | composable 입력 파라미터 |
 
-类型残留：`yup`/`zod`/rules、`Form.Item name=`、内嵌 Swagger。
+남아 있는 타입 정보: `yup`/`zod`/rules, `Form.Item name=`, 내장 Swagger.
 
-→ `param_candidates.json`：`{ path, fields[], source: "static-callsite", confidence }`
+→ `param_candidates.json`: `{ path, fields[], source: "static-callsite", confidence }`
 
-#### 1b.2 — 绑定层
+#### 1b.2 — 바인딩 계층
 
 ```
 Form field → onFinish/handleSubmit → transform → API payload
 ```
 
-| 绑定源 | 手法 |
+| 바인딩 출처 | 방법 |
 |---|---|
-| 表单 submit | 跟 submit → transform → API |
-| 表格搜索 | `getFieldsValue()` → `params` |
-| 路由 | `:id` / `?tab=` |
-| 拦截器 | 全局 `tenantId`、分页、sign |
-| 枚举 select | `options` → API 枚举值 |
+| 폼 submit | submit → transform → API를 추적 |
+| 표 검색 | `getFieldsValue()` → `params` |
+| 라우트 | `:id` / `?tab=` |
+| 인터셉터 | 전역 `tenantId`, 페이지네이션, sign |
+| 열거 select | `options` → API 열거값 |
 
-DevTools call stack 从 `fetch`/`XHR.send` 往上追组包函数。
+DevTools call stack에서 `fetch`/`XHR.send`부터 거슬러 올라가 요청 구성 함수를 추적합니다.
 
-#### 1b.3 — 组包三问（≠ Phase 2 鉴权三门）
+#### 1b.3 — 요청 구성의 세 질문(≠ Phase 2 인증·인가 확인의 세 관문)
 
-| 问 | 要答什么 |
+| 질문 | 확인할 내용 |
 |---|---|
-| **组装** | payload 在哪 build、transform 痕迹 |
-| **校验** | required、pattern、enum |
-| **传输** | path / query / body / multipart / 头 |
+| **구성** | payload를 어디서 build하는지, transform 흔적 |
+| **검증** | required, pattern, enum |
+| **전송** | path / query / body / multipart / 헤더 |
 
-拦截器门（Phase 2）顺带读全局注入字段（Authorization、`X-Tenant-Id`、sign）。
+인터셉터 관문(Phase 2)에서 전역 추가 필드(Authorization, `X-Tenant-Id`, sign)도 함께 읽습니다.
 
-#### 1b.4 — 与 Phase 3 衔接
+#### 1b.4 — Phase 3과 연결
 
-候选字段来自静态/绑定层；**必填/可选/条件依赖**须 Phase 3 参数矩阵 + diff + Phase 5 错误反推。
+후보 필드는 정적 분석/바인딩 계층에서 가져옵니다. **필수/선택/조건 의존성**은 반드시 Phase 3 파라미터 매트릭스 + diff + Phase 5 오류 기반 역추론으로 확인해야 합니다.
 
 ---
 
-## Phase 2 — 鉴权三道门
+## Phase 2 — 인증·인가 확인의 세 관문
 
-在 `OUTDIR/js/` grep（带 `head`），写入 `config.json`（配方见 reference）：
+`OUTDIR/js/`에서 grep(`head` 포함)하고 `config.json`에 기록합니다(방법은 reference 참조):
 
-| 门 | 问题 | 关键词 |
+| 관문 | 질문 | 키워드 |
 |---|---|---|
-| **渲染门** | 如何判断已登录？ | `isLogin`、`getToken`、Cookie/localStorage |
-| **拦截器门** | 什么触发跳 `/login`？ | `response_code`、`errno`、axios interceptor |
-| **内容门** | 菜单/权限从哪来？ | `menu`、`permission`、`role`、`acl`、`routes` |
+| **렌더링 관문** | 로그인 여부를 어떻게 판단하는가? | `isLogin`, `getToken`, Cookie/localStorage |
+| **인터셉터 관문** | 무엇이 `/login` 이동을 트리거하는가? | `response_code`, `errno`, axios interceptor |
+| **콘텐츠 관문** | 메뉴/권한은 어디에서 오는가? | `menu`, `permission`, `role`, `acl`, `routes` |
 
-禁止把 localStorage 键名当凭据——须从 chunk/请求链确认。
+localStorage 키 이름을 자격 증명으로 취급해서는 안 됩니다. 반드시 chunk/요청 연결 관계에서 확인해야 합니다.
 
-**出口 = 门禁 B**：结论落到 `config.json`，并改 `OUTDIR/runtime_harvest.js` / `preload.js`。
+**출구 = 실행 전 필수 확인 B**: 결론을 `config.json`에 반영하고 `OUTDIR/runtime_harvest.js` / `preload.js`를 수정합니다.
 
-### Phase 2b — API 观察（可选）
+### Phase 2b — API 관찰(선택 사항)
 
-用 OUTDIR 内 `preload.js` 确认会话键名、Authorization、嵌套 API URL：
+OUTDIR 안의 `preload.js`로 세션 키 이름, Authorization, 중첩 API URL을 확인합니다:
 
-| 配置 | 产出 |
+| 설정 | 산출물 |
 |---|---|
 | `recordDetail: true` | `__API_RECON_DETAIL__` |
-| `observe.xhrHeaders: true` | headers 观察 |
-| `extractUrlsFromResponse: true` | 响应内子 API |
-| `observe.storageReads/cookieReads: true` | 回填 config |
+| `observe.xhrHeaders: true` | headers 관찰 |
+| `extractUrlsFromResponse: true` | 응답 안의 하위 API |
+| `observe.storageReads/cookieReads: true` | config에 반영 |
 | `neutralizeVueRouter: true` | `__API_RECON_ROUTES__` |
 
-coverage 每轮导出：`__API_RECON_LOG__`、`__API_RECON_DETAIL__`、`__API_RECON_ROUTES__`、`__API_RECON_OBSERVE__`。
+coverage의 각 회차에서 내보냅니다: `__API_RECON_LOG__`, `__API_RECON_DETAIL__`, `__API_RECON_ROUTES__`, `__API_RECON_OBSERVE__`.
 
 ---
 

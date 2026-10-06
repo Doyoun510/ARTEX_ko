@@ -20,9 +20,9 @@ Grep 방법·`config.json` 템플릿·문제 해결 안내입니다. 모든 grep
 
 ---
 
-## A. 逆向三道门
+## A. 세 관문 역분석
 
-### A1. 渲染门 — 「如何判断已登录？」
+### A1. 렌더링 관문 — '로그인 여부를 어떻게 판단하는가?'
 
 ```bash
 grep -rhoaE '.{0,40}(isLogin|isAuthenticated|loggedIn|hasLogin|requireAuth)\b.{0,80}' js | head
@@ -32,19 +32,19 @@ grep -rhoaE '(Cookies?|cookie)\.(get|load)\("[^"]+"\)' js | sort -u
 grep -rhoaE '\batob\(|JSON\.parse\(|jwt|decode' js | head
 ```
 
-找链路 `isLogin = f(getUser())` → `getUser = decode(storage.read(KEY))`，确定 **存储键**、**容器**（Cookie vs localStorage）、**编码**：
+연결 관계 `isLogin = f(getUser())` → `getUser = decode(storage.read(KEY))`를 찾아 **저장 키**, **저장 위치**(Cookie vs localStorage), **인코딩**을 확인합니다:
 
-| 编码 | config 伪造方式 |
+| 인코딩 | config 위조 방식 |
 |---|---|
-| 明文字符串 / `"1"` / token | `"value": "anything-truthy"` |
+| 평문 문자열 / `"1"` / token | `"value": "anything-truthy"` |
 | `JSON.parse(x)` | `"value": "json:{\"id\":1,\"username\":\"admin\"}"` |
 | `JSON.parse(atob(x))` | `"value": "b64json:{\"id\":1,\"username\":\"admin\"}"` |
-| JWT | 无签名/`alg:none` JWT，或 bundle 内密钥签名 |
-| 加密（SM2/AES/RSA） | 找硬编码密钥；渲染门仅需可解码 blob 时可 forge；否则静态兜底 |
+| JWT | 서명 없는/`alg:none` JWT 또는 bundle 안의 키로 서명 |
+| 암호화(SM2/AES/RSA) | 하드코딩된 키를 찾습니다. 렌더링 관문에서 디코딩 가능한 blob만 필요하면 forge할 수 있고, 그렇지 않으면 정적 분석으로 대체합니다 |
 
-→ 写入 `cookies` / `localStorage`。
+→ `cookies` / `localStorage`에 기록합니다.
 
-### A2. 拦截器门 — 「什么触发跳 /login？」
+### A2. 인터셉터 관문 — '무엇이 /login 이동을 트리거하는가?'
 
 ```bash
 grep -rhoaE '.{0,60}(interceptors\.response|axios|request\.use).{0,120}' js | head
@@ -53,15 +53,15 @@ grep -rhoaE '.{0,40}(未登录|请重新登录|登录已过期|unauthorized|登�
 grep -rhoaE '.{0,30}(location\.href|router\.(push|replace)|navigate)\([^)]*login[^)]*\)' js | head
 ```
 
-确定：**字段名**、**成功值**（通常 `0` 或 `200`）、**触发跳转的失败值**。用 junk session 验证：
+확인할 내용: **필드명**, **성공값**(보통 `0` 또는 `200`), **리디렉션을 트리거하는 실패값**. junk session으로 검증합니다:
 
 ```bash
 curl -sk -X POST -H 'Cookie: <fakekey>=junk' https://target/api/<protected> -d '{}' -H 'Content-Type: application/json'
 ```
 
-→ 写入 `neutralize.fields` + `neutralize.success`。
+→ `neutralize.fields` + `neutralize.success`에 기록합니다.
 
-### A3. 内容门 — 「菜单/权限从哪来？」
+### A3. 콘텐츠 관문 — '메뉴/권한은 어디에서 오는가?'
 
 ```bash
 grep -rhoaE '"/api[^"]*(permission|perm|role|menu|acl|resource|nav)[^"]*"' js | sort -u
@@ -70,24 +70,24 @@ grep -rhoaE 'userRouteAuth|getResultTree|routeMap|routeLink|hasPermission|checkA
 grep -rhoaE '([A-Z_][A-Z0-9_]*):\{name:"[^"]*",link:"/[^"]+"\}' js | head
 ```
 
-**两层数据**（常见企业后台）：
+**두 계층 데이터**(일반적인 기업 관리 화면):
 
-| API | 典型 payload | 消费方 |
+| API | 일반적인 payload | 소비부 |
 |---|---|---|
-| `.../role_permissions` | `{ permissions: string[], role_type }` | 路由守卫、按钮级 ACL |
-| `.../permissions/all` | `tree[{ code, position, children }]` | 侧栏菜单渲染 |
-| bundle 内 `userRouteAuth` | `{ CODE: { url, name? } }` | code → 前端 path |
-| bundle 内 `routeMap` | `{ KEY: { name, link } }` | 别名解析（webpack `o.DASHBOARD`） |
+| `.../role_permissions` | `{ permissions: string[], role_type }` | 라우트 인증 가드, 버튼 단위 ACL |
+| `.../permissions/all` | `tree[{ code, position, children }]` | 사이드바 메뉴 렌더링 |
+| bundle 안의 `userRouteAuth` | `{ CODE: { url, name? } }` | code → 프런트엔드 path |
+| bundle 안의 `routeMap` | `{ KEY: { name, link } }` | 별칭 해석(webpack `o.DASHBOARD`) |
 
-读消费方代码确认：`getResultTree(tree, permissions)` 如何过滤、`v-if` / `hasAuth(code)` 检查哪个字段。
+소비부 코드를 읽어 확인합니다: `getResultTree(tree, permissions)`가 어떻게 필터링하는지, `v-if` / `hasAuth(code)`가 어떤 필드를 검사하는지.
 
-**手工 forge**（小站点）：构建 permissive payload → `stubs`。
+**직접 forge**(소규모 사이트): permissive payload 구성 → `stubs`.
 
-**完整权限树还原**（大站点，侧栏/子模块仍空白）：见 **I 节**。
+**전체 권한 트리 복원**(대규모 사이트, 사이드바/하위 모듈이 여전히 비어 있는 경우): **I절** 참조.
 
 ---
 
-## B. config.json 模板
+## B. config.json 템플릿
 
 ```json
 {
@@ -150,18 +150,18 @@ grep -rhoaE '([A-Z_][A-Z0-9_]*):\{name:"[^"]*",link:"/[^"]+"\}' js | head
 }
 ```
 
-字段说明：
-- `runtimeMode`：`depth`（Puppeteer）、`coverage`（browser MCP）、`both`
-- `cookies[].value` 前缀：`b64json:` → base64(JSON)；`json:` → 原始 JSON；无前缀 → 字面量
-- `forward: true` 转发真实请求并改写码字段；`false` 完全离线 stub
-- `mockTier`：coverage 模式 preload 启用层级，如 `L1+L2`、`L1+L2+L3`
-- `routes` 来自 `routes.txt`；forge 菜单后 harness 自动追加 `<a href>`
-- `captureResponses` / `recordWs` 仅 depth 模式有效
-- `waitUntil`：大型 SPA 用 `domcontentloaded`，避免 `networkidle2` 挂起
-- `routeTimeout`：单路由 `page.goto` 超时（毫秒）
-- `proxy`：Puppeteer `--proxy-server`；也可设 `HTTP_PROXY` / `HTTPS_PROXY`
+필드 설명:
+- `runtimeMode`: `depth`(Puppeteer), `coverage`(browser MCP), `both`
+- `cookies[].value` 접두: `b64json:` → base64(JSON), `json:` → 원본 JSON, 접두 없음 → 리터럴
+- `forward: true`는 실제 요청을 전달하고 코드 필드를 변경하며, `false`는 완전히 오프라인인 stub
+- `mockTier`: coverage 모드의 preload에서 활성화할 계층. 예: `L1+L2`, `L1+L2+L3`
+- `routes`는 `routes.txt`에서 가져옵니다. 메뉴를 forge한 뒤 harness가 `<a href>`를 자동으로 추가합니다
+- `captureResponses` / `recordWs`는 depth 모드에서만 유효합니다
+- `waitUntil`: 대규모 SPA에는 `domcontentloaded`를 사용하고 `networkidle2`로 대기가 끝나지 않는 상황을 피합니다
+- `routeTimeout`: 단일 라우트의 `page.goto` 시간 초과(밀리초)
+- `proxy`: Puppeteer `--proxy-server`. `HTTP_PROXY` / `HTTPS_PROXY`를 설정할 수도 있습니다
 
-### B1. 双 stub 模板（role_permissions + permissions/all）
+### B1. 두 stub 템플릿(role_permissions + permissions/all)
 
 ```json
 "stubs": [
@@ -193,7 +193,7 @@ grep -rhoaE '([A-Z_][A-Z0-9_]*):\{name:"[^"]*",link:"/[^"]+"\}' js | head
 ]
 ```
 
-外层字段名（`response_code` / `code` / `data`）须与 A2 拦截器门一致；`permissions` 须覆盖 tree 中所有 leaf code。
+바깥 필드명(`response_code` / `code` / `data`)은 반드시 A2 인터셉터 관문과 일치해야 하고, `permissions`는 반드시 tree의 모든 leaf code를 포함해야 합니다.
 
 ---
 
@@ -249,9 +249,9 @@ preload（coverage）与 runtime_harvest（depth）内置的浏览器 Hook 能�
 
 ---
 
-## E. Endpoint 提取正则（静态过少时）
+## E. Endpoint 추출 정규 표현식(정적 결과가 너무 적을 때)
 
-在 `harvest_static.py` 的 `extract_endpoints` 放宽，或手动：
+`harvest_static.py`의 `extract_endpoints`를 넓히거나 직접 실행합니다:
 
 ```bash
 grep -rhoaE '"/[a-z][A-Za-z0-9_/\-]{3,}"' js | sort -u
@@ -385,24 +385,24 @@ node recon/runtime_harvest.js recon/config.json
 
 ---
 
-## J. 参数逆向（Phase 1b / 5b / 5c）
+## J. 파라미터 역분석(Phase 1b / 5b / 5c)
 
-**方法论，非通用脚本。** 找 path 用正则；找参数用锚点扩窗 + UI 绑定链 + 多样本 diff + 错误反推。
+**방법론이며 범용 스크립트가 아닙니다.** path는 정규 표현식으로 찾고, 파라미터는 앵커 주변 검색 범위 확대 + UI 바인딩 연결 관계 + 여러 샘플의 diff + 오류 기반 역추론으로 확인합니다.
 
-### J1. 锚点扩窗 — 从 path 找组包对象
+### J1. 앵커 주변 검색 범위 확대 — path에서 요청 구성 객체 찾기
 
 ```bash
-# 以 Phase 1 已知 path 为锚
+# Phase 1의 알려진 path를 앵커로 사용
 grep -n '"/api/user/list"' js/*.js
 grep -rhoaE '.{0,120}("/api[^"]+").{0,200}' js | head
 grep -rhoaE '(params|data|body|payload)\s*:\s*\{' js | head
 grep -rhoaE '(get|post|put|delete|patch)\([^,]+,\s*\{' js | head
 ```
 
-### J2. 包装层与传输形态
+### J2. 래퍼 계층과 전송 형태
 
 ```bash
-# axios / 统一 request
+# axios / 공통 request
 grep -rhoaE '(axios|request)\.(get|post|put|delete|patch)\(' js | head
 grep -rhoaE 'interceptors\.(request|response)' js | head
 
@@ -413,12 +413,12 @@ grep -rhoaE '\$[a-zA-Z_]+\s*:\s*(Int|String|Boolean|\[)' js | head
 # FormData / multipart
 grep -rhoaE 'FormData|\.append\(' js | head
 
-# 路径参数
+# 경로 파라미터
 grep -rhoaE 'path:\s*"/[^"]*:[^"]+"' js | head
 grep -rhoaE 'useParams|route\.params|\$route\.params' js | head
 ```
 
-### J3. 校验门 — 必填 / 格式 / 枚举
+### J3. 검증 관문 — 필수 / 형식 / 열거
 
 ```bash
 grep -rhoaE '(required|message|pattern|enum|validator)\s*:' js | head
@@ -427,74 +427,74 @@ grep -rhoaE 'rules\s*:\s*\[|name:\s*["\'][a-zA-Z_]+["\']' js | head
 grep -rhoaE 'label.*value|options\s*:\s*\[' js | head
 ```
 
-### J4. 绑定层 — 表单 → API
+### J4. 바인딩 계층 — 폼 → API
 
 ```bash
 grep -rhoaE 'onFinish|handleSubmit|getFieldsValue|validateFields' js | head
 grep -rhoaE '(pick|omit|transform|dayjs|moment)\(' js | head
 ```
 
-runtime 补位：DevTools → Network → 请求 → **发起程序**（call stack）从 `fetch`/`send` 往上追组包函数。
+runtime에서 보완합니다: DevTools → Network → 요청 → **Initiator(요청 시작 지점)**(call stack)에서 `fetch`/`send`부터 거슬러 올라가 요청 구성 함수를 추적합니다.
 
-### J5. 加密参数
+### J5. 암호화 파라미터
 
 ```bash
 grep -rhoaE 'encrypt|decrypt|sign|CryptoJS|sm2|sm3|sm4|RSA|AES' js | head
 ```
 
-**勿在密文上猜字段** — Hook 加密函数**入参**，在加密前录 plaintext payload；结论写 `config.json` / `param_candidates.json`。
+**암호문에서 필드를 추측하지 마세요** — Hook으로 암호화 함수의 **입력 파라미터**를 관찰하고, 암호화 전에 plaintext payload를 기록합니다. 결론은 `config.json` / `param_candidates.json`에 기록합니다.
 
-### J6. 参数触发矩阵（Phase 3 必做）
+### J6. 파라미터 트리거 매트릭스(Phase 3 필수)
 
-对每模块按操作各录一次，diff 请求 body/query：
+각 모듈에서 동작별로 한 번씩 기록하고 diff로 요청 body/query를 대조합니다:
 
-| 操作 | 关注 |
+| 동작 | 확인할 내용 |
 |---|---|
-| 列表首屏 | 分页默认值 |
-| 搜索 | keyword、filters |
-| 高级筛选 | optional 字段 |
-| 新建/编辑 | 完整 entity |
-| 批量/导出 | `ids[]`、`exportType` |
-| 排序/翻页 | `sortField`、`order` |
+| 목록 첫 화면 | 페이지네이션 기본값 |
+| 검색 | keyword, filters |
+| 고급 필터링 | optional 필드 |
+| 생성/편집 | 전체 entity |
+| 일괄/내보내기 | `ids[]`, `exportType` |
+| 정렬/페이지 이동 | `sortField`, `order` |
 
-产出 `param_samples.json`：`[{ "path", "method", "action": "search", "body", "query", "headers" }]`
+산출물 `param_samples.json`: `[{ "path", "method", "action": "search", "body", "query", "headers" }]`
 
-### J7. 置信度规则
+### J7. 신뢰도 규칙
 
-| 置信度 | 条件 |
+| 신뢰도 | 조건 |
 |---|---|
-| **高** | 静态 callsite + runtime ≥2 样本一致 |
-| **中** | 仅静态，或仅 1 次 runtime |
-| **低** | 响应/错误反推，未二次验证 |
-| **待触发** | 静态已知字段，UI/权限未跑到 |
+| **높음** | 정적 callsite + runtime ≥2개 샘플 일치 |
+| **중간** | 정적 결과만 있거나 runtime 1회만 있음 |
+| **낮음** | 응답/오류 기반 역추론, 추가 검증하지 않음 |
+| **트리거 대기** | 정적으로 알려진 필드이나 UI/권한 경로에 도달하지 못함 |
 
-### J8. 场景快配
+### J8. 상황별 빠른 설정
 
-| 场景 | 顺序 |
+| 상황 | 순서 |
 |---|---|
-| REST 列表页 | J1 组包对象 → J6 四次 diff → J3 rules |
-| 新建/编辑表单 | J3 Form name → J4 submit 链 → runtime 提交 + 故意留空看 400 |
-| GraphQL | J2 variables 声明 → runtime 各 operation 录 variables |
-| 加密 body | J5 Hook 入参 → 加密前字段即真实 params |
+| REST 목록 페이지 | J1 요청 구성 객체 → J6 네 번의 diff → J3 rules |
+| 생성/편집 폼 | J3 Form name → J4 submit 연결 관계 → runtime 제출 + 일부러 비워 두고 400 확인 |
+| GraphQL | J2 variables 선언 → runtime에서 각 operation의 variables 기록 |
+| 암호화 body | J5 Hook 입력 파라미터 → 암호화 전 필드가 실제 params |
 
-### J9. 与 api-recon 阶段映射
+### J9. api-recon 단계와 대응
 
-| api-recon | 参数 recon |
+| api-recon | 파라미터 recon |
 |---|---|
-| Phase 1 静态 | J1 锚点扩窗 |
-| Phase 2 A2 拦截器 | 全局注入字段（tenantId、sign） |
-| Phase 3 runtime | J6 触发矩阵 + `param_samples.json` |
-| Phase 4 权限树 | 不同模块表单不同 → 权限够才触发全字段 |
-| Phase 5 合并 | `params_merged.json` + 置信度；勿单样本定必填 |
+| Phase 1 정적 | J1 앵커 주변 검색 범위 확대 |
+| Phase 2 A2 인터셉터 | 전역 추가 필드(tenantId, sign) |
+| Phase 3 runtime | J6 트리거 매트릭스 + `param_samples.json` |
+| Phase 4 권한 트리 | 모듈마다 폼이 다름 → 권한이 충분해야 모든 필드를 트리거 |
+| Phase 5 병합 | `params_merged.json` + 신뢰도. 단일 샘플로 필수 여부를 확정하지 마세요 |
 
-### J10. 排障
+### J10. 문제 해결
 
-| 现象 | 处理 |
+| 현상 | 처리 |
 |---|---|
-| 静态有字段名 runtime 从未出现 | 标注「待触发」；补权限树 / 点高级筛选 / 联动 select 各 option |
-| 同 path 不同 body 形状 | 正常 — 按 `action` 分条记录，勿强行合并 schema |
-| stub 响应假但想看 params | **看 outbound 请求** body/headers，勿从 stub 响应反推 |
-| 400 报 nested field | 注意外层包装 `data`/`bizData`/`variables` |
-| GraphQL 只见 operation 名 | 展开 `variables` JSON；静态找 `$var: Type` |
+| 정적으로 필드명은 있으나 runtime에서 나타난 적 없음 | '트리거 대기'로 표시. 권한 트리 보완 / 고급 필터 클릭 / 연동 select의 각 option 선택 |
+| 같은 path에서 body 형태가 다름 | 정상 — `action`별로 나누어 기록하고 schema를 강제로 병합하지 마세요 |
+| stub 응답은 가짜지만 params를 확인하려 함 | **outbound 요청** body/headers를 확인합니다. stub 응답에서 역추론하지 마세요 |
+| 400에서 nested field를 알림 | 바깥쪽 `data`/`bizData`/`variables` 구조에 유의합니다 |
+| GraphQL에서 operation 이름만 보임 | `variables` JSON을 펼치고 정적 분석에서 `$var: Type`을 찾습니다 |
 
 ---
