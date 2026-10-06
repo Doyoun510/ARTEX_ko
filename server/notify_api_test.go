@@ -185,7 +185,7 @@ func (f *fakeWebhook) body(t *testing.T, i int) map[string]any {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if i >= len(f.bodies) {
-		t.Fatalf("假接收端只收到 %d 条请求，取不到第 %d 条", len(f.bodies), i)
+		t.Fatalf("가짜 수신 측이 받은 요청은 %d개뿐이므로 %d번째 요청을 가져올 수 없습니다", len(f.bodies), i)
 	}
 	return f.bodies[i]
 }
@@ -193,13 +193,13 @@ func (f *fakeWebhook) body(t *testing.T, i int) map[string]any {
 func (f *fakeWebhook) last(t *testing.T) map[string]any {
 	t.Helper()
 	if f.count() == 0 {
-		t.Fatal("假接收端没有收到任何请求")
+		t.Fatal("가짜 수신 측이 요청을 하나도 받지 못했습니다")
 	}
 	return f.body(t, f.count()-1)
 }
 
-// markdownText 从请求体里取出正文，兼容各家的字段名差异：
-// 钉钉 markdown 用 `text`、ActionCard 用 `text`、企业微信 markdown 用 `content`。
+// markdownText는 요청 본문에서 본문을 추출하며, 각 제품의 필드명 차이를 처리합니다:
+// DingTalk markdown은 `text`, ActionCard는 `text`, WeCom(기업용 위챗) markdown은 `content`를 사용합니다.
 func markdownText(t *testing.T, body map[string]any) string {
 	t.Helper()
 	for _, key := range []string{"markdown", "actionCard"} {
@@ -213,11 +213,11 @@ func markdownText(t *testing.T, body map[string]any) string {
 			}
 		}
 	}
-	t.Fatalf("请求体里没有可识别的正文: %v", body)
+	t.Fatalf("요청 본문에 인식할 수 있는 본문이 없습니다: %v", body)
 	return ""
 }
 
-// agePendingBatch 把该渠道的待发投递催老，用于测试汇总批次到期。
+// agePendingBatch는 해당 채널의 전송 대기 항목 시각을 과거로 바꿔 모아 보내기 배치의 만료를 테스트합니다.
 func (f *notifyFixture) agePendingBatch(t *testing.T, chID int64) {
 	t.Helper()
 	if _, err := f.pg.Exec(`UPDATE notification_deliveries SET created_at = now() - interval '2 hours'
@@ -243,10 +243,10 @@ func TestNotifyEndToEndRealtimeDelivery(t *testing.T) {
 	text := markdownText(t, hook.last(t))
 	for _, want := range []string{"SQL注入", "높음", "**요약**:"} {
 		if !strings.Contains(text, want) {
-			t.Fatalf("消息正文缺少 %q:\n%s", want, text)
+			t.Fatalf("메시지 본문에 다음 항목이 없습니다: %q\n%s", want, text)
 		}
 	}
-	// 投递应流转为 sent。
+	// 전송 상태는 sent로 바뀌어야 합니다.
 	var pending int
 	if err := f.pg.QueryRow(`SELECT count(*) FROM notification_deliveries WHERE channel_id=$1 AND state <> $2`,
 		chID, db.NotifyStateSent).Scan(&pending); err != nil {
@@ -428,14 +428,14 @@ func TestNotifyDigestBatchesMultipleFindingsIntoOneMessage(t *testing.T) {
 	}
 	text := markdownText(t, hook.last(t))
 	if !strings.Contains(text, "최근") || !strings.Contains(text, "새 취약점 3개") {
-		t.Fatalf("汇总消息缺少条数/时间窗文案:\n%s", text)
+		t.Fatalf("모아 보내기 메시지에 개수/시간 범위 안내가 없습니다:\n%s", text)
 	}
 	for i := 1; i <= 3; i++ {
 		if !strings.Contains(text, fmt.Sprintf("汇总漏洞%d", i)) {
 			t.Fatalf("汇总消息缺少第 %d 条:\n%s", i, text)
 		}
 	}
-	// 同一批次应共享 batch_id。
+	// 같은 배치는 batch_id를 공유해야 합니다.
 	var distinct, total int
 	if err := f.pg.QueryRow(`SELECT count(DISTINCT batch_id), count(*) FROM notification_deliveries WHERE channel_id=$1`, chID).Scan(&distinct, &total); err != nil {
 		t.Fatal(err)
@@ -717,7 +717,7 @@ func TestNotifyNoDeepLinkWithoutBaseURL(t *testing.T) {
 		t.Fatalf("未配外部地址时应发 markdown，得到 %v", body["msgtype"])
 	}
 	if text := markdownText(t, body); strings.Contains(text, "상세 보기") {
-		t.Fatalf("未配外部地址时不该出现详情链接:\n%s", text)
+		t.Fatalf("외부 주소를 설정하지 않았을 때는 상세 링크가 나타나면 안 됩니다:\n%s", text)
 	}
 }
 
@@ -777,7 +777,7 @@ func TestNotifyDigestSegmentsAndDefersRemainder(t *testing.T) {
 	}
 	// 消息正文必须如实告知还有多少条没包含在本条里。
 	if text := markdownText(t, hook.last(t)); !strings.Contains(text, "나머지") {
-		t.Fatalf("消息应说明还有条目未包含在本条:\n%.400s", text)
+		t.Fatalf("메시지는 이번 메시지에 포함하지 않은 항목이 남아 있음을 알려야 합니다:\n%.400s", text)
 	}
 
 	// 被推迟的条目不得消耗重试预算：领取时 attempts 已乐观 +1，推迟时要减回去。

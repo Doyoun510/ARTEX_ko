@@ -152,7 +152,7 @@ func ParseAutoScopeLine(line string) (ParsedScope, error) {
 	if looksLikeDomain {
 		return ParseScopeLine(raw)
 	}
-	// 备案 번호 자체에는 점이 없다(예: 京ICP备12345678号-1). 점이 있는 텍스트는 대개 도메인이나 버전 번호가 섞인 것이라,
+	// ICP 등록(备案) 번호 자체에는 점이 없다(예: 京ICP备12345678号-1). 점이 있는 텍스트는 대개 도메인이나 버전 번호가 섞인 것이라,
 	// ICP로 저장하면 어떤 자산과도 영원히 매칭되지 않는 죽은 규칙만 생긴다 —— ICP 귀속은 정확한
 	// 상등 비교를 쓰므로(companies.go의 kind='icp' 귀속 쿼리 참조), 이런 텍스트는 키워드로 분류한다.
 	lower := strings.ToLower(raw)

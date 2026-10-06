@@ -42,7 +42,7 @@ func callInsertAssets(t *testing.T, ts *ToolSet, payload any) map[string]any {
 
 // =====================================================================
 // TestInsertAssetsSubdomainSideEffects
-// 子域名插入 → 自动创建 root_domain + IP 资产，IP 绑定域名
+// 서브도메인 삽입 → root_domain + IP 자산을 자동 생성하고 IP에 도메인을 바인딩합니다.
 // =====================================================================
 func TestInsertAssetsSubdomainSideEffects(t *testing.T) {
 	d := testDB(t)
@@ -111,7 +111,7 @@ func TestInsertAssetsSubdomainSideEffects(t *testing.T) {
 
 // =====================================================================
 // TestInsertAssetsMultiIPSubdomain
-// 多个 IP 的子域名：所有 IP 都应存入 record_value[]，各自创建 IP 资产
+// IP가 여러 개인 서브도메인: 모든 IP를 record_value[]에 저장하고 각 IP 자산을 생성해야 합니다.
 // =====================================================================
 func TestInsertAssetsMultiIPSubdomain(t *testing.T) {
 	d := testDB(t)
@@ -159,7 +159,7 @@ func TestInsertAssetsMultiIPSubdomain(t *testing.T) {
 
 // =====================================================================
 // TestInsertAssetsHTTPServiceTechnologies
-// HTTP 服务插入：technologies 存储并可读回；IP 存在时域名和端口写入 IP 资产
+// HTTP 서비스 삽입: technologies를 저장하고 다시 읽을 수 있습니다. IP가 있으면 도메인과 포트를 IP 자산에 기록합니다.
 // =====================================================================
 func TestInsertAssetsHTTPServiceTechnologies(t *testing.T) {
 	d := testDB(t)
@@ -242,7 +242,7 @@ func TestInsertAssetsHTTPServiceTechnologies(t *testing.T) {
 
 // =====================================================================
 // TestInsertAssetsOtherService
-// 非 HTTP 服务：c_segment 自动生成，IP 资产含 open_ports 和 bound_domains
+// 비 HTTP 서비스: c_segment를 자동 생성하며, IP 자산에는 open_ports와 bound_domains가 포함됩니다.
 // =====================================================================
 func TestInsertAssetsOtherService(t *testing.T) {
 	d := testDB(t)
@@ -303,7 +303,7 @@ func TestInsertAssetsOtherService(t *testing.T) {
 
 // =====================================================================
 // TestInsertAssetsMixedBatch
-// 混合批量插入：一次调用插入多种类型
+// 혼합 일괄 삽입: 한 번의 호출로 여러 유형을 삽입합니다.
 // =====================================================================
 func TestInsertAssetsMixedBatch(t *testing.T) {
 	d := testDB(t)
@@ -361,7 +361,7 @@ func TestInsertAssetsMixedBatch(t *testing.T) {
 
 // =====================================================================
 // TestInsertAssetsDedup
-// 幂等写入：同一资产插入两次，返回相同 ID
+// 멱등 쓰기: 같은 자산을 두 번 삽입하면 같은 ID를 반환합니다.
 // =====================================================================
 func TestInsertAssetsDedup(t *testing.T) {
 	d := testDB(t)
@@ -398,8 +398,8 @@ func TestInsertAssetsDedup(t *testing.T) {
 
 // =====================================================================
 // TestInsertAssetsRejectsHostnameIPPerItem
-// 一批里混入 ip 填了主机名的一条 → 只有那条失败，其余照常入库，
-// 且错误里带得上 index 和改正方法，Agent 下一轮能自己修好。
+// 한 배치에 ip에 호스트명을 입력한 항목이 섞임 → 해당 항목만 실패하고 나머지는 정상 등록되며,
+// 오류에 index와 수정 방법도 포함되어 Agent가 다음 턴에 스스로 수정할 수 있습니다.
 // =====================================================================
 func TestInsertAssetsRejectsHostnameIPPerItem(t *testing.T) {
 	d := testDB(t)
