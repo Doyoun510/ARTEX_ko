@@ -183,7 +183,7 @@ HTTP 핸들러/관리 API 6파일 완료(B-1 auth·dto·customtool·platform_too
 
 ### 묶음 D 요약 — **server/ 전체 한국어화 완료**
 server/ 비테스트 파일에 남은 중국어는 전부 **의도적 DNT**(설계문서 경로·§5.7 계약 앵커·멘션 토큰 파서·logsink 분류 키워드·마이그레이션 상수). U11 server/ 작업 종료. (trans 트랙 B의 notify/·db/ 등 타 단위는 범위 밖)
-## U12 · 데이터/DB (트랙 B)  [진행 중 — 소/중형 완료]
+## U12 · 데이터/DB (트랙 B)  [완료 — 번역·정적·빌드/vet PASS]
 사용자(사람1)가 U11(server/) 완료 후 U12 착수. 실행 환경에 **Go 1.26.3 존재** → `go build ./...`·`go vet ./db/`·`gofmt`·no-DB 테스트를 매 커밋 실행. DB 필요 테스트는 PostgreSQL 미연결로 미검증(U11과 동일).
 
 ### 완료 배치 (커밋됨)
@@ -197,11 +197,15 @@ server/ 비테스트 파일에 남은 중국어는 전부 **의도적 DNT**(설�
   - **⚠️ 계약(U11 이월) 해소**: `内置默认`→`내장 기본값`, `恢复为内置默认`→`내장 기본값으로 복원`. 이 값은 `agent_prompts.note`(순수 표시, §3: Go 비교·프런트 매칭 0). 같은 라벨을 쓰는 **`server/finding_retests.go:230`의 SQL 저장 값도 동일 문자열로 동기화**(두 writer 일관). 구 DB 레코드의 구 라벨은 note 미매칭이라 표시만 혼재(기능 무해, §7.1 새 DB 전제).
   - DNT: 설계문서 경로 `docs/交互式shell设计.md`(U11 `server/assembly.go:311` 선례로 보존 — 포크에 실물 없어도 경로 참조)·thinking.type/serial/parallel enum.
 
-### U12 잔여 (todo, 대형·계약주의)
-- **대형**: `notification.go`(2111)·`notification_delivery.go`(1804)·`finding_assets.go`(1115)·`db.go`(1058)·`exploration.go`(710)·`asset_intercept_match.go`(580)·`findings.go`(514)·`tasks.go`(366)·`llmretry.go`(284)·`finding_retests.go`(나머지)·`finding_traffic.go`(221)·`company_scope.go`(199)·`companies.go`(190).
-- **⚠️ db.go 안전장치**: 내장 인터셉트 규칙(`rm -rf` 차단 등)은 `name`·`message`만 번역, **`pattern` 절대 불변**. 번역 후 규칙 개수·본체 대조(TRANSLATION_PROMPT §6, 용어집 9.3).
-- **⚠️ company_scope.go**: `备案`(ICP 파서 키워드)·입력 구분자 DNT(B레인 선례).
-- **테스트(~12개 _test.go)**: 표시 문자열 번역에 필요한 기대값만 수정, 계약·길이·인코딩 검증 데이터는 중국어라도 보존(용어집 7.4).
+### 완료 배치 (대형·테스트)  [2026-10-06]
+U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 머지 후 대형·테스트 전부 번역.
+- **대형 생산**: notification·notification_delivery·finding_assets·db.go·exploration·asset_intercept_match·findings·tasks·llmretry·finding_retests·finding_traffic·company_scope·companies·chat_mentions·assets.
+- **⚠️ db.go 안전장치 준수**: 내장 인터셉트 규칙은 `name`·`message`만 번역, `pattern`/`target`/`typ`/`action`/`priority` 전부 불변(diff에 pattern 라인 0건, 패턴 19개 유지). `[内置]`→`[내장]`.
+- **⚠️ company_scope.go**: `备案`(L160 `strings.Contains` 파서)·`.．。` 입력 점·ICP 예시 DNT 보존.
+- **계약 동기화**: tasks.go '작업 생성 시 회사 연결:' ↔ tasks_test.go:610, `内置默认`→`내장 기본값`(db/config.go+server/finding_retests.go), task_archives_restore 경고 ↔ task_archives_test.go:274 substring.
+- **테스트(~20개 _test.go)**: §7.4대로 주석·t.* 진단·서브테스트명만 번역, 픽스처/계약/인코딩 데이터 보존(VulnClass·ICP·`界` 길이·`余额不足`/`额度不足` 할당량 계약·`[模型]`·프롬프트 라운드트립·FTS 쿼리쌍).
+- **검증**: `go build ./...`·`go vet ./db/`·`gofmt`(기준선 대비) PASS. DB 필요 테스트만 PostgreSQL 미연결 미검증.
+- **잔여 중국어(의도 DNT만)**: 설계문서 경로(`任务级超时与收尾设计.md`·`交互式shell设计.md`·`LLM重试设计.md`·`资产模型与自动关联设计.md`)·`备案`·`[模型]` 계약·테스트 픽스처.
 
 ## U13 · 그 외 백엔드 패키지 (트랙 B)  [완료 — 번역·정적·실행 일부 PASS]
 사용자(사람1)가 U12 보류 후 착수(다형 권장 순서). 대상: traffic·selfupdate·llmrec·llmpool·guard·evidence·mcphttp·cmd·config·enrich. Go 1.26.3로 매 커밋 `go build ./...`·`go vet`·`gofmt`·no-DB 테스트 실행(PASS). DB 필요 테스트만 미검증.
