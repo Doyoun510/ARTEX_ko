@@ -189,7 +189,7 @@ func TestUploadSkillUnsupportedMethod(t *testing.T) {
 		t.Fatalf("status = %d, want 400 (body %s)", rr.Code, rr.Body)
 	}
 	msg, _ := out["error"].(string)
-	if !strings.Contains(msg, "Deflate64") || !strings.Contains(msg, "不支持的压缩方式") {
+	if !strings.Contains(msg, "Deflate64") || !strings.Contains(msg, "지원하지 않는 압축 방식") {
 		t.Fatalf("error = %q, want a Chinese message naming Deflate64", msg)
 	}
 }
@@ -210,7 +210,7 @@ func TestUploadSkillEncrypted(t *testing.T) {
 	if rr.Code != 400 {
 		t.Fatalf("status = %d, want 400 (body %s)", rr.Code, rr.Body)
 	}
-	if msg, _ := out["error"].(string); !strings.Contains(msg, "已加密") {
+	if msg, _ := out["error"].(string); !strings.Contains(msg, "압축 파일이 암호화되어 있습니다") {
 		t.Fatalf("error = %q, want 加密 hint", msg)
 	}
 }

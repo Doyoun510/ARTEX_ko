@@ -177,7 +177,7 @@ func TestChatMentionWorkerReceivesServerDetails(t *testing.T) {
 	select {
 	case req := <-requests:
 		blob, _ := json.Marshal(req.Messages)
-		if !strings.Contains(string(blob), "worker-hidden-proof") || !strings.Contains(string(blob), "用户引用的记录快照") {
+		if !strings.Contains(string(blob), "worker-hidden-proof") || !strings.Contains(string(blob), "사용자가 참조한 레코드 스냅샷") {
 			t.Fatalf("worker missing reference details: %s", blob)
 		}
 	case <-time.After(5 * time.Second):
@@ -304,7 +304,7 @@ func TestChatMentionConversationReceivesServerDetails(t *testing.T) {
 	s, fid := newRetestServer(t)
 	setRetestProvider(s, retestProvider{complete: func(_ context.Context, req llm.CompletionRequest) (llm.Message, string, llm.Usage, error) {
 		blob, _ := json.Marshal(req.Messages)
-		if !strings.Contains(string(blob), "original proof") || !strings.Contains(string(blob), "用户引用的记录快照") {
+		if !strings.Contains(string(blob), "original proof") || !strings.Contains(string(blob), "사용자가 참조한 레코드 스냅샷") {
 			t.Errorf("model did not receive resolved evidence: %s", blob)
 		}
 		return llm.Message{Role: llm.RoleAssistant, Content: []llm.ContentBlock{llm.TextBlock("已读取引用")}}, "end_turn", llm.Usage{}, nil

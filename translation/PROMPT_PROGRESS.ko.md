@@ -616,3 +616,10 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **수정·보존**: SKILL.md:3을 name: scopesentry로 바꾸고 description 바로 뒤(:5)에 종료 ---를 추가했다. frontmatter에는 빈 줄 외 name/description만 있다. 기존 description 이후 본문 전체를 바이트 그대로 보존해 준비·연결·JSON 안내부터 파일 끝까지 본문에 포함된다. 기존 :44 구분선은 :45의 본문 절 구분선으로 유지했다. 366→367줄, LF 유지; JSON·명령·DSL·검색값·링크·MCP 이름·본문 제목·기존 번역/들여쓰기 동일.
 - **후속·범위**: 원래 frontmatter 형식 문제는 정정했다. 실제 SDK 로드·모델 본문 전달은 실행 미검증이다. db/db.go:306–307의 mcps: ScopeSentry 선언 설명과 실제 문서의 mcps 필드 부재는 추가 원문 설명 불일치로 기록하며 mcps/코드/권한을 추가하지 않았다. 로그인·세션 정책·depth/coverage·메타데이터/병렬 안내·U11·U7 등 다른 후속 항목 및 이전 이력은 유지한다.
 - **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 전체 diff /tmp/artex-u15-scopesentry-frontmatter.diff, 검토 보고 /tmp/artex-u15-scopesentry-frontmatter-review.md. 기존 로컬 변경·미추적 담당표·다른 파일·Git index 보존. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 통합 감사 보완 1 · A001–A010 [기대값 수정·정적 대조 완료 / 실행 미검증]
+- **기준·범위**: HEAD `474300b6d355fc1c8cf7051d644c52a7abae1fd4` 및 통합 감사 A001–A010을 현재 생성부와 재대조했다. 지정된 테스트 7개에서 직접 연결된 기대 문자열 10곳만 수정했다. 감사 기준 이후 대상 내용 변경은 없었으며 이미 일치하는 항목은 없었다. 운영 소스·DB·프런트·용어집은 수정하지 않았다.
+- **대응 결과**: A001 finding_recorder의 미등록 오류, A002 finding_traffic의 작업 접근 거부, A003 finding_workflow의 독립 취약점 기록 ID, A004 traffic_search 설명의 호스트 단독/호스트:포트/완전한 URL 지원, A005 intercept_detail의 삭제된 대화, A006 task_categories의 task_ids 개수 제약, A007–A008 chat_mentions의 서버 생성 레코드 스냅샷 헤더, A009–A010 skill_upload의 지원하지 않는 압축 방식/암호화 오류를 현재 한국어 출력과 맞췄다. A009–A010의 기존 U15 공유 기대값 보류는 이번 정적 대응으로 해소했으며 실행 결과는 미확인이다.
+- **보존·정적 검토**: Contains 검사와 조건·HTTP 상태 코드·Deflate64·worker-hidden-proof·original proof·입력·fixture·호출·반환 구조·무관한 기대값·실패 안내를 보존했다. 테스트 7개의 줄 수·들여쓰기·개행·포맷 지정자는 동일하며 기대 문자열 10곳 외 바이트는 변경하지 않았다. 기존 이력·U7/U15의 다른 후속 보류·다른 단위 상태는 유지한다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index를 보존했다. A011 이후 감사 항목은 이번 작업 범위 밖이다.
+- **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 테스트 통과 또는 실패를 관측하지 않았다. 전체 diff `/tmp/artex-audit-fix-tests.diff`, 검토 보고 `/tmp/artex-audit-fix-tests-review.md`. 기존 감사 보고서는 유지하고 fetch·병합·stage·commit·push·다음 묶음은 진행하지 않았다.
