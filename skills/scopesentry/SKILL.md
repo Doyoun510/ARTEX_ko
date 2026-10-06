@@ -1,7 +1,8 @@
 ---
 
-## name: scopesentry-mcp
+name: scopesentry
 description: ScopeSentry MCP를 통해 보안 스캔 플랫폼(프로젝트, 작업, 템플릿, 자산, 노드)을 관리합니다. 사용자가 ScopeSentry, MCP, API Key, 스캔 작업, 자산 조회를 언급할 때 사용합니다.
+---
 
 # ScopeSentry MCP 사용 안내
 

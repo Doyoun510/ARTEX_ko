@@ -584,3 +584,11 @@ server/ 비테스트 파일에 남은 중국어는 전부 **의도적 DNT**(설�
 - **routes 자동 확장 주장 정정**: reference.md:350을 “`--config`로 지정한 `config.json`이 존재하면 `stubs`를 자동 갱신”으로 정정했다. build_perm_tree.py:155의 옵션 선언 및 :196–206의 설정 저장 경로를 확인했다. 기존 permissions/all·role_permissions stub을 제거하고 새 stub을 추가해 cfg['stubs']만 갱신하며 routes 변경은 없다. --config 생략 시 outdir/config.json을 선택하는 기존 구현도 보존한다.
 - **보존·잔여**: reference 500/500줄·CRLF 500개·나머지 본문·Markdown·명령·코드·예시와 기존 번역을 보존했다. 이전 후속 기록은 이력으로 유지하며 위 두 건만 해소했다. 로그인/세션 정책 충돌·depth/coverage 차이·ScopeSentry 형식/로더·U11 공유·U7 후속 보류 및 다른 단위 상태는 변경하지 않았다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index를 보존했다.
 - **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. `/tmp/artex-u15-doc-followup.diff`, `/tmp/artex-u15-doc-followup-review.md`. fetch·병합·stage·commit·push·다음 작업은 진행하지 않았다.
+
+
+### U15 · ScopeSentry frontmatter 형식 정정 [형식 정정·정적 검토 완료 / 실제 SDK 로드·모델 동작 실행 미검증]
+- **버전·근거**: go.mod의 replace 없음 및 norma v0.4.3 고정을 확인했다. Go 모듈 프록시 ZIP의 dirhash가 go.sum과 일치한다. SDK skill/skill.go:263–289는 YAML 성공 여부와 무관하게 먼저 본문을 분리하고, :231–234는 name 누락 시 디렉터리 이름을 fallback으로 쓴다. 기존 문서의 유효 등록 이름 scopesentry를 유지하는 수정이다.
+- **참조 확인**: 저장소 내 scopesentry/scopesentry-mcp 참조를 읽기 전용으로 검색했다. scopesentry-mcp의 기존 SKILL 헤더 외 직접 skill 호출·하드코딩된 조회 참조는 발견하지 못했다(과거 진행 기록은 이력). server/assembly.go:35–51의 노출 키와 server/skill_usage.go:64–75의 사용 기록 키는 Dir basename scopesentry다. web/src/lib/mock/data.ts의 skill 예시 name도 scopesentry다. MCP 서버/동기화 이름은 다른 역할로 보존했다. 실제 DB/모델 호출은 미확인이다.
+- **수정·보존**: SKILL.md:3을 name: scopesentry로 바꾸고 description 바로 뒤(:5)에 종료 ---를 추가했다. frontmatter에는 빈 줄 외 name/description만 있다. 기존 description 이후 본문 전체를 바이트 그대로 보존해 준비·연결·JSON 안내부터 파일 끝까지 본문에 포함된다. 기존 :44 구분선은 :45의 본문 절 구분선으로 유지했다. 366→367줄, LF 유지; JSON·명령·DSL·검색값·링크·MCP 이름·본문 제목·기존 번역/들여쓰기 동일.
+- **후속·범위**: 원래 frontmatter 형식 문제는 정정했다. 실제 SDK 로드·모델 본문 전달은 실행 미검증이다. db/db.go:306–307의 mcps: ScopeSentry 선언 설명과 실제 문서의 mcps 필드 부재는 추가 원문 설명 불일치로 기록하며 mcps/코드/권한을 추가하지 않았다. 로그인·세션 정책·depth/coverage·메타데이터/병렬 안내·U11·U7 등 다른 후속 항목 및 이전 이력은 유지한다.
+- **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 전체 diff /tmp/artex-u15-scopesentry-frontmatter.diff, 검토 보고 /tmp/artex-u15-scopesentry-frontmatter-review.md. 기존 로컬 변경·미추적 담당표·다른 파일·Git index 보존. fetch·병합·stage·commit·push·다음 작업 없음.
