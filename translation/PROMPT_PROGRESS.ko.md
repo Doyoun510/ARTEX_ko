@@ -183,6 +183,18 @@ HTTP 핸들러/관리 API 6파일 완료(B-1 auth·dto·customtool·platform_too
 
 ### 묶음 D 요약 — **server/ 전체 한국어화 완료**
 server/ 비테스트 파일에 남은 중국어는 전부 **의도적 DNT**(설계문서 경로·§5.7 계약 앵커·멘션 토큰 파서·logsink 분류 키워드·마이그레이션 상수). U11 server/ 작업 종료. (trans 트랙 B의 notify/·db/ 등 타 단위는 범위 밖)
+## U13 · 그 외 백엔드 패키지 (트랙 B)  [완료 — 번역·정적·실행 일부 PASS]
+사용자(사람1)가 U12 보류 후 착수(다형 권장 순서). 대상: traffic·selfupdate·llmrec·llmpool·guard·evidence·mcphttp·cmd·config·enrich. Go 1.26.3로 매 커밋 `go build ./...`·`go vet`·`gofmt`·no-DB 테스트 실행(PASS). DB 필요 테스트만 미검증.
+
+- **소형 7파일**: evidence·mcphttp·cmd/artex·config·enrich·llmpool(pool/health). 로그·오류·CLI 배너·주석. §3 확인(프런트·코드 비교 0).
+- **guard·llmrec**: guard는 모델 전달 차단 래퍼(`【ARTEX 平台管控…】`)·systemBlockMessage. §3: 배너를 파싱/매칭하는 **비테스트 소비부 0**(guard가 유일 생산자). intercept/server 테스트의 동일 배너는 입력 픽스처일 뿐 guard 출력과 미비교 → 번역 무영향, 그 픽스처는 U7/U11 소유라 미변경. `[内置]`→`[내장]`(§3 매칭 0).
+- **traffic**(traffic.go+evidence.go): 모델 전달 도구 설명 traffic_search/traffic_get/traffic_read_blob + 로그·오류.
+  - **⚠️ 마이그레이션 계약**: `TrafficSearchDescription`은 `server/finding_workflow.go`의 새 값($1), 비교 앵커 `legacy`($2, U11 소유·이미 한국어·구버전 설명)는 불변. 소스를 신버전 한국어로 번역해 구→신 업그레이드가 올바르게 동작.
+- **selfupdate**(github·selfupdate·stage·bootstrap): 자가 업데이트 주석·SSE 진행·오류·State.Detail. §3 확인. DNT: Phase enum 값(idle/downloading/…)·exit 코드·경로(artex.new/.old/.sha256)·SHA256SUMS·버전 리터럴.
+- **테스트 4파일**(traffic 3 + selfupdate_test): §7.4대로 주석·진단 메시지만 번역. **인코딩/계약 데이터 보존** — 중국어 FTS 입력(`内网测试账号`·`内网测试` 쿼리 페어·`中文正文`·`老数据正文`·`清空后仍可录制`)·버전·URL·parseSums 픽스처.
+- **용어**: 轮询=순환 전환·故障转移=장애 조치·熔断=회로 차단(프런트 llm "즉시 복구"/"회로 차단" 일치)·流量=트래픽·记录代理=기록 프록시·透传=패스스루·压实=압축·冷/热=cold/hot.
+- **U13 잔여(의도 DNT)**: 설계문서 경로 `docs/资产模型与自动关联设计.md`·`docs/交互式shell设计.md`, traffic 테스트 FTS/인코딩 픽스처. **전체 `go build ./...`·`go vet ./...`·`gofmt` PASS.**
+
 ## U5~U8·U10·U12~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
 
