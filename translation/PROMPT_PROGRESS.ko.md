@@ -532,3 +532,35 @@ server/ 비테스트 파일에 남은 중국어는 전부 **의도적 DNT**(설�
 - **추가 허용·정적 보존**: Mermaid 166–169행의 사람이 읽는 중국어 노드 라벨만 번역했다. `task==阶段1任务名`·노드 ID·화살표·배치·구문·도구명·DSL·실제 검색값은 동일하다. 이번 추가 SKILL 변경은 9행, 누적 변경은 150행이다. 366/366줄·LF 366개·CRLF 0개·들여쓰기·빈 줄·개행·강조·Markdown/Mermaid 구조·JSON·inline code·기존 영어·숫자 순서·기존 제목/fragment 대응을 보존했다.
 - **잔여·후속·상태**: 이번 문서의 용어 보류 5곳은 해소했고 추가 번역 누락·용어/계약 보류는 발견하지 못했다. 남은 중국어는 작업명·규칙명·ObjectID·URL/헤더/인증키 placeholder·JSON 예시·DSL 매칭값으로 분류했다. frontmatter 기존 형식과 MCP 이름, 로더 영향 미확인·API 정찰 정책/설명 후속·U11 공유·U7 후속 보류는 유지한다. 관련 테스트 수정 필요는 발견하지 못했으며 실제 모델/외부 서비스 동작은 미확인이다. U15 전체 완료가 아니다.
 - **보존·실행·산출물**: 완료된 다른 파일·기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index와 이전 진행 기록을 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. 누적 전체 diff `/tmp/artex-u15-scopesentry.diff`, 갱신된 보고서 `/tmp/artex-u15-scopesentry-review.md`. fetch·병합·stage·commit·push·다음 묶음은 진행하지 않았다.
+
+
+### U15 · 마지막 묶음(playwright-cli) 및 전체 종합 [전체 파일 번역·정적 검토 완료 / 원문 정책·형식·설명 후속 검토 보류 / 실행 미검증]
+- **시작·커버리지**: `work/ko-translation`, HEAD `729e4f8c9f012c7c24fe1a6a30a1654454589b37`의 ScopeSentry 커밋을 확인했다. 대상 기존 변경·staged 변경·MERGE_HEAD는 없었다. git의 skills/ 추적 파일 21개(API 정찰 10·ScopeSentry 1·playwright-cli 10)를 모두 읽고 기존 묶음 기록과 대조했다. 기존 21개와 차이가 없으며 미검토 추적 파일은 없다. fetch·병합하지 않았다.
+- **playwright-cli**: SKILL.md 및 references 9개 전체는 영어 설명·명령·옵션·예시뿐이며 중국어 자연어가 없어 모두 “검토 완료 / 번역 대상 없음”이다. 영어·코드·식별자·메타데이터·제목·링크를 수정하지 않았다. 아래 목록은 파일별 최종 검토 상태이다.
+| 추적 파일 | HEAD/현재 줄 수 | 개행 | 검토·번역 상태 | 잔여 근거 |
+| --- | --- | --- | --- | --- |
+| `skills/api-recon/SKILL.md` | 425/425 | LF | 기존 번역 완료 / 전체 재검토 완료 | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/api-recon/reference.md` | 500/500 | CRLF | 기존 번역 완료 / 전체 재검토 완료 | 52행 검색 정규식 DNT |
+| `skills/api-recon/scripts/build_perm_tree.py` | 210/210 | CRLF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/api-recon/scripts/extract_route_map.py` | 42/42 | CRLF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/api-recon/scripts/harvest_static.py` | 207/207 | LF | 기존 번역 완료 / 전체 재검토 완료 | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/api-recon/scripts/package-lock.json` | 1011/1011 | LF | 검토 완료 / 번역 대상 없음 / 메타데이터 DNT | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/api-recon/scripts/package.json` | 9/9 | LF | 검토 완료 / 번역 대상 없음 / 메타데이터 DNT | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/api-recon/scripts/preload.js` | 348/348 | CRLF | 기존 번역 완료 / 전체 재검토 완료 | 192행 판별 정규식 DNT |
+| `skills/api-recon/scripts/runtime_harvest.js` | 228/228 | LF | 기존 번역 완료 / 전체 재검토 완료 | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/api-recon/scripts/spider_mpa.py` | 123/123 | LF | 기존 번역 완료 / 전체 재검토 완료 | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/SKILL.md` | 420/420 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/element-attributes.md` | 23/23 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/playwright-tests.md` | 39/39 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/request-mocking.md` | 87/87 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/running-code.md` | 241/241 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/session-management.md` | 225/225 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/storage-state.md` | 275/275 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/test-generation.md` | 433/433 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/tracing.md` | 139/139 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/playwright-cli/references/video-recording.md` | 143/143 | LF | 검토 완료 / 번역 대상 없음(영어 유지) | 중국어·지정 전각 문장부호 없음; 전체 문맥 확인 |
+| `skills/scopesentry/SKILL.md` | 366/366 | LF | 기존 번역 완료 / 전체 재검토 완료 | 21행의 DSL/검색값·원문 예시/placeholder(아래 전부 분류) |
+- **잔여·연결부**: 중국어/지정 전각 잔여는 reference:52·preload:192의 검색/판별 정규식과 ScopeSentry의 21행 DSL/검색값·원문 예시·placeholder, 총 23행이다. 번역 누락·미확정 용어·새 계약 보류는 발견하지 못했다. 문서의 코드 블록 밖 Markdown 링크 33곳의 실제 파일/제목 fragment 대응을 정적으로 확인했다. 코드 안 정규식은 링크로 취급하지 않았으며 렌더는 실행하지 않았다.
+- **후속 미해결**: API 정찰 로그인/세션 정책 충돌·reference D/E절 참조·routes 확장 설명·depth/coverage stub 차이·ScopeSentry frontmatter 형식과 로더 영향 미확인·U11 skill_upload_test 기대값 불일치 2곳은 유지한다. U7의 live 중국어 동사 의존·옛 공통 블록 중복·기존 커스텀 정책 본문 보존은 별도 단위 보류다. 추가로 package.json의 api-recon-runtime과 lock 루트 spa-api-recon-runtime 이름 차이, playwright test-generation:293의 병렬 금지와 :352의 병렬 가능 안내는 원문 메타데이터/설명 후속 확인 항목으로 기록하며 수정하지 않는다.
+- **정적 보존·실행**: skills/ 21개 파일은 모두 HEAD 및 시작 상태와 바이트 동일하다. 줄 수·LF/CRLF·들여쓰기·개행·Markdown·Mermaid·코드·JSON·DSL·명령·옵션·설정값·영어를 유지했다. PROMPT_PROGRESS의 이전 이력은 그대로 두고 이번 기록만 추가했다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index를 해시로 대조해 보존했다. 관련 테스트 기대값 변경 필요는 발견하지 못했고 테스트는 수정하지 않았다. 설치·빌드·테스트·lint·포맷터·스크립트·브라우저·앱·Git 훅·외부 MCP/API와 실행 검증은 **사용자 요청으로 미실행**이다. 실제 로더/모델/외부 서비스 동작 검증 완료를 뜻하지 않는다.
+- **산출물·종료**: 전체 diff `/tmp/artex-u15-final-audit.diff`, 파일별 잔여·후속 종합 보고서 `/tmp/artex-u15-final-review.md`. fetch·병합·stage·commit·push·다음 단위는 진행하지 않았다.
