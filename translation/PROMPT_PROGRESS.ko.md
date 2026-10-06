@@ -170,14 +170,19 @@ HTTP 핸들러/관리 API 6파일 완료(B-1 auth·dto·customtool·platform_too
 - 모델-읽기 도구 설명(get_finding_retest_context·record_finding_retest_result·get_finding_traffic·bind_finding_traffic·legacy traffic_search)·에러·안전 문구 번역. 도구/파라미터/enum·`finding recorded`·`report_finding` 등 DNT.
 - **검증**: go build ./server/ OK, gofmt 무출력, 테스트 커플링 없음(chat_mentions_test 동기화 완료). DB 필요 테스트 미검증.
 
-### U11 잔여(todo) — server/ 긴 꼬리 (D-2 이후)
-A/B/C가 핵심 핸들러·오케스트레이션·알림을 덮었고, `server/`엔 소규모 파일이 다수 남음. **⚠️ §5.7 계약 주의 파일**:
-- `chat_mentions.go`(12) — 멘션 토큰(`@[漏洞#id]` 종류명)·`已截断`(chat_mentions_test 매칭). 프런트·테스트 동시 고려.
-- `task_archives.go`(19) — `归档不存在`(프런트 tasks 페이지 `includes("归档不存在")` 매칭).
-- `finding_retests.go`·`finding_traffic.go`·`finding_workflow.go` — 재검증/증거 도구 설명(모델-읽기).
-- `intercept.go`·`asset_intercept.go`·`task_intercept.go`·`side_questions.go`·`constraints_api.go`·`chatupload.go`·`skill_zip.go`·`workspace.go` 등.
-- 그 외: assembly·assets·findings_groups·intent_intervention·llmpool·logsink·mcpdiscover·task_* ·triggers·webui_* 등.
+### 묶음 D-2·D-3 (server/ 긴 꼬리 완료)  [정적검토 done · 실행 검증 일부]
+- **D-2**: intercept·asset_intercept·task_intercept·constraints_api·intent_intervention·side_questions.
+- **D-3**: assembly·assets·chatupload·findings_groups·llmpool·logsink·mcpdiscover·task_archive_package·task_assets·task_categories·task_metadata·task_resolution·task_templates·triggers·webui_embed·webui_stub·workspace·skill_zip.
+- **계약/특수 처리**:
+  - intercept.go 판정 형식 에러의 판정 앵커(§5.7)·server_mgmt `已存在`·task_archives `归档不存在`·chat_mentions 멘션 토큰 정규식/맵·conversations `新对话`/SDK 참조·finding_retests 프롬프트 버전 라벨(db/config U12 일치)·fallbackChat 접두·각종 설계문서 경로·orchestration 마이그레이션 상수 = **DNT 보존**.
+  - **logsink.go**: 로그 분류 키워드 리스트에 한국어 키워드(실패·폐기·거부·불가·비활성·재시도) **추가**(중국어 키워드 유지) — 로그를 한국어로 번역해 분류가 깨지지 않게 보강. 기존 동작 유지.
+  - 모델-읽기(assembly bash 상호작용 노트·shell 힌트, chatupload 첨부 노트, finding/traffic 도구 설명)는 지시 강도 보존 번역.
+  - 회사/분류/템플릿 `已存在`은 프런트 매칭 없음(실제 페이지 기준) 확인 후 번역.
+- **계약 테스트 동기화**: chat_mentions_test(`잘림`)·findings_groups_test(수동 제출 요약) 갱신.
+- **실행 검증(Go 1.26.3)**: `gofmt -l` 무출력 ✅ / `go build ./...` OK ✅ / `go vet ./server/` clean ✅ / 순수·no-DB 서버 테스트 + agent 회귀 PASS ✅. DB 필요 서버 테스트는 미검증.
 
+### 묶음 D 요약 — **server/ 전체 한국어화 완료**
+server/ 비테스트 파일에 남은 중국어는 전부 **의도적 DNT**(설계문서 경로·§5.7 계약 앵커·멘션 토큰 파서·logsink 분류 키워드·마이그레이션 상수). U11 server/ 작업 종료. (trans 트랙 B의 notify/·db/ 등 타 단위는 범위 밖)
 ## U5~U8·U10·U12~U15  [todo]
 (각 단위 완료 시 위와 같은 형식으로 추가. 트랙 A=U1~U9·U15 / 트랙 B=U10~U13 / 트랙 C=U14. [`PROMPT_GUIDE.ko.md`](./PROMPT_GUIDE.ko.md) §1 커버리지 맵 참고)
 
