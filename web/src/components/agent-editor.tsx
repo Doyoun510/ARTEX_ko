@@ -1137,7 +1137,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
                 {t.on_task_create && t.task_create_message && <div className="line-clamp-1">작업 생성: {t.task_create_message}</div>}
                 {t.on_tool_call && (
                   <>
-                    <div className="line-clamp-1">도구: {t.tool_names.join("、") || "(미선택)"}</div>
+                    <div className="line-clamp-1">도구: {t.tool_names.join(", ") || "(미선택)"}</div>
                     {t.tool_call_message && <div className="line-clamp-1">메시지: {t.tool_call_message}</div>}
                   </>
                 )}

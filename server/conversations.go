@@ -558,7 +558,7 @@ func (s *Server) runConversationTurn(ctx context.Context, cancel context.CancelC
 			log.Printf("[conv %d] append activity failed: %v", c.ID, err)
 		}
 	}
-	// On a manual stop ctx is cancelled; Chat already emits a clean "已手动停止"
+	// On a manual stop ctx is cancelled; Chat already emits a clean "사용자가 이번 대화를 중지했습니다"
 	// step, so skip the raw-error entry — only surface genuine failures.
 	if _, err := ca.Chat(ctx, c.AgentKey, sessionID, msg, maxTurns, maxDuration, webSearch, emit); err != nil {
 		finishReason = err.Error()

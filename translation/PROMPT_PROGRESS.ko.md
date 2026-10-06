@@ -703,3 +703,12 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **용어·범위**: 打桩=stub 처리(이번 테스트의 함수 반환값 지정), 令牌桶=토큰 버킷(알림 전송 속도 제한 알고리즘), 量纲=측정 단위(요청 횟수와 배치당 취약점 개수)를 중복·충돌 없이 문맥 제한과 함께 확정 등록했다. server/notify_api_test.go의 H01–H04 주석/실패 안내를 번역하고, 전송 시점 설명 두 곳을 정정했다. 직전 부분 번역 기록은 이력으로 유지한다.
 - **정적 보존**: 이번 추가 수정 14행, 파일 원본/현재 951/951줄·LF·들여쓰기·줄 배치 동일. 입력·fixture·기대값·검사 조건·코드·포맷 지정자와 인수 순서·이스케이프를 보존했다. 주석의 옛 메시지 인용 「近 30 分钟新增 1 个漏洞」와 실패 안내의 검증용 인용 状态变更 → 已修复는 원문 예시/인용으로 유지한다. 기존 세 파일 보완·TRANSLATION_PROMPT 변경·미추적 파일·Git index도 보존했다.
 - **잔여·실행**: S001 용어 보류 4개 블록 해소. S002의 범위 밖 table 사례 이름 8개는 남은 번역 작업으로 유지하며 A052·A090·S004·S005 및 U7/U15 후속 보류를 변경하지 않았다. 전체 감사/번역 완료나 테스트 통과를 뜻하지 않는다. 실행 검증은 **사용자 요청으로 미실행**이다. 누적 diff `/tmp/artex-audit-fix-final-text.diff`, 검토 보고 `/tmp/artex-audit-fix-final-text-review.md`, 감사 상태 MD/TSV를 갱신했다. fetch·병합·stage·commit·push·다음 묶음 없음.
+
+
+### 통합 감사 보완 9 · S002 잔여·S004·S005 [이번 범위 정리·정적 검토 완료 / 실행 미검증]
+- **기준·상태**: HEAD `564c80439114a88c58cb1c2dcaf3593199c48a41`의 직전 서버 테스트 설명/잔여 용어 정리 커밋을 확인했다. work/ko-translation이며 대상 기존 변경·staged·MERGE_HEAD 없음. 최신 네 기준 문서를 적용하고 fetch·병합하지 않았다.
+- **S002**: TestIsThinkingOnlyTurn의 앞부분 table 사례 이름 8개만 번역했다. 생각/도구/본문 구분·완전히 빈 assistant 턴·도구 결과·assistant 메시지 없음·빈 이력의 의미를 유지한다. 입력·fixture·thinking/guard 값·true/false 기대값·조건·t.Run(c.name)·기존 지정 t.Run 7개 번역은 동일하다. 전체 추적 파일에서 옛 이름의 정의 밖 직접 참조를 발견하지 못했으며 외부 개인 -run 명령은 미확인이다.
+- **S004**: 인터셉트 페이지 :542–543의 텍스트/툴팁 및 agent-editor :1140의 도구 목록 표시 구분자 3곳을 ", "로 맞췄다. 저장은 원래 enabled_tools/tool_names 배열을 사용한다. planner :185·191은 renderTriggers가 모델 입력의 자유 서술 목표/힌트 목록을 만드는 경로로, 비교/파싱/저장/출력 계약 의존을 발견하지 못해 이번 사용자 지정 허용에 따라 구분자 2곳만 변경했다. 목표·힌트 원문 값·지시 강도·포맷/인수는 보존한다. 다른 구분자는 변경하지 않았다.
+- **S005**: conversations.go:561의 영어 주석 안 인용만 “사용자가 이번 대화를 중지했습니다”로 맞췄다. pgStopConversation의 AbortChatStoppedByUser→Chat→captureRunSession→terminalText 경로 및 cancelcause.go:56의 Short와 대조했으며, 전체 결과 문구를 단독 문자열로 단정하지 않고 실제 요약에 포함되는 취소 사유를 인용했다. 운영 출력·취소 처리·영어 주석의 나머지는 동일하다.
+- **정적 검토·잔여**: 5개 소스/테스트 파일의 총 14행만 변경했고 파일별 줄 수·LF·끝 개행·들여쓰기·허용 리터럴/인용 밖 코드·포맷 지정자/인수 순서·이스케이프 동일. 연결된 테스트 기대값 수정 필요는 발견하지 못했다. 새 용어/계약 보류 없음. A052·A090·A050 및 U7/U15 후속·다른 단위/과거 기록은 보존한다. 전체 감사/번역 완료나 테스트 통과를 뜻하지 않는다.
+- **보존·산출물·실행**: 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·Git index 보존. 전체 diff `/tmp/artex-audit-fix-labels-separators.diff`, 검토 `/tmp/artex-audit-fix-labels-separators-review.md`, 감사 상태 MD/TSV 갱신. 실행 검증은 **사용자 요청으로 미실행**이다. stage·commit·push·다음 묶음 없음.

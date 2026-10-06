@@ -26,24 +26,24 @@ func TestIsThinkingOnlyTurn(t *testing.T) {
 		msgs []llm.Message
 		want bool
 	}{
-		{"仅思考", []llm.Message{llm.UserText("开始"), assistantThinking("想想")}, true},
-		{"思考+工具", []llm.Message{llm.UserText("开始"), toolUse}, false},
-		{"思考+正文", []llm.Message{assistantThinking("想想"), {
+		{"생각만 있음", []llm.Message{llm.UserText("开始"), assistantThinking("想想")}, true},
+		{"생각+도구", []llm.Message{llm.UserText("开始"), toolUse}, false},
+		{"생각+본문", []llm.Message{assistantThinking("想想"), {
 			Role:    llm.RoleAssistant,
 			Content: []llm.ContentBlock{{Type: llm.BlockThinking, Thinking: "x"}, llm.TextBlock("结论")},
 		}}, false},
-		{"正文只有空白字符", []llm.Message{{
+		{"본문에 공백 문자만 있음", []llm.Message{{
 			Role:    llm.RoleAssistant,
 			Content: []llm.ContentBlock{{Type: llm.BlockThinking, Thinking: "x"}, llm.TextBlock("  \n ")},
 		}}, true},
-		{"完全空的 assistant 回合", []llm.Message{{Role: llm.RoleAssistant}}, true},
+		{"완전히 빈 assistant 턴", []llm.Message{{Role: llm.RoleAssistant}}, true},
 		// 도구 결과의 역할은 user이므로 반드시 앞에 있는 assistant까지 거슬러 올라가 판정하고, 가장 가까운 메시지로 잘못 판정해서는 안 됩니다.
-		{"最后一条是工具结果", []llm.Message{toolUse, {
+		{"마지막 메시지가 도구 결과", []llm.Message{toolUse, {
 			Role:    llm.RoleUser,
 			Content: []llm.ContentBlock{{Type: llm.BlockToolResult, ToolUseID: "t1"}},
 		}}, false},
-		{"没有 assistant 消息", []llm.Message{llm.UserText("开始")}, false},
-		{"空历史", nil, false},
+		{"assistant 메시지 없음", []llm.Message{llm.UserText("开始")}, false},
+		{"빈 이력", nil, false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

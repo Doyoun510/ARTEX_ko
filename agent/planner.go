@@ -182,13 +182,13 @@ func renderTriggers(ts *db.ExplorationStore, evs []TriggerEvent) string {
 			if len(ev.Goals) == 1 {
 				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 목표 하나를 추가: %s —— 새로 달성해야 할 목표, 이에 따라 탐색 방향을 보충하라(대응 의도가 아직 없으면).", ev.Goals[0]))
 			} else {
-				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 목표 %d개를 추가: %s —— 모두 새로 달성해야 할 목표, 대응 의도가 아직 없는 목표마다 탐색 방향을 보충하라.", len(ev.Goals), strings.Join(ev.Goals, "；")))
+				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 목표 %d개를 추가: %s —— 모두 새로 달성해야 할 목표, 대응 의도가 아직 없는 목표마다 탐색 방향을 보충하라.", len(ev.Goals), strings.Join(ev.Goals, ", ")))
 			}
 		case "hint":
 			if len(ev.Hints) == 1 {
 				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 전략 힌트 하나를 추가: %s —— 탐색 그래프에 연결됨, 이에 따라 탐색 방향을 조정/보충하라(대응 의도가 아직 없으면).", ev.Hints[0]))
 			} else {
-				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 전략 힌트 %d개를 추가: %s —— 모두 탐색 그래프에 연결됨, 하나씩 이에 따라 탐색 방향을 조정/보충하라.", len(ev.Hints), strings.Join(ev.Hints, "；")))
+				b.WriteString(fmt.Sprintf("\n- 사람(메인 agent)이 전략 힌트 %d개를 추가: %s —— 모두 탐색 그래프에 연결됨, 하나씩 이에 따라 탐색 방향을 조정/보충하라.", len(ev.Hints), strings.Join(ev.Hints, ", ")))
 			}
 		case "goal_deleted":
 			b.WriteString(fmt.Sprintf("\n- 사람이 이 목표를 삭제: %s —— 해당 목표가 제거됨, 이에 따라 남은 목표/방향을 재판단하라(더는 그것을 위해 의도를 파견할 필요 없음).", ev.Detail))

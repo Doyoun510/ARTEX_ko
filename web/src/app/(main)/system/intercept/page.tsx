@@ -539,8 +539,8 @@ export default function InterceptPage() {
           ) : (
             <>
               <Badge variant="secondary" className="shrink-0">{scopeTools.length}개 도구</Badge>
-              <span className="truncate text-muted-foreground" title={scopeTools.join("、")}>
-                {scopeTools.join("、")}
+              <span className="truncate text-muted-foreground" title={scopeTools.join(", ")}>
+                {scopeTools.join(", ")}
               </span>
             </>
           )}
