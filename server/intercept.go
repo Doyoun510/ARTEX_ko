@@ -47,7 +47,7 @@ func (s *Server) wireInterceptReviewer() {
 		}
 		v := intercept.ParseVerdict(text)
 		if v.Action == "" {
-			return intercept.Decision{ProfileID: profileID}, fmt.Errorf("모델 판정 형식이 유효하지 않음, 다음을 포함해야 합니다: 裁决、实际操作、成功后的后果、命中规则")
+			return intercept.Decision{ProfileID: profileID}, fmt.Errorf("모델 판정 형식이 유효하지 않음, 문자열 필드 decision과 comment만 있는 JSON 객체여야 합니다. decision은 allow/ask/deny 중 하나이며 comment의 필수 앵커는 实际操作：, ；成功后的后果：, ；命中规则：입니다")
 		}
 		return intercept.Decision{Action: v.Action, Message: v.Reason, ProfileID: profileID}, nil
 	})

@@ -678,3 +678,13 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **확정·적용**: “标题里的图片信标”를 이번 Markdown 이스케이프 테스트 사례 설명에 한정해 “제목 안의 외부 이미지 삽입”으로 등록하고 notify/pack_test.go:133의 name만 변경했다. 图片信标의 일반 번역으로 확대하지 않는다. 직전 67개 이름 번역과 GUIDE 정정을 보존하여 이번 사례 설명 68곳의 보류는 모두 해소했다.
 - **정적 보존·잔여**: 이미지 URL·Item.Name·must/wrong·입력·기대값·검사 로직·영어·포맷·들여쓰기·줄 수·LF는 그대로다. TLS 설명/fixture 방향 불일치는 원문 문제로 유지한다. A089의 과거 U12/PASS 기록 및 U7/U15·다른 감사 항목은 변경하지 않았다. 기존 로컬 변경·미추적 파일·Git index를 보존했다.
 - **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 누적 diff `/tmp/artex-audit-fix-test-labels.diff`, 검토 보고 `/tmp/artex-audit-fix-test-labels-review.md`를 갱신했다. fetch·병합·stage·commit·push·다음 묶음 없음.
+
+
+### 통합 감사 보완 7 · A051·A053·A090 [표시·안내 정정 및 정적 검토 완료 / ProxyAddr 설명 확인 보류 / 실행 미검증]
+- **기준·범위**: HEAD `9262641`의 직전 알림 테스트 사례·작업 라벨 정리 커밋을 확인했다. 대상 기존 변경·staged 변경·MERGE_HEAD는 없었다. 최신 로컬 기준과 통합 감사 항목을 생성부·소비부·관련 테스트 및 Git 이력으로 재대조했다.
+- **A051 표시/계약 분리**: mentionKinds의 기존 kind·label·alias에 한국어 displayLabel만 추가했다. 선택 목록·검색 안내·검색 결과 종류 배지와 selectedMentions의 선택된 참조 표시/접근성 이름은 표시값을 사용한다. categories[index].label의 실제 삽입 경로, mentionSearch의 기존 중국어/영어 검색 문법, mentionToken·선택 토큰 정규식·token/start 반환·제거 범위·서버 파서·API/DB 값은 보존했다. 알 수 없는 종류의 기존 fallback도 유지한다. 입력창의 @중국어 종류 및 @[중국어 종류#id …] 토큰은 DNT로 남으며 레코드 이름/설명과 서버 스냅샷은 변환하지 않는다.
+- **기대값 대응**: web/src/lib/chat-mentions.test.mjs:28의 선택된 참조 표시 기대값에서 종류명만 취약점으로 맞췄다. 중국어 제목/설명 fixture·Unicode/개행/커서 입력·토큰·다른 기대값·검사 로직은 동일하다. 직접 소비자는 MentionTextarea와 이 테스트이며 서버 멘션 테스트는 중국어 계약 입력을 유지한다.
+- **A053 안내 정정**: server/intercept.go:50의 자체 오류 안내만 decision/comment 두 문자열 필드·allow/ask/deny·실제 comment 앵커 안내로 정정했다. 裁决은 ParseVerdict의 앵커가 아니며 实际操作：·；成功后的后果：·；命中规则：는 정확히 유지한다. 오류 안내를 직접 비교하는 테스트/소비부는 검색에서 발견하지 못했다. 파서·프롬프트·정책은 변경하지 않았다.
+- **A090 확인·유지**: db/db.go:192의 설명은 수정하지 않았다. 원문 记录代理地址(驱动 if 双文案), renderSystem의 Go 템플릿 렌더, WorkerVars.ProxyAddr와 prompt_test.go의 dual-text 주석 및 {{if .ProxyAddr}}…{{else}}…{{end}} fixture를 확인했다. 두 분기의 문구 선택을 가리킨다는 근거는 있으나 双文案의 직접 정의는 없고 현재 기본 worker 본문에는 해당 if가 없다. 후보는 “프록시 주소(사용자 프롬프트의 if/else 안내 문구 선택에 사용)”이다. ProxyAddr는 캡처 OFF에서도 전역 프록시를 반환할 수 있어 레코딩 여부와 동일시하지 않는다. 후보를 확정 용어로 등록하지 않았으며 변수·기본값·설정·DB 저장은 보존한다.
+- **정적 보존·범위**: 표시 분리에 필요한 최소 참조 변경 외 코드·정규식·키·enum·영어·숫자·포맷/인수·줄 수·LF·들여쓰기는 보존했다. 진행 기록은 이번 이력만 추가했다. 기존 TRANSLATION_PROMPT 변경·미추적 파일·Git index 및 U7 live 테스트/커스텀 프롬프트와 U15 정책 후속 보류는 유지한다. 이번 안내 정정이 기존 후속 문제 해결을 뜻하지 않는다.
+- **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 전체 diff `/tmp/artex-audit-fix-contract-display.diff`, 상세 보고 `/tmp/artex-audit-fix-contract-display-review.md`. fetch·병합·stage·commit·push·다음 묶음 없음.

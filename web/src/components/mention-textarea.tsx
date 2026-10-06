@@ -236,7 +236,7 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
             <span>
               {categories.length
                 ? "참조 유형 선택"
-                : `${mentionKinds.find((kind) => kind.kind === search.kind)?.label ?? "전체 기록"} 검색`}
+                : `${mentionKinds.find((kind) => kind.kind === search.kind)?.displayLabel ?? "전체 기록"} 검색`}
             </span>
             <span>↑↓ 선택 · Enter 확인 · Esc 닫기</span>
           </div>
@@ -265,7 +265,7 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
                 onClick={() => choose(index)}
               >
                 <AtSignIcon className="size-4 text-muted-foreground" />
-                <span>{kind.label}</span>
+                <span>{kind.displayLabel}</span>
                 <ChevronRightIcon className="ml-auto size-4 text-muted-foreground" />
               </button>
             ))}
@@ -300,7 +300,7 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
                 onClick={() => choose(index)}
               >
                 <span className="flex w-full items-center gap-2">
-                  <Badge variant="outline">{mentionKinds.find((kind) => kind.kind === item.kind)?.label}</Badge>
+                  <Badge variant="outline">{mentionKinds.find((kind) => kind.kind === item.kind)?.displayLabel}</Badge>
                   <span className="truncate text-sm">{item.label}</span>
                   <span className="ml-auto shrink-0 text-muted-foreground text-xs">#{item.id}</span>
                 </span>

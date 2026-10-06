@@ -1,13 +1,13 @@
 export const mentionKinds = [
-  { kind: "finding", label: "漏洞", alias: "finding" },
-  { kind: "asset", label: "资产", alias: "asset" },
-  { kind: "company", label: "企业", alias: "company" },
-  { kind: "endpoint", label: "接口", alias: "api" },
-  { kind: "ip", label: "IP", alias: "ip" },
-  { kind: "app", label: "应用", alias: "app" },
-  { kind: "root_domain", label: "域名", alias: "domain" },
-  { kind: "subdomain", label: "子域名", alias: "subdomain" },
-  { kind: "service", label: "服务", alias: "service" },
+  { kind: "finding", label: "漏洞", displayLabel: "취약점", alias: "finding" },
+  { kind: "asset", label: "资产", displayLabel: "자산", alias: "asset" },
+  { kind: "company", label: "企业", displayLabel: "회사", alias: "company" },
+  { kind: "endpoint", label: "接口", displayLabel: "엔드포인트", alias: "api" },
+  { kind: "ip", label: "IP", displayLabel: "IP", alias: "ip" },
+  { kind: "app", label: "应用", displayLabel: "앱", alias: "app" },
+  { kind: "root_domain", label: "域名", displayLabel: "도메인", alias: "domain" },
+  { kind: "subdomain", label: "子域名", displayLabel: "서브도메인", alias: "subdomain" },
+  { kind: "service", label: "服务", displayLabel: "서비스", alias: "service" },
 ] as const;
 
 export type MentionKind = (typeof mentionKinds)[number]["kind"];
@@ -55,7 +55,7 @@ export function selectedMentions(value: string) {
   return [...value.matchAll(/@\[(漏洞|资产|企业|接口|IP|应用|域名|子域名|服务)#([0-9]+)(?: ([^\]\r\n]*))?\]/g)].map(
     (match) => ({
       token: match[0],
-      label: `${match[1]} #${match[2]}${match[3] ? ` · ${match[3]}` : ""}`,
+      label: `${mentionKinds.find((entry) => entry.label === match[1])?.displayLabel ?? match[1]} #${match[2]}${match[3] ? ` · ${match[3]}` : ""}`,
       start: match.index,
     }),
   );
