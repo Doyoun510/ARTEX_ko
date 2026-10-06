@@ -1,117 +1,117 @@
 ---
 name: api-recon
-description: 收集网站API接口时调用该skill。
+description: 웹사이트 API 엔드포인트를 수집할 때 이 skill을 호출합니다.
 ---
 
-# API Recon（前端接口侦察）
+# API Recon(프런트엔드 엔드포인트 정찰)
 
-在**已授权**前提下，尽可能完整地发现：**后端 API**（路径、方法、参数、响应体）、**前端路由**、**UI 功能触发点**（Tab、弹窗、表格操作等）。
+**권한을 부여받은** 상태에서 **백엔드 API**(경로·메서드·파라미터·응답 본문), **프런트엔드 라우트**, **UI 기능 트리거 지점**(Tab·팝업·표 동작 등)을 가능한 한 빠짐없이 발견합니다.
 
 ---
 
-## 边界与禁止（Agent 必读 · 违反即越界）
+## 경계와 금지 사항(Agent 필독 · 위반 시 범위 이탈)
 
-本 skill **仅做 API / 参数面侦察**，不是漏洞挖掘或渗透利用阶段。
+이 skill은 **API / 파라미터 영역 정찰만 수행**하며, 취약점 탐색이나 침투 공격 단계가 아닙니다.
 
-### 任务边界
+### 작업 경계
 
-| 范围 | 允许 | 禁止 |
+| 범위 | 허용 | 금지 |
 |---|---|---|
-| **目标** | 枚举 path、method、参数、路由、UI 触发点 | SQLi/XSS/越权/爆破/fuzz 漏洞、改包攻击、破坏性操作 |
-| **鉴权** | Hook + stub/mock 绕过**客户端**登录门 | 向用户索要或猜测账号密码；尝试真实登录表单提交 |
-| **运行时** | 无凭据下 hook 接口，用 mock 响应让 SPA 进入登录后壳层 | 依赖真实后端会话才能继续的流程 |
+| **목표** | path·method·파라미터·라우트·UI 트리거 지점 열거 | SQLi/XSS/권한 우회/무차별 대입/fuzz 취약점·요청 변조 공격·파괴적 동작 |
+| **인증** | Hook + stub/mock으로 **클라이언트** 로그인 관문 우회 | 사용자에게 계정/비밀번호 요구 또는 추측·실제 로그인 폼 제출 시도 |
+| **런타임** | 자격 증명 없이 hook으로 엔드포인트를 가로채고 mock 응답으로 SPA의 로그인 후 기본 화면에 진입 | 실제 백엔드 세션에 의존해야 계속할 수 있는 흐름 |
 
-### 无凭据动态分析（Phase 3 默认）
+### 자격 증명 없는 동적 분석(Phase 3 기본)
 
-1. 通过 `preload.js` / `runtime_harvest.js` **拦截并 stub** 登录、权限、菜单等 bootstrap 接口；
-2. 对业务查询接口返回 **结构正确、业务码成功、数据可为空** 的 mock body；
-3. 使前端在无后端或 401 环境下仍能渲染登录后页面，从而触发更多 XHR/fetch/WebSocket；
-4. **空数据、空白表格、占位 UI 均属预期**——勿为此转向真实登录或漏洞测试。
+1. `preload.js` / `runtime_harvest.js`를 통해 **가로채고 stub 처리**합니다. 대상은 로그인·권한·메뉴 등의 bootstrap 엔드포인트입니다.
+2. 업무 조회 엔드포인트에 **구조가 올바르고 애플리케이션 응답 코드가 성공이며 데이터는 비어 있어도 되는** mock body를 반환합니다.
+3. 백엔드가 없거나 401이 반환되는 환경에서도 프런트엔드가 로그인 후 페이지를 렌더링하도록 하여 더 많은 XHR/fetch/WebSocket을 트리거합니다.
+4. **빈 데이터·빈 표·자리만 표시된 UI는 모두 예상된 결과입니다**. 이 때문에 실제 로그인이나 취약점 테스트로 전환하지 마세요.
 
-**一句话**：用 mock 撑开前端路由与组件挂载，**只录 outbound 请求**；后端返回什么不重要，重要的是前端**还会发哪些接口**。
+**요약**: mock으로 프런트엔드 라우트와 컴포넌트 마운트가 이루어지게 하고, **outbound 요청만 기록합니다**. 백엔드가 무엇을 반환하는지는 중요하지 않으며, 프런트엔드가 **어떤 엔드포인트를 추가로 요청하는지**가 중요합니다.
 
-### 流程硬禁止
+### 절차상 엄격한 금지 사항
 
-| 禁止 | 替代做法 |
+| 금지 | 대안 |
 |---|---|
-| Phase 1 完成前 grep/curl/Read 主 entry `index-*.js` 提取 API path | 跑 `OUTDIR/harvest_static.py` |
-| 手写 `extract_apis.py` 等替代 harvest 的脚本 | 改 `OUTDIR/harvest_static.py` 后重跑 |
-| 同一 grep/命令失败 ≥2 次仍重复 | 换策略：读 tool_logs、改 harvest、查 reference |
-| 跳过门禁 A/B，直接跑 `scripts/` 原版 | 复制到 OUTDIR 并按目标改 |
-| 真实用户名/密码、OTP、OAuth 等鉴权 | stub/mock（见上文） |
-| 以「拿真实数据」为由跳过 stub，做越权/注入测试 | 只录 outbound，属 recon 边界 |
-| 删除、导出敏感数据、批量写等不可逆操作 | coverage 点击亦同 |
-| 未完成 runtime + 动态枚举，声称已获全部页面和接口 | 见「完成定义」或标注局限 |
-| 未完成参数触发矩阵 + diff，声称已掌握全部参数 | Phase 3b 矩阵 + Phase 5 diff |
-| 用单一 runtime 样本推断必填/可选 | 多样本 diff 或校验规则/错误反推 |
+| Phase 1 완료 전에 grep/curl/Read로 메인 entry `index-*.js`에서 API path 추출 | `OUTDIR/harvest_static.py` 실행 |
+| `extract_apis.py` 등 harvest를 대체하는 스크립트를 직접 작성 | `OUTDIR/harvest_static.py`를 수정한 뒤 다시 실행 |
+| 동일한 grep/명령이 ≥2회 실패했는데도 반복 | 전략 변경: tool_logs 읽기·harvest 수정·reference 확인 |
+| 실행 전 필수 확인 A/B를 건너뛰고 `scripts/` 원본을 직접 실행 | OUTDIR에 복사한 뒤 대상에 맞게 수정 |
+| 실제 사용자 이름/비밀번호·OTP·OAuth 등의 인증 | stub/mock(위 내용 참조) |
+| '실제 데이터 확보'를 이유로 stub을 건너뛰고 권한 우회/인젝션 테스트 수행 | outbound만 기록, recon 경계에 해당 |
+| 삭제·민감정보 내보내기·일괄 쓰기 등의 비가역적 동작 | coverage 클릭에도 동일하게 적용 |
+| runtime + 동적 열거를 완료하지 않고 모든 페이지와 엔드포인트를 확보했다고 주장 | '완료 정의' 참조 또는 한계 명시 |
+| 파라미터 트리거 매트릭스 + diff를 완료하지 않고 모든 파라미터를 파악했다고 주장 | Phase 3b 매트릭스 + Phase 5 diff |
+| 단일 runtime 샘플로 필수/선택 사항 추론 | 여러 샘플의 diff 또는 검증 규칙/오류 기반 역추론 |
 
 ---
 
-## 两层模型 + 运行模式
+## 두 계층 모델 + 실행 모드
 
-| 层 | 产出 | 上限 |
+| 계층 | 산출물 | 한계 |
 |---|---|---|
-| **静态**（JS bundle） | 全量 endpoint 路径、路由草案、组包点字段候选 | 无 HTTP 方法；参数须 Phase 1b；漏掉运行时拼接 URL |
-| **运行时**（活会话） | 方法 + body + 响应 + 动态 URL + WS/SSE；多样本 diff 补全参数 | 页面须实际渲染才会发请求；单样本不足以定必填/可选 |
+| **정적**(JS bundle) | 전체 endpoint 경로·라우트 초안·요청 구성 지점의 필드 후보 | HTTP 메서드는 없습니다. 파라미터는 Phase 1b가 필요하며, 런타임에 조합되는 URL은 놓칩니다 |
+| **런타임**(활성 세션) | 메서드 + body + 응답 + 동적 URL + WS/SSE. 여러 샘플의 diff로 파라미터 보완 | 페이지가 실제로 렌더링되어야 요청이 발생합니다. 단일 샘플만으로 필수/선택 사항을 확정할 수 없습니다 |
 
-| 运行模式 | 引擎 | 适用 |
+| 실행 모드 | 엔진 | 용도 |
 |---|---|---|
-| **depth** | `runtime_harvest.js`（Puppeteer） | API 清单、METHOD/params/响应体、WS/SSE、可复现批量跑 |
-| **coverage** | browser + `preload.js` | 点 Tab/弹窗/表格，功能点覆盖更深 |
-| **both** | 先 depth 再 coverage | 最完整，耗时最长 |
+| **depth** | `runtime_harvest.js`(Puppeteer) | API 목록·METHOD/params/응답 본문·WS/SSE·재현 가능한 일괄 실행 |
+| **coverage** | browser + `preload.js` | Tab/팝업/표 클릭으로 기능 지점을 더 깊이 확인 |
+| **both** | depth 후 coverage | 가장 완전하며, 가장 오래 걸립니다 |
 
-**参数方法论**（无通用脚本）：path 用 harvest/正则；参数用 **锚点扩窗 + UI 绑定链 + 多样本 diff + 错误反推**（grep 配方见 [reference.md](reference.md) J 节）。
-
----
-
-## 完成定义
-
-全部满足方可声称 recon 完成：
-
-- [ ] **静态**：Phase 1 harvest 产出 `api_static.txt`、`routes.txt`、`js/`
-- [ ] **运行时**：至少 depth 或 coverage 之一；coverage/both 须 **Hook 生效 + 动态枚举环**
-- [ ] **进壳**：访问业务 path 时非 `/login`（注意 hash 路由）
-- [ ] **参数**：coverage/both 完成参数触发矩阵 + `param_samples.json`；Phase 5 合并 `params_merged.json`
-- [ ] **深度**（若模块页空白）：Phase 4 权限树还原并重跑，直至出现 **module 级 API**（非仅 locale/bootstrap）
-- [ ] **交付**：Phase 5 产出齐全（见 Phase 5 产出表）；`insert_assets` 写入服务与端点资产
+**파라미터 분석 방법**(범용 스크립트 없음): path는 harvest/정규 표현식으로 찾고, 파라미터는 **앵커 주변 검색 범위 확대 + UI 바인딩 연결 관계 + 여러 샘플의 diff + 오류 기반 역추론**으로 확인합니다(grep 방법은 [reference.md](reference.md) J절 참조).
 
 ---
 
-## 脚本与门禁
+## 완료 정의
 
-`scripts/` 仅为参考模板，**禁止**直接跑原版并当最终结果。
+다음을 모두 충족해야 recon 완료라고 주장할 수 있습니다:
 
-**规则**：先读 → 按目标改 → 写入 `OUTDIR`（如 `recon/`）→ 记 `CHANGES.md`；不匹配则按方法论重写，只借结构。
+- [ ] **정적**: Phase 1 harvest에서 `api_static.txt`·`routes.txt`·`js/` 생성
+- [ ] **런타임**: depth 또는 coverage 중 적어도 하나. coverage/both는 **Hook 적용 + 동적 열거 반복 절차**가 필수
+- [ ] **로그인 후 화면 진입**: 업무 path에 접근할 때 `/login`이 아님(hash 라우트 주의)
+- [ ] **파라미터**: coverage/both에서 파라미터 트리거 매트릭스 + `param_samples.json` 완료. Phase 5에서 `params_merged.json` 병합
+- [ ] **심층**(모듈 페이지가 비어 있는 경우): Phase 4 권한 트리 복원 후 다시 실행하며, **module 수준 API**가 나타날 때까지 반복(locale/bootstrap만으로는 부족)
+- [ ] **제출**: Phase 5 산출물이 모두 갖춰져 있어야 합니다(Phase 5 산출물 표 참조). `insert_assets`로 서비스와 엔드포인트 자산 기록
 
-| 门禁 | 何时 | 参考脚本 → OUTDIR 副本 | 常见必改项 |
+---
+
+## 스크립트와 실행 전 필수 확인
+
+`scripts/`는 참조 템플릿일 뿐이며, 원본을 직접 실행하고 최종 결과로 취급하는 것은 **금지합니다**.
+
+**규칙**: 먼저 읽기 → 대상에 맞게 수정 → `OUTDIR`(예: `recon/`)에 저장 → `CHANGES.md`에 기록. 맞지 않으면 방법론에 따라 다시 작성하며 구조만 참고합니다.
+
+| 실행 전 필수 확인 | 시점 | 참조 스크립트 → OUTDIR 사본 | 일반적인 필수 수정 사항 |
 |---|---|---|---|
-| **A（静态）** | Phase 0 后、**第一次**跑 harvest/spider 前 | `harvest_static.py` / `spider_mpa.py` | **多数站点默认 regex 可直接跑**；仅 manifest/方言不匹配时改 endpoint 正则、webpack/Vite `publicPath`、MPA exclude/cookie |
-| **B（运行时）** | Phase 2 后、跑 depth/coverage 前 | `runtime_harvest.js` / `preload.js` + `config.json` | Cookie/localStorage 键、neutralize 成功值、stubs、login 正则、api 前缀、hash/history |
+| **A(정적)** | Phase 0 후, harvest/spider를 **처음** 실행하기 전 | `harvest_static.py` / `spider_mpa.py` | **대부분의 사이트는 기본 regex로 바로 실행 가능**. manifest/표현 방식이 맞지 않을 때만 endpoint 정규 표현식·webpack/Vite `publicPath`·MPA exclude/cookie 수정 |
+| **B(런타임)** | Phase 2 후, depth/coverage 실행 전 | `runtime_harvest.js` / `preload.js` + `config.json` | Cookie/localStorage 키·neutralize 성공값·stubs·login 정규 표현식·api 접두사·hash/history |
 
-**SPA 强制顺序**（不可交换；Phase 编号优先于「先探索再脚本」）：
+**SPA 필수 순서**(순서 변경 불가. Phase 번호가 '먼저 탐색한 뒤 스크립트 실행'보다 우선):
 
-| 步骤 | 必须 | 禁止 |
+| 단계 | 필수 | 금지 |
 |---|---|---|
-| Phase 0 完成后 | 下一条 Bash = `python3 OUTDIR/harvest_static.py <URL> OUTDIR` | curl/grep/Read 主 entry `index-*.js`（通常 >500KB） |
-| 门禁 A | 复制脚本 → 按需小改 → **立刻运行** | 先手工提取 API 再决定是否 harvest |
-| Phase 1 完成前 | `wc -l` 校验产出；404 改 harvest 重试 | 手写 extract 脚本；对未下载 URL 反复 grep |
-| Phase 1b 起 | grep 仅 `OUTDIR/js/*.js` | 用主 bundle 代替 harvest |
+| Phase 0 완료 후 | 다음 Bash = `python3 OUTDIR/harvest_static.py <URL> OUTDIR` | curl/grep/Read로 메인 entry `index-*.js` 처리(보통 >500KB) |
+| 실행 전 필수 확인 A | 스크립트 복사 → 필요에 따라 소폭 수정 → **즉시 실행** | 먼저 API를 직접 추출한 뒤 harvest 여부 결정 |
+| Phase 1 완료 전 | `wc -l`로 산출물 확인. 404이면 harvest 수정 후 재시도 | extract 스크립트 직접 작성·다운로드하지 않은 URL에 반복 grep |
+| Phase 1b부터 | grep은 `OUTDIR/js/*.js`에만 사용 | 메인 bundle로 harvest 대체 |
 
-- ✅ 复制 `harvest_static.py` → （可选）改 regex → **立即运行**
-- ❌ curl 主 bundle → grep 多次 → 写临时 extract → 最后才 harvest
-- **MPA**：Phase 0 后下一条 Bash = `python3 OUTDIR/spider_mpa.py ...`
+- ✅ `harvest_static.py` 복사 → (선택 사항) regex 수정 → **즉시 실행**
+- ❌ curl로 메인 bundle 요청 → grep 여러 번 → 임시 extract 작성 → 마지막에 harvest
+- **MPA**: Phase 0 후 다음 Bash = `python3 OUTDIR/spider_mpa.py ...`
 
 ---
 
-## 工具与输出约束
+## 도구와 출력 제약 조건
 
-| 约束 | 说明 |
+| 제약 조건 | 설명 |
 |---|---|
-| 大文件 | >100KB 的 `index-*.js` **禁止** Read/grep 进上下文；用 OUTDIR 脚本批处理 |
-| grep 输出 | 必须 `\| head -20` 或 `-m 5`；对话只保留 path 摘要，勿贴 bundle 片段 |
-| 校验 | 用 `wc -l`、`ls \| wc -l`；勿 Read 整目录 |
-| regex 初探 | 可选、≤1 次、仅 ≤50KB 小 chunk 或 HTML；正式静态以 harvest 为准 |
-| reference | 配方/模板/排障见 [reference.md](reference.md)，勿重复 inline 全文 |
+| 대용량 파일 | >100KB인 `index-*.js`를 Read/grep으로 컨텍스트에 넣는 것은 **금지합니다**. OUTDIR 스크립트로 일괄 처리합니다 |
+| grep 출력 | 반드시 `\| head -20` 또는 `-m 5`를 사용해야 합니다. 대화에는 path 요약만 남기고 bundle 조각을 붙이지 마세요 |
+| 확인 | `wc -l`·`ls \| wc -l`을 사용합니다. 디렉터리 전체를 Read하지 마세요 |
+| regex 초기 탐색 | 선택 사항, ≤1회, ≤50KB인 작은 chunk 또는 HTML에만 적용. 정식 정적 분석은 harvest를 기준으로 합니다 |
+| reference | 방법/템플릿/문제 해결은 [reference.md](reference.md) 참조. inline으로 전문을 반복하지 마세요 |
 
 ---
 
@@ -157,7 +157,7 @@ python3 recon/spider_mpa.py <BASE_URL> <OUTDIR> [--cookie "session=..."] [--max 
 
 ## Phase 1 — 静态
 
-遵守 [脚本与门禁](#脚本与门禁) · [工具与输出约束](#工具与输出约束)。
+遵守 [脚本与门禁](#스크립트와-실행-전-필수-확인) · [工具与输出约束](#도구와-출력-제약-조건)。
 
 ```bash
 python3 recon/harvest_static.py <BASE_URL> <OUTDIR>
@@ -175,7 +175,7 @@ ls OUTDIR/js | wc -l
 
 ### Phase 1b — 参数逆向
 
-path 来自 Phase 1；参数字段须单独 recon。grep 规则见 [工具与输出约束](#工具与输出约束)。
+path 来自 Phase 1；参数字段须单独 recon。grep 规则见 [工具与输出约束](#도구와-출력-제약-조건)。
 
 **完成标准**：重要接口能答——字段名、传输位置、类型推断、是否必填、样本值、置信度。
 
@@ -278,7 +278,7 @@ coverage 每轮导出：`__API_RECON_LOG__`、`__API_RECON_DETAIL__`、`__API_RE
 
 ## Phase 3 — 运行时
 
-须已过门禁 B；遵守 [边界与禁止](#边界与禁止agent-必读--违反即越界) · 无凭据 mock 策略。
+须已过门禁 B；遵守 [边界与禁止](#경계와-금지-사항agent-필독--위반-시-범위-이탈) · 无凭据 mock 策略。
 
 `config.json` 设置 `"runtimeMode": "depth" | "coverage" | "both"`（模板见 reference）。
 
@@ -422,4 +422,4 @@ stub 检查：外层 `response_code` 与拦截器门一致；flat codes 与 tree
 ## 附加资源
 
 - Grep 配方、`config.json` 模板、排障、Hook、参数逆向 J 节、site_map 模板：**[reference.md](reference.md)**
-- 参考脚本路径见 [脚本与门禁](#脚本与门禁) 表
+- 参考脚本路径见 [脚本与门禁](#스크립트와-실행-전-필수-확인) 表

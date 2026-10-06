@@ -1,22 +1,22 @@
-# api-recon — 参考手册
+# api-recon — 참조 매뉴얼
 
-Grep 配方、`config.json` 模板与排障。所有 grep 针对 `js/` 目录执行。bundle 单行时可先 `js-beautify` 或 `sed 's/}/}\n/g'`，通常带上下文窗口的 raw grep 即可。
+Grep 방법·`config.json` 템플릿·문제 해결 안내입니다. 모든 grep은 `js/` 디렉터리를 대상으로 실행합니다. bundle이 한 줄이면 먼저 `js-beautify` 또는 `sed 's/}/}\n/g'`를 사용할 수 있으며, 보통 컨텍스트 범위가 있는 raw grep이면 충분합니다.
 
-## 脚本说明
+## 스크립트 설명
 
-`scripts/` 内所有文件均为**参考模板**，执行前必须按目标站点调整。典型改动点：
+`scripts/`의 모든 파일은 **참조 템플릿**이며, 실행 전에 반드시 대상 사이트에 맞게 수정해야 합니다. 대표적인 수정 사항:
 
-| 脚本 | 常见需调整项 |
+| 스크립트 | 일반적인 수정 사항 |
 |---|---|
-| `harvest_static.py` | endpoint 正则、webpack/Vite manifest 解析、微前端 publicPath、重试/并发 |
-| `runtime_harvest.js` | neutralize 字段名与成功值、stub 匹配规则与 body 结构、routes 来源、WS 录制、`waitUntil`/`routeTimeout`/`proxy` |
-| `preload.js` | `loginPathRe`、L1 stubs、`neutralize.fields`、`apiPattern`、是否启用 L3、`recordDetail`、`observe.*`、`neutralizeVueRouter` |
-| `spider_mpa.py` | `--exclude` 破坏性链接、cookie、depth/max、同域过滤 |
-| `extract_route_map.py` | `routeMap` / `routeLink` 正则、KEY 命名模式 |
-| `build_perm_tree.py` | `userRouteAuth` 解析、`ROOTS`/`PREFIX_PARENT` 层级启发式、stub 外层字段名 |
-| `config.json` | 以上全部站点专属参数的统一入口 |
+| `harvest_static.py` | endpoint 정규 표현식·webpack/Vite manifest 파싱·micro-frontend publicPath·재시도/동시성 |
+| `runtime_harvest.js` | neutralize 필드명과 성공값·stub 매칭 규칙과 body 구조·routes 출처·WS 기록·`waitUntil`/`routeTimeout`/`proxy` |
+| `preload.js` | `loginPathRe`·L1 stubs·`neutralize.fields`·`apiPattern`·L3 활성화 여부·`recordDetail`·`observe.*`·`neutralizeVueRouter` |
+| `spider_mpa.py` | `--exclude` 파괴적 링크·cookie·depth/max·동일 도메인 필터링 |
+| `extract_route_map.py` | `routeMap` / `routeLink` 정규 표현식·KEY 이름 규칙 |
+| `build_perm_tree.py` | `userRouteAuth` 파싱·`ROOTS`/`PREFIX_PARENT` 계층 구성 추론 규칙·stub 외부 필드명 |
+| `config.json` | 위의 모든 사이트별 파라미터를 통합하는 진입점 |
 
-调整后的文件建议放在任务工作目录（如 `recon/`），报告中注明相对参考脚本的具体改动。
+수정한 파일은 작업 디렉터리(예: `recon/`)에 두는 것을 권장하며, 보고서에 참조 스크립트와 비교하여 구체적으로 무엇을 수정했는지 명시합니다.
 
 ---
 
