@@ -1228,7 +1228,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     const name = normalizedTemplateName(b.name);
     if (!name) throw new Error("분류 이름은 비어 있을 수 없습니다");
     if (mockTaskCategories.some((category) => category.name.toLowerCase() === name.toLowerCase())) {
-      throw new Error("分类名称已存在");
+      throw new Error("분류 이름이 이미 존재합니다");
     }
     const now = new Date().toISOString();
     const category: TaskCategory = {
@@ -1247,7 +1247,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     const name = normalizedTemplateName(b.name);
     if (!name) throw new Error("분류 이름은 비어 있을 수 없습니다");
     if (mockTaskCategories.some((item) => item.id !== category.id && item.name.toLowerCase() === name.toLowerCase())) {
-      throw new Error("分类名称已存在");
+      throw new Error("분류 이름이 이미 존재합니다");
     }
     category.name = name;
     category.updated_at = new Date().toISOString();
@@ -1307,7 +1307,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     if (
       mockTaskTemplates.some((template) => normalizedTemplateName(template.name).toLowerCase() === name.toLowerCase())
     ) {
-      throw new Error("模板名称已存在");
+      throw new Error("템플릿 이름이 이미 존재합니다");
     }
     const nextID = mockTaskTemplates.reduce((max, template) => Math.max(max, template.id), 0) + 1;
     const created: TaskTemplate = {
@@ -1333,7 +1333,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
         (item) => item.id !== template.id && normalizedTemplateName(item.name).toLowerCase() === name.toLowerCase(),
       )
     ) {
-      throw new Error("模板名称已存在");
+      throw new Error("템플릿 이름이 이미 존재합니다");
     }
     template.name = name;
     template.description = description;
@@ -1801,7 +1801,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     const name = String(b.name ?? "").trim();
     if (!name) throw new Error("회사 이름은 비어 있을 수 없습니다");
     if (mockCompanies.some((company) => company.name.toLowerCase() === name.toLowerCase())) {
-      throw new Error("企业已存在");
+      throw new Error("회사가 이미 존재합니다");
     }
     const id = mockCompanies.reduce((max, company) => Math.max(max, company.id), 0) + 1;
     const scopeResult = mockScopeRows(id, b.scope);

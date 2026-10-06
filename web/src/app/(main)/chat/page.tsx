@@ -878,6 +878,7 @@ const ConversationItem = React.memo(function ConversationItem({
   const renameInputRef = React.useRef<HTMLInputElement>(null);
   const cancelRenameRef = React.useRef(false);
   const pinned = conversationIsPinned(conv);
+  const displayTitle = !conv.title || conv.title === "新对话" ? "새 대화" : conv.title;
 
   React.useEffect(() => {
     if (!renaming) return;
@@ -897,7 +898,7 @@ const ConversationItem = React.memo(function ConversationItem({
         <Checkbox
           checked={selectedForDelete}
           onCheckedChange={(checked) => onSelectedForDeleteChange(conv.id, checked === true)}
-          aria-label={`'${conv.title || "新对话"}' 대화 선택`}
+          aria-label={`'${displayTitle}' 대화 선택`}
           className="ml-1 shrink-0"
         />
       )}
@@ -929,7 +930,7 @@ const ConversationItem = React.memo(function ConversationItem({
         >
           <div className="flex min-w-0 items-center gap-1.5">
             {pinned && <PinIcon className="text-primary size-3 shrink-0" aria-label="고정됨" />}
-            <div className="truncate text-sm">{conv.title || "新对话"}</div>
+            <div className="truncate text-sm">{displayTitle}</div>
             {conv.running ? (
               <Badge variant="secondary" className="shrink-0 gap-1" title="Agent 실행 중">
                 <Spinner className="size-3" aria-hidden="true" />
@@ -963,7 +964,7 @@ const ConversationItem = React.memo(function ConversationItem({
             variant="ghost"
             size="icon-sm"
             className="text-muted-foreground shrink-0"
-            aria-label={`'${conv.title || "新对话"}' 대화 관리`}
+            aria-label={`'${displayTitle}' 대화 관리`}
           >
             <MoreHorizontalIcon />
           </Button>
@@ -991,7 +992,7 @@ const ConversationItem = React.memo(function ConversationItem({
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>'{conv.title || "新对话"}' 대화를 삭제할까요?</AlertDialogTitle>
+            <AlertDialogTitle>'{displayTitle}' 대화를 삭제할까요?</AlertDialogTitle>
             <AlertDialogDescription>이 작업은 되돌릴 수 없습니다.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
