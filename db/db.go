@@ -189,7 +189,7 @@ var builtinAgents = []builtinAgent{
 		{"FindingsSummary", "확인된 취약점 요약(선택)", "high:1 medium:2", "distilled"},
 	}, false, nil},
 	{"worker", "실행", "worker", "의도 하나를 받아 실행하고, 발견한 사실/취약점을 지식 그래프에 기록한 뒤 정지하라.", []promptVar{
-		{"ProxyAddr", "기록 프록시 주소(if 이중 문구 구동)", "127.0.0.1:8080", "runtime"},
+		{"ProxyAddr", "현재 실행에 적용되는 프록시 주소(사용자 프롬프트에서 참조하거나 if/else 안내 문구 선택에 사용 가능)", "127.0.0.1:8080", "runtime"},
 		{"WorkerName", "worker 자기 식별(선택)", "worker-1", "runtime"},
 	}, false, nil},
 	// Auto: 내장 '플랫폼 동작' agent. 침투 오케스트레이션 루프에 참여하지 않고, 대화 페이지로 구동되며, 도구로 플랫폼 동작을 수행한다.

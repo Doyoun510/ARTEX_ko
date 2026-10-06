@@ -712,3 +712,12 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **S005**: conversations.go:561의 영어 주석 안 인용만 “사용자가 이번 대화를 중지했습니다”로 맞췄다. pgStopConversation의 AbortChatStoppedByUser→Chat→captureRunSession→terminalText 경로 및 cancelcause.go:56의 Short와 대조했으며, 전체 결과 문구를 단독 문자열로 단정하지 않고 실제 요약에 포함되는 취소 사유를 인용했다. 운영 출력·취소 처리·영어 주석의 나머지는 동일하다.
 - **정적 검토·잔여**: 5개 소스/테스트 파일의 총 14행만 변경했고 파일별 줄 수·LF·끝 개행·들여쓰기·허용 리터럴/인용 밖 코드·포맷 지정자/인수 순서·이스케이프 동일. 연결된 테스트 기대값 수정 필요는 발견하지 못했다. 새 용어/계약 보류 없음. A052·A090·A050 및 U7/U15 후속·다른 단위/과거 기록은 보존한다. 전체 감사/번역 완료나 테스트 통과를 뜻하지 않는다.
 - **보존·산출물·실행**: 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·Git index 보존. 전체 diff `/tmp/artex-audit-fix-labels-separators.diff`, 검토 `/tmp/artex-audit-fix-labels-separators-review.md`, 감사 상태 MD/TSV 갱신. 실행 검증은 **사용자 요청으로 미실행**이다. stage·commit·push·다음 묶음 없음.
+
+
+### 통합 감사 보완 10 · A050 승인 문자열·A090 [승인 범위 번역·정적 검토 완료 / 기록 fixture 후속 검토 보류 / 실행 미검증]
+- **기준·범위**: HEAD `a344782784ec0a90e2eb9b5512094819b3738cbd`의 직전 사례 이름/목록 구분자 커밋을 확인했다. work/ko-translation, 대상 기존 변경·staged·MERGE_HEAD 없음. 최신 네 기준 문서와 앞선 읽기 전용 검토를 적용했으며 fetch·병합하지 않았다.
+- **A050**: mock/data.ts의 Agent 이름 5곳(3067·3080·3093·3106·3136), 버전 template_text 2곳(3155·3156), 편집 prompt 1곳(3163), 마무리 기본값 2곳(3168·3172), skill 설명 3곳(3218·3229·3239)을 번역했다. `${a.name}`을 통한 이름 삽입, `{{.Goal}}`·`{{.AssetSummary}}`·`{{.RouteHint}}` 및 이스케이프를 보존했다. 시간/스텝 수의 제한이 곧 소진된다는 뜻과 즉시 마무리 지시를 유지했다. 실제 Agent 정책을 복제하거나 새 지시를 추가하지 않았다.
+- **원문 문제·잔여**: mock api-recon의 권한 우회 영역 열거 설명은 실제 SKILL의 API/파라미터 정찰 전용·취약점 공격 금지 범위와 다르다. 번역과 별개인 원문 범위 문제로 기록하며 어느 쪽도 정책을 고치지 않았다. 감사 user_message/context·실제 도구 입출력·명령·LLM 요청/응답 기록 fixture·`[模型]` 5곳은 보존했다. A050의 기록 fixture 후속 검토는 유지하며 전체 A050 또는 전체 감사를 완료로 단정하지 않는다.
+- **A090**: ProxyAddr description 1곳을 “현재 실행에 적용되는 프록시 주소(사용자 프롬프트에서 참조하거나 if/else 안내 문구 선택에 사용 가능)”으로 정정했다. 캡처 OFF의 전역 프록시 및 사용자 템플릿 if/else 소비와 대조했다. 변수·기본 예시·source·프록시 동작은 그대로다. 기존 seed upsert(db.go:215–220)는 이후 초기화에서 기존 DB 변수 메타데이터에도 설명을 반영할 수 있지만 사용자 프롬프트 본문을 바꾸지 않는다. 이번에는 DB를 열거나 갱신하지 않았다.
+- **정적 보존·테스트**: 승인 13+1줄 밖 소스 바이트 동일, mock 4223/4223줄·db 602/602줄, LF·들여쓰기·끝 개행·포맷 지정자/변수/이스케이프 보존을 확인했다. 직접 연결된 테스트 기대값 의존은 발견하지 못해 테스트 수정은 없다. 별도 fixture의 规划者 및 ProxyAddr 템플릿 입력은 보존한다. A052·U7/U15 후속·기존 팀원 기록·다른 단위 상태를 유지한다.
+- **보존·산출물·실행**: 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·Git index를 보존했다. `/tmp/artex-audit-fix-mock-proxy.diff`, `/tmp/artex-audit-fix-mock-proxy-review.md` 및 감사 상태 MD/TSV를 갱신했다. 실행 검증은 **사용자 요청으로 미실행**이다. stage·commit·push·다음 작업 없음.

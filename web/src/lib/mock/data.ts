@@ -3064,7 +3064,7 @@ export const agents: Agent[] = [
   {
     id: "1001",
     key: "retester",
-    name: "漏洞复测",
+    name: "취약점 재검증",
     role: "assistant",
     builtin: false,
     enabled: true,
@@ -3077,7 +3077,7 @@ export const agents: Agent[] = [
   {
     id: "1",
     key: "goals",
-    name: "目标拆解器",
+    name: "목표 분해기",
     role: "goals",
     builtin: true,
     enabled: true,
@@ -3090,7 +3090,7 @@ export const agents: Agent[] = [
   {
     id: "2",
     key: "planner",
-    name: "规划者",
+    name: "planner",
     role: "planner",
     builtin: true,
     enabled: true,
@@ -3103,7 +3103,7 @@ export const agents: Agent[] = [
   {
     id: "3",
     key: "mainagent",
-    name: "主 Agent",
+    name: "메인 Agent",
     role: "mainagent",
     builtin: true,
     enabled: true,
@@ -3133,7 +3133,7 @@ export const agents: Agent[] = [
   {
     id: "5",
     key: "recon-bot",
-    name: "侦察机器人（自定义）",
+    name: "정찰 로봇(사용자 정의)",
     role: "custom",
     builtin: false,
     enabled: true,
@@ -3152,24 +3152,24 @@ const promptVars: PromptVar[] = [
 ];
 
 const promptVersions: PromptVersion[] = [
-  { version: 3, ts: T("2026-07-25T10:00:00Z"), note: "권한 우회 탐지 안내 강화", template_text: "你是 ARTEX 的规划者……" },
-  { version: 2, ts: T("2026-07-20T10:00:00Z"), note: "초기 버전 소폭 조정", template_text: "你是 ARTEX 的规划者(v2)……" },
+  { version: 3, ts: T("2026-07-25T10:00:00Z"), note: "권한 우회 탐지 안내 강화", template_text: "당신은 ARTEX의 planner입니다……" },
+  { version: 2, ts: T("2026-07-20T10:00:00Z"), note: "초기 버전 소폭 조정", template_text: "당신은 ARTEX의 planner(v2)입니다……" },
 ];
 
 export function agentDetail(key: string): AgentDetail {
   const a = agents.find((x) => x.key === key) ?? agents[1];
   return {
     agent: a,
-    prompt: `你是 ARTEX 的「${a.name}」。\n目标：{{.Goal}}\n资产概览：{{.AssetSummary}}\n路线提示：{{.RouteHint}}\n请基于以上信息推进探索，并通过工具把结果写回图。`,
+    prompt: `당신은 ARTEX의 '${a.name}'입니다.\n목표: {{.Goal}}\n자산 개요: {{.AssetSummary}}\n경로 힌트: {{.RouteHint}}\n위 내용을 바탕으로 탐색을 진행하고 도구를 통해 결과를 그래프에 기록하세요.`,
     variables: promptVars,
     versions: promptVersions,
     visibility: { mcp: [1, 2], skill: ["api-recon", "playwright-cli"] },
     wrapup_prompt: "",
-    wrapup_default: "时间/步数将尽，请总结已确认发现并标记意图终态。",
+    wrapup_default: "시간/스텝 수의 제한이 곧 소진됩니다. 확인된 발견을 요약하고 의도의 종료 상태를 표시하세요.",
     wrapup_max_turns: 0,
     wrapup_max_turns_default: 3,
     task_timeout_wrapup_supported: a.key === "worker" || a.key === "planner",
-    task_timeout_wrapup_default: "任务超时，请立即收尾并落库当前结论。",
+    task_timeout_wrapup_default: "작업이 타임아웃에 도달했습니다. 즉시 마무리하고 현재 결론을 DB에 기록하세요.",
     task_timeout_wrapup_max_turns_default: 2,
   };
 }
@@ -3215,7 +3215,7 @@ export const mcpToolsById: Record<number, MCPTool[]> = {
 export const skills: SkillItem[] = [
   {
     name: "api-recon",
-    description: "对 REST/GraphQL API 做侦察与越权面枚举；发现新 API 端点时使用。",
+    description: "REST/GraphQL API 정찰과 권한 우회 영역 열거를 수행합니다. 새 API 엔드포인트를 발견했을 때 사용합니다.",
     license: "MIT",
     mcps: [],
     files: ["SKILL.md", "scripts/enum.py"],
@@ -3226,7 +3226,7 @@ export const skills: SkillItem[] = [
   },
   {
     name: "playwright-cli",
-    description: "用 Playwright 驱动浏览器做动态爬取与截图；需要渲染 JS 站点时使用。",
+    description: "Playwright로 브라우저를 구동해 동적 크롤링과 스크린샷 수집을 수행합니다. JS 사이트를 렌더링해야 할 때 사용합니다.",
     mcps: ["playwright"],
     files: ["SKILL.md"],
     calls: 7,
@@ -3236,7 +3236,7 @@ export const skills: SkillItem[] = [
   },
   {
     name: "scopesentry",
-    description: "从 ScopeSentry 拉取资产并归并到公司范围；批量导入资产时使用。",
+    description: "ScopeSentry에서 자산을 가져와 회사 범위에 통합합니다. 자산을 대량으로 가져올 때 사용합니다.",
     files: ["SKILL.md", "assets/mapping.md"],
     calls: 0,
     tasks: 0,
