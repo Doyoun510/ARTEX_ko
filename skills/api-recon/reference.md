@@ -264,7 +264,7 @@ grep -rhoaE '/api/[a-zA-Z0-9_./-]+' js | sort -u
 
 | 현상 | 원인 → 처리 |
 |---|---|
-| 정적 API가 매우 적음 | endpoint 표현 방식이 맞지 않음 → 정규 표현식을 넓힘(D절) |
+| 정적 API가 매우 적음 | endpoint 표현 방식이 맞지 않음 → 정규 표현식을 넓힘(E절) |
 | chunk 개수 ≪ manifest | CSS-only 또는 배포되지 않은 chunk. 404는 이미 재시도함 |
 | runtime에서 여전히 로그인 화면이 표시됨 | 렌더링 관문 오류 → A1 재확인: 키 이름, 저장 위치, 인코딩, domain |
 | 로그인 후 화면에 진입했으나 모듈이 비어 있음 | 콘텐츠 관문 → 메뉴 forge(A3). `routes` path가 잘못됐을 수 있음 |
@@ -347,7 +347,7 @@ python3 scripts/build_perm_tree.py recon/js recon/ --config recon/config.json
 2. `route_map.json`으로 alias → 실제 path 해석
 3. code 접두로 parent 추론(`MONITOR_ALERT` → `MONITOR`)
 4. `permissions_tree.json`, `permissions_all_stub.json`, `role_permissions_stub.json` 출력
-5. `--config`가 있으면 `config.json`의 `stubs`에 자동 기록하고 `routes` 확장
+5. `--config`로 지정한 `config.json`이 존재하면 `stubs`를 자동 갱신
 
 **대상에 맞게 조정**(스크립트 위쪽):
 - `DEFAULT_ROOTS`: 최상위 모듈 code 목록

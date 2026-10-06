@@ -576,3 +576,11 @@ server/ 비테스트 파일에 남은 중국어는 전부 **의도적 DNT**(설�
 - **후속 미해결**: API 정찰 로그인/세션 정책 충돌·reference D/E절 참조·routes 확장 설명·depth/coverage stub 차이·ScopeSentry frontmatter 형식과 로더 영향 미확인·U11 skill_upload_test 기대값 불일치 2곳은 유지한다. U7의 live 중국어 동사 의존·옛 공통 블록 중복·기존 커스텀 정책 본문 보존은 별도 단위 보류다. 추가로 package.json의 api-recon-runtime과 lock 루트 spa-api-recon-runtime 이름 차이, playwright test-generation:293의 병렬 금지와 :352의 병렬 가능 안내는 원문 메타데이터/설명 후속 확인 항목으로 기록하며 수정하지 않는다.
 - **정적 보존·실행**: skills/ 21개 파일은 모두 HEAD 및 시작 상태와 바이트 동일하다. 줄 수·LF/CRLF·들여쓰기·개행·Markdown·Mermaid·코드·JSON·DSL·명령·옵션·설정값·영어를 유지했다. PROMPT_PROGRESS의 이전 이력은 그대로 두고 이번 기록만 추가했다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index를 해시로 대조해 보존했다. 관련 테스트 기대값 변경 필요는 발견하지 못했고 테스트는 수정하지 않았다. 설치·빌드·테스트·lint·포맷터·스크립트·브라우저·앱·Git 훅·외부 MCP/API와 실행 검증은 **사용자 요청으로 미실행**이다. 실제 로더/모델/외부 서비스 동작 검증 완료를 뜻하지 않는다.
 - **산출물·종료**: 전체 diff `/tmp/artex-u15-final-audit.diff`, 파일별 잔여·후속 종합 보고서 `/tmp/artex-u15-final-review.md`. fetch·병합·stage·commit·push·다음 단위는 진행하지 않았다.
+
+
+### U15 · API 정찰 문서 후속 2건 정정 [문서 정정·정적 검토 완료 / 나머지 후속 검토 보류 / 실행 미검증]
+- **확인 기준**: `work/ko-translation`, HEAD `79f71c6dbbfe2a49dbd673ef71d46ee548fb63dc`. 대상 기존 변경·staged 변경·진행 중 병합 없음. 최신 로컬 문서와 관련 코드를 읽기 전용으로 대조했다.
+- **D/E절 참조 정정**: reference.md:267의 “정적 API가 매우 적음” 행에서 D절을 E절로 정정했다. 실제 Endpoint 추출 정규 표현식은 :252–262의 E절이며 D절(:234–248)은 Hook 기능 설명이다.
+- **routes 자동 확장 주장 정정**: reference.md:350을 “`--config`로 지정한 `config.json`이 존재하면 `stubs`를 자동 갱신”으로 정정했다. build_perm_tree.py:155의 옵션 선언 및 :196–206의 설정 저장 경로를 확인했다. 기존 permissions/all·role_permissions stub을 제거하고 새 stub을 추가해 cfg['stubs']만 갱신하며 routes 변경은 없다. --config 생략 시 outdir/config.json을 선택하는 기존 구현도 보존한다.
+- **보존·잔여**: reference 500/500줄·CRLF 500개·나머지 본문·Markdown·명령·코드·예시와 기존 번역을 보존했다. 이전 후속 기록은 이력으로 유지하며 위 두 건만 해소했다. 로그인/세션 정책 충돌·depth/coverage 차이·ScopeSentry 형식/로더·U11 공유·U7 후속 보류 및 다른 단위 상태는 변경하지 않았다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index를 보존했다.
+- **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. `/tmp/artex-u15-doc-followup.diff`, `/tmp/artex-u15-doc-followup-review.md`. fetch·병합·stage·commit·push·다음 작업은 진행하지 않았다.
