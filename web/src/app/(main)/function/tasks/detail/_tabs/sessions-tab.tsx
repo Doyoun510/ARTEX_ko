@@ -2118,8 +2118,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
               <AlertDialogDescription className="break-words whitespace-normal">
                 {deleteMode === "hard" ? (
                   <>
-                    <strong>하드 삭제</strong>는 이 의도와 <strong>이 의도만 뒷받침하는</strong>
-                    하위 노드를 물리적으로 제거합니다(리프까지 연쇄 제거해 고립 데이터를 남기지 않음). 공유 노드, 목표, 작업 루트 사실은 보존됩니다.
+                    <strong>하드 삭제</strong>는 이 의도와 <strong>이 의도만 뒷받침하는</strong>{" "}
+                    하위 노드를 물리적으로 제거합니다(리프까지 연쇄 제거해 고립 데이터를 남기지 않음). 공유 노드, 목표, 작업 루트 사실은 보존됩니다.{" "}
                     <strong>이 작업은 되돌릴 수 없습니다.</strong> planner가 삭제 통지를 받고 이를 바탕으로 다시 계획합니다.
                   </>
                 ) : (

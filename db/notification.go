@@ -13,7 +13,7 @@ import (
 	"github.com/Autumn-27/artex/notify"
 )
 
-// 이 파일은 IM 푸시의 채널 설정·이벤트 레이어다. 전달 작업의 획득과 상태 전이는
+// 이 파일은 IM 푸시의 채널 설정·이벤트 레이어다. 전송 작업의 획득과 상태 전이는
 // db/notification_delivery.go 참조.
 //
 // 두 불변식, 이 파일을 수정할 때 반드시 유지할 것:
@@ -27,11 +27,11 @@ import (
 // ErrNotificationChannelNotFound 채널이 존재하지 않음.
 var ErrNotificationChannelNotFound = errors.New("알림 채널이 존재하지 않습니다")
 
-// 전달 상태.
+// 전송 상태.
 const (
 	NotifyStatePending = "pending" // 발송 대기
-	NotifyStateSending = "sending" // 어떤 dispatcher가 획득, 리스 미만료
-	NotifyStateSent    = "sent"    // 전달됨
+	NotifyStateSending = "sending" // 어떤 dispatcher가 획득, lease 미만료
+	NotifyStateSent    = "sent"    // 전송됨
 	NotifyStateFailed  = "failed"  // 재시도 소진 또는 영구 실패, 수동 재전송 가능
 	NotifyStateSkipped = "skipped" // 채널 비활성화, 더 이상 전송 안 함
 )
@@ -128,11 +128,11 @@ func (d *DB) SaveNotificationChannel(ctx context.Context, c *NotificationChannel
 	if c.Mode == "" {
 		c.Mode = NotifyModeRealtime
 	}
-	// 여기서는 일부러 0을 가공하지 **않는다**: 0은 유효한 설정이며 '레이트 리밋 없음'을 의미한다.
+	// 여기서는 일부러 0을 가공하지 **않는다**: 0은 유효한 설정이며 '전송 속도 제한 없음'을 의미한다.
 	//
 	// 예전엔 `if c.RatePerMin <= 0 { c.RatePerMin = 기본값 }`로 썼는데, 의도는 '미지정 시
 	// 안전 기본값 제공'이었지만 그건 '명시적으로 0 설정'도 함께 삼켜버렸다 —— 문서·UI 안내·
-	// takeTokens 모두 0을 레이트 리밋 없음으로 해석하는데, 여기서만 몰래 20(DingTalk/WeCom/Telegram)
+	// takeTokens 모두 0을 전송 속도 제한 없음으로 해석하는데, 여기서만 몰래 20(DingTalk/WeCom/Telegram)
 	// 또는 100(Feishu)으로 바꿔, 조작자는 리밋을 풀었다고 여기지만 실제로는 20/분에 막히고 아무 안내도 없었다.
 	//
 	// '미지정'과 '명시적 0'의 구분은 호출자만 안다(요청 본문의 필드 누락 vs 명시적 0 전달),

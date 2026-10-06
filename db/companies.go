@@ -633,7 +633,7 @@ LIMIT $1`, malformedIPAssetsSampled)
 	}
 	warning := fmt.Sprintf(
 		"%d개 자산의 ip 필드가 유효한 IP가 아니어서 IP/CIDR 범위 매칭을 건너뜀(이 자산들은 네트워크 대역 규칙으로 회사에 귀속되지 않음): %s",
-		total, strings.Join(samples, "、"),
+		total, strings.Join(samples, ", "),
 	)
 	if total > len(samples) {
 		warning += fmt.Sprintf(" 외 %d개", total)

@@ -58,7 +58,7 @@ AI 자율 침투 테스트 시스템 (Go 백엔드 + Next.js 프런트엔드)
 [AegisHook의 승인 상세 컴포넌트](https://github.com/RuoJi6/AegisHook/blob/main/web/src/components/CallDetail.vue)를 참고했으며, ARTEX의 컴포넌트와 테마를 그대로 사용했습니다:
 
 
-## 자산 동기화（ScopeSentry）
+## 자산 동기화(ScopeSentry)
 
 [ScopeSentry](https://github.com/Autumn-27/ScopeSentry)에서 자산 데이터를 직접 동기화하여 중복 수집을 줄일 수 있습니다:
 
@@ -123,7 +123,7 @@ cp config.example.json config.json   # database 연결 정보 입력
 cd web && npm ci && npm run build:static && cd ..
 # 2) 임베드 디렉터리로 복사
 cp -r web/out server/webui/dist
-# 3) 컴파일（-tags embedui 를 줘야 프런트엔드 임베드）
+# 3) 컴파일(-tags embedui 를 줘야 프런트엔드 임베드)
 CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 ./start.sh
 ```
@@ -179,11 +179,11 @@ cd ARTEX
 
 ```bash
 cd ARTEX
-git pull                       # compose / 스크립트 업데이트（선택）
+git pull                       # compose / 스크립트 업데이트(선택)
 # 버전 지정: .env 에 ARTEX_TAG=v0.2.0 설정; 미설정 시 latest 사용
 docker compose pull artex
 docker compose up -d artex     # 새 이미지로 교체 후 재시작 → schema 자동 마이그레이션
-docker image prune -f          # 오래된 이미지 정리（선택）
+docker image prune -f          # 오래된 이미지 정리(선택)
 ```
 
 ### 방법 4: 사전 컴파일 바이너리(Releases)
@@ -294,17 +294,17 @@ ARTEX는 **LLM 멀티 agent 기반 자율 침투 시스템**입니다: Go 모놀
 
 ```mermaid
 flowchart TB
-  subgraph FE["프런트엔드 Next.js（go:embed 단일 바이너리 임베드）"]
+  subgraph FE["프런트엔드 Next.js(go:embed 단일 바이너리 임베드)"]
     UI["대시보드 · 작업 · 자산 · 커버리지 맵 · 트래픽 · 워크스페이스 · 시스템 설정"]
   end
-  subgraph SRV["server（Go net/http）"]
+  subgraph SRV["server(Go net/http)"]
     API["REST /api/*　JWT 인증　SSE"]
     ENG["engine 스케줄 루프"]
     MGR["Manager　작업/엔진/store 생명주기"]
   end
-  subgraph AG["agent（norma SDK）"]
+  subgraph AG["agent(norma SDK)"]
     GO["goals　목표 분해 + 범위 추출"]
-    PL["planner　플래너（유일한 의도 생성자）"]
+    PL["planner (유일한 의도 생성자)"]
     WK["worker　실행자 ×N"]
     MA["mainagent　human-in-the-loop"]
   end
@@ -351,12 +351,12 @@ flowchart TB
 시스템은 '**목표가 무엇인가**'와 '**어느 정도까지 테스트했는가**'를 서로 독립적이면서도 앵커로 연결된 두 개의 그래프로 나눕니다:
 
 - **자산 그래프(Asset Graph, 전역 공유)**: 작업을 가로질러 공유되는 자산의 단일 신뢰 소스(SSOT). 노드는 `root_domain / subdomain / ip / service / app / endpoint`이며 회사에 귀속됩니다; 도메인→서브도메인→서비스→엔드포인트의 부모-자식 관계와 중복 제거 key는 모두 프로그램이 계산하고, agent는 원시 정보만 제출합니다.
-- **탐색 그래프(Exploration Graph, 작업별 독립)**: 한 작업의 "사고와 추진" 과정. 노드는 `goal（목표）/ intent（의도）/ fact（사실）/ finding（취약점）/ hint（힌트）`이며, `spawns / derived_from / yields / proves` 등의 엣지로 **계보 체인(lineage chain)**을 이루어 "어떤 방향이 어떤 사실에서 파생되어 무엇을 산출했는가"에 답합니다.
+- **탐색 그래프(Exploration Graph, 작업별 독립)**: 한 작업의 "사고와 추진" 과정. 노드는 `goal(목표)/ intent(의도)/ fact(사실)/ finding(취약점)/ hint(힌트)`이며, `spawns / derived_from / yields / proves` 등의 엣지로 **계보 체인(lineage chain)**을 이루어 "어떤 방향이 어떤 사실에서 파생되어 무엇을 산출했는가"에 답합니다.
 - **두 그래프는 앵커로 연결됩니다**: `exploration_anchors(node_id, asset_id)`가 의도/사실/취약점을 구체적인 자산에 앵커링합니다 — 그래서 "탐색 방향"에서 그것이 어떤 자산을 공격했는지도 볼 수 있고, "어떤 자산"에서 그것이 본 작업에서 어떤 의도로 테스트되었고 어떤 사실을 얻었는지도 역추적할 수 있습니다. 이는 **자산 테스트 커버리지**와 **자산 커버리지 맵**(범위 내 자산 + 테스트 완료 하이라이트)도 뒷받침합니다.
 
 ```mermaid
 flowchart LR
-  subgraph EG["탐색 그래프（작업별 독립 · 추진 체인）"]
+  subgraph EG["탐색 그래프(작업별 독립 · 추진 체인)"]
     direction TB
     G["goal 목표"]
     I1["intent 의도 A"]
@@ -368,7 +368,7 @@ flowchart LR
     F1 -->|derived_from| I2
     I2 -->|proves| FD
   end
-  subgraph AG["자산 그래프（전역 공유 · 단일 신뢰 소스(SSOT)）"]
+  subgraph AG["자산 그래프(전역 공유 · 단일 신뢰 소스(SSOT))"]
     direction TB
     RD["root_domain"]
     SD["subdomain"]
@@ -422,10 +422,10 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-  WA["worker A（의도 #12）"] -->|"매 단계 activity"| ACT[("탐색 그래프 · activity 과정 저장소")]
-  WB["worker B（의도 #34）"] -->|"매 단계 activity"| ACT
-  WC["worker C（의도 #56）"] ==>|"1) search_all_worker_traces(q)"| ACT
-  ACT ==>|"2) A/B의 단계 적중（자기 제외）"| WC
+  WA["worker A(의도 #12)"] -->|"매 단계 activity"| ACT[("탐색 그래프 · activity 과정 저장소")]
+  WB["worker B(의도 #34)"] -->|"매 단계 activity"| ACT
+  WC["worker C(의도 #56)"] ==>|"1) search_all_worker_traces(q)"| ACT
+  ACT ==>|"2) A/B의 단계 적중(자기 제외)"| WC
   WC ==>|"3) get_worker_trace(id, step_ids)"| ACT
   ACT ==>|"4) 전체 과정 내용 반환"| WC
 ```
@@ -439,7 +439,7 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-  subgraph TODO["공유 todolist（작업별 보존 · 깨우기 간 상주）"]
+  subgraph TODO["공유 todolist(작업별 보존 · 깨우기 간 상주)"]
     direction LR
     T1["1 인젝션 포인트　[완료]"]
     T2["2 자격증명 획득　[진행 중]"]
@@ -448,8 +448,8 @@ flowchart TB
     T1 -.선행충족.-> T2 -.-> T3 -.-> T4
   end
   R1["제1라운드 깨우기　의도① 투입"] --> T1
-  R2["제2라운드（①이 fact 산출）　의도② 투입"] --> T2
-  R3["제3라운드（②가 fact 산출）　의도③ 투입"] --> T3
+  R2["제2라운드(①이 fact 산출)　의도② 투입"] --> T2
+  R3["제3라운드(②가 fact 산출)　의도③ 투입"] --> T3
 ```
 
 그리하여 공격 체인은 "이벤트 기반 + 무상태 세션" 환경에서도 여전히 **안정적으로 추진되고, 중복되지 않으며, 순서가 틀어지지 않습니다** — 이것이 ARTEX가 다단계 익스플로잇 체인을 자율적으로 완주할 수 있는 핵심입니다.
@@ -476,7 +476,7 @@ https://github.com/oritera/Cairn
 
 ### 오픈소스 라이선스
 
-본 프로젝트는 **GNU Affero General Public License v3.0（AGPL-3.0）**로 라이선스되며, 전체 조항은 저장소 루트의 [LICENSE](LICENSE) 파일을 참조하세요.
+본 프로젝트는 **GNU Affero General Public License v3.0(AGPL-3.0)**로 라이선스되며, 전체 조항은 저장소 루트의 [LICENSE](LICENSE) 파일을 참조하세요.
 
 이는 누구나 자유롭게 본 프로젝트를 사용·수정·배포할 수 있으나, **파생 저작물도 반드시 AGPL-3.0으로 오픈소스화해야 함**을 의미합니다; 특히 **본 프로젝트를 수정하여 네트워크를 통해(예: 온라인 서비스로 배포) 사용자에게 제공하는 경우, 해당 사용자에게도 대응하는 전체 소스 코드를 공개해야 합니다**.
 

@@ -91,7 +91,7 @@ type taskLLMSelection struct {
 	revision  int64
 	provider  llm.Provider
 	// retry는 이번에 선택된 설정에서 해석한 재시도 파라미터(profile 재정의 → 전역 정책 → 내장 기본값).
-	// 같은 provider 안전 윈도우 재시도는 이를 따르므로, profile을 바꾸면 재시도 리듬도 한 벌 바뀐다.
+	// 같은 provider 안전 구간 재시도는 이를 따르므로, profile을 바꾸면 재시도 리듬도 한 벌 바뀐다.
 	retry agent.RetryConfig
 }
 
@@ -246,7 +246,7 @@ func completeTaskLLM(ctx context.Context, taskID string, req llm.CompletionReque
 			usage   llm.Usage
 			callErr error
 		)
-		// 같은 provider 안전 윈도우 재시도: 비스트리밍 호출은 전체 성공 아니면 전체 실패라,
+		// 같은 provider 안전 구간 재시도: 비스트리밍 호출은 전체 성공 아니면 전체 실패라,
 		// 도중에 출력을 이미 전달하는 문제가 없으므로, 어떤 일시적 실패든 그대로 재시도할 수 있다.
 		retries, backoffOf := sameProviderRetryPolicy(selection.retry)
 		for attempt := 0; ; attempt++ {
@@ -296,7 +296,7 @@ func streamTaskLLM(ctx context.Context, taskID string, req llm.CompletionRequest
 			var pending []llm.StreamEvent
 			var streamErr error
 			retries, backoffOf := sameProviderRetryPolicy(selection.retry)
-			// 같은 provider 안전 윈도우 재시도: committed 이전(아직 호출자에게 출력을 전혀 전달하지 않음)
+			// 같은 provider 안전 구간 재시도: committed 이전(아직 호출자에게 출력을 전혀 전달하지 않음)
 			// 의 일시적 실패는 그대로 재생할 수 있고, 모델 출력이나 도구 실행을 중복하지 않는다. committed 이후,
 			// ctx 취소, 또는 결정적/할당량 오류면 빠져나가 아래의 기존 패스스루/failover 로직에 맡긴다.
 			for attempt := 0; ; attempt++ {
@@ -394,7 +394,7 @@ func streamEventCommitsOutput(event llm.StreamEvent) bool {
 	}
 }
 
-// 제출 전 안전 윈도우 안에서 같은 provider에 대한 [기본] 재시도 횟수. SDK의 doStream은 연결 수립
+// 제출 전 안전 구간 안에서 같은 provider에 대한 [기본] 재시도 횟수. SDK의 doStream은 연결 수립
 // 단계(200을 받기 전)만 재시도한다; 스트림이 일단 시작되면 도중 스트림 끊김 / overloaded / 스트림 내 429 등 일시적 장애는 바로
 // model_error로 버블링되어 재시도가 0이다. token을 하나도 호출자에게 넘기지 않은 한(!committed), 재생이
 // 완전히 동일한 요청이면 모델 출력이나 도구 부작용을 중복하지 않으므로, 여기서 같은 provider 백오프 재시도를 한 겹 덧댄다,

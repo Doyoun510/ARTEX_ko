@@ -10,11 +10,11 @@ import (
 	"github.com/Autumn-27/norma/llm"
 )
 
-// LLM 폴링(failover)의 서버 측 배선. 설계는 docs/LLM轮询设计.md 참고:
-//   - 전역 활성 설정 경로(agent 미바인딩·작업 미pin)에서만 폴링;
+// LLM 순환 전환(failover)의 서버 측 배선. 설계는 docs/LLM轮询设计.md 참고:
+//   - 전역 활성 설정 경로(agent 미바인딩·작업 미pin)에서만 순환 전환;
 //   - 바인딩/pin 경로는 기본적으로 그 설정을 독점, 실패 즉 실패(llm_pool_bind_fallback으로 폴백 켤 수 있음);
 //   - 체인 순서 = 활성 설정 → 나머지는 priority DESC, pool_exclude는 제외;
-//   - 서킷 브레이커 상태는 프로세스 레벨 공유(s.llmHealth), pool 재구축해도 비우지 않음.
+//   - 회로 차단 상태는 프로세스 레벨 공유(s.llmHealth), pool 재구축해도 비우지 않음.
 
 // newLLMHealthRegistry builds the process-wide circuit-breaker registry, mirroring
 // state into PG so a cooling-off window survives a restart. Writes are async and
@@ -31,7 +31,7 @@ func newLLMHealthRegistry(pg *db.DB) *llmpool.Registry {
 		}
 		go func() {
 			if err := pg.SaveLLMHealth(h); err != nil {
-				log.Printf("[llmpool] 서킷 브레이커 상태 DB 기록 실패: %v", err)
+				log.Printf("[llmpool] 회로 차단 상태 DB 기록 실패: %v", err)
 			}
 		}()
 	}
@@ -48,7 +48,7 @@ func newLLMHealthRegistry(pg *db.DB) *llmpool.Registry {
 				st.OpenUntil = *h.OpenUntil
 			}
 			reg.Restore(h.ProfileID, st)
-			log.Printf("[llmpool] 서킷 브레이커 상태 복구: 설정 #%d 쿨다운 %s까지", h.ProfileID, st.OpenUntil.Format(time.RFC3339))
+			log.Printf("[llmpool] 회로 차단 상태 복구: 설정 #%d 재시도 대기 시간: %s까지", h.ProfileID, st.OpenUntil.Format(time.RFC3339))
 		}
 	}
 	return reg
@@ -83,7 +83,7 @@ func (s *Server) poolChain(headID int64, headProv llm.Provider, headCfg agent.Co
 	}
 	profs, err := s.m.pg.PoolProfiles()
 	if err != nil {
-		log.Printf("[llmpool] 폴링 체인 읽기 실패: %v", err)
+		log.Printf("[llmpool] 순환 전환 체인 읽기 실패: %v", err)
 		return nil
 	}
 	var head *db.LLMProfile
@@ -136,7 +136,7 @@ func (s *Server) poolForActive(activeID int64, prov llm.Provider, cfg agent.Conf
 	for _, m := range pool.Members() {
 		names = append(names, m.Name+"/"+m.Model)
 	}
-	log.Printf("[llmpool] LLM 폴링 활성화됨, 체인(%d): %v", len(names), names)
+	log.Printf("[llmpool] LLM 순환 전환 활성화됨, 체인(%d): %v", len(names), names)
 	return pool
 }
 

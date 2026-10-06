@@ -1845,8 +1845,8 @@ func (s *Server) pgGetLLMRetryPolicy(w http.ResponseWriter, r *http.Request) {
 }
 
 // pgSaveLLMRetryPolicy는 전역 재시도 정책을 저장한다. '엔드포인트를 따르는' 세 겹(연결 수립/빈 응답/같은
-// provider 안전 윈도우)은 provider의 구축 파라미터 또는 호출 파라미터라, 변경 후에는 캐시의 provider를
-// 재구축해야 한다; 서킷 브레이커 파라미터는 프로세스 레벨 Registry에 직접 푸시.
+// provider 안전 구간)은 provider의 구축 파라미터 또는 호출 파라미터라, 변경 후에는 캐시의 provider를
+// 재구축해야 한다; 회로 차단 파라미터는 프로세스 레벨 Registry에 직접 푸시.
 func (s *Server) pgSaveLLMRetryPolicy(w http.ResponseWriter, r *http.Request) {
 	pg := s.pg(w)
 	if pg == nil {
@@ -1938,9 +1938,9 @@ func (s *Server) pgActivateProfile(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]any{"ok": true})
 }
 
-// pgLLMPoolStatus reports the failover ("폴링") switches, the resolved chain order
+// pgLLMPoolStatus reports the failover ("순환 전환") switches, the resolved chain order
 // and every profile's circuit-breaker state — what the LLM page renders as the
-// "폴링 순서" strip and the per-card health badges.
+// "순환 전환 순서" strip and the per-card health badges.
 func (s *Server) pgLLMPoolStatus(w http.ResponseWriter, r *http.Request) {
 	if s.pg(w) == nil {
 		return

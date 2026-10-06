@@ -8,12 +8,12 @@ import (
 )
 
 // 재시도 정책의 서버 측 해석, docs/LLM重试设计.md 참고. 다섯 겹 중:
-//   - 연결 수립 / 빈 응답 / 같은 provider 안전 윈도우는 '엔드포인트를 따르는' 것이라, 각 LLM 설정이
+//   - 연결 수립 / 빈 응답 / 같은 provider 안전 구간은 '엔드포인트를 따르는' 것이라, 각 LLM 설정이
 //     전역 기본값을 재정의할 수 있다(profile의 어떤 항목을 비우면 전역을 상속, 전역도 미설정이면 내장 기본값);
-//   - 서킷 브레이커 / 의도 재실행은 프로세스 레벨이라, 전역 하나뿐.
+//   - 회로 차단 / 의도 재실행은 프로세스 레벨이라, 전역 하나뿐.
 //
 // 전역 정책은 DB의 settings 한 행을 한 번 읽으며, 호출 지점이 모두 저빈도 경로(provider 구축, work 마무리,
-// 설정 저장)라, 캐시를 한 겹 더 둘 가치가 없다; 서킷 브레이커 파라미터는 예외 —— 실패 경로에서 매번 읽어야 하므로,
+// 설정 저장)라, 캐시를 한 겹 더 둘 가치가 없다; 회로 차단 파라미터는 예외 —— 실패 경로에서 매번 읽어야 하므로,
 // applyRetryPolicy가 Registry에 푸시해 저장한다.
 
 // retryPolicy reads the global policy; a nil DB yields the zero policy (all
@@ -49,7 +49,7 @@ func (s *Server) applyProfileRetry(cfg *agent.Config, p *db.LLMProfile) {
 	cfg.Retry = resolveRetry(p.Retry, s.retryPolicy())
 }
 
-// 서킷 브레이커(폴링 쿨다운)의 기본값, llmpool 내장과 동일 —— 여기서는 '사용자가 값을 설정'했을 때만 재정의.
+// 회로 차단(순환 전환 재시도 대기 시간)의 기본값, llmpool 내장과 동일 —— 여기서는 '사용자가 값을 설정'했을 때만 재정의.
 // 의도 재실행의 기본값은 engine.go의 modelErrorRetries / modelErrorRetryBackoff 참고.
 
 // applyRetryPolicy pushes the process-wide layers of the policy into the objects

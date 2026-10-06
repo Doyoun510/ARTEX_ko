@@ -58,7 +58,7 @@ func (s SideQuestionService) Answer(ctx context.Context, req llm.CompletionReque
 	}
 	if err == nil && strings.TrimSpace(out.Text) == "" {
 		if out.ToolUse {
-			out.Text = "현재 보조 질문에서는 도구 조작을 실행할 수 없습니다. 메인 세션에서 조작 요청을 보내세요."
+			out.Text = "현재 보조 질문에서는 도구 동작을 실행할 수 없습니다. 메인 세션에서 동작 요청을 보내세요."
 		} else {
 			err = errors.New("모델이 답변을 반환하지 않았습니다")
 		}

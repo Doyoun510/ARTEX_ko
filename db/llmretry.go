@@ -84,7 +84,7 @@ type LLMRetryPolicy struct {
 	Connect RetryRule `json:"connect"`
 	// Empty: SDK 빈 응답 재시도(완료됐지만 content block 없음, openai 형식만). 기본 2회·지수 백오프.
 	Empty RetryRule `json:"empty"`
-	// Stream: 같은 provider 안전 윈도우 재시도(출력 전달 전 끊긴 스트림 재생). 기본 2회·0.5s부터 지수(상한 4s).
+	// Stream: 같은 provider 안전 구간 재시도(출력 전달 전 끊긴 스트림 재생). 기본 2회·0.5s부터 지수(상한 4s).
 	Stream RetryRule `json:"stream"`
 	// Breaker: 순환 전환 회로 차단. Attempts=연속 몇 회 순간 실패 시 차단 발동(기본 3, -1=순간 실패로는 차단 안 함,
 	// 잔액 부족/키 만료 같은 하드 실패는 즉시 차단); IntervalMS=고정 쿨다운 시간(0=기본 1/5/30min 단계).

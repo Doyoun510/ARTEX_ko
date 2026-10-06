@@ -152,7 +152,7 @@ func New(ctx context.Context, m *Manager, skillDir string, dataDir string, keyDi
 		provByProfile:  map[int64]*provEntry{}, llmHealth: newLLMHealthRegistry(m.pg),
 		taskAgents: map[string]*taskAgentBundle{}, archiveWake: make(chan struct{}, 1)}
 	s.initSideQuestions()
-	// 서킷 브레이커 임계값/쿨다운은 실패 경로의 핫 파라미터라, 시작 시 전역 재시도 정책을 Registry에 한 번 푸시;
+	// 회로 차단 임계값/재시도 대기 시간은 실패 경로의 핫 파라미터라, 시작 시 전역 재시도 정책을 Registry에 한 번 푸시;
 	// 이후 정책을 저장할 때마다 다시 푸시(saveLLMRetryPolicy).
 	s.applyRetryPolicy()
 	// Every task uses a stable task router. An empty explicit chain is resolved by

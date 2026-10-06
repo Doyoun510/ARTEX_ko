@@ -9,19 +9,19 @@ import (
 	"time"
 )
 
-// 이 파일은 전달 작업의 획득과 상태 전이다.
+// 이 파일은 전송 작업의 획득과 상태 전이다.
 //
-// 획득은 긴 트랜잭션 대신 '리스'를 쓴다: 행을 sending으로 두고 next_attempt_at을 미래로 밀어
-// 리스 만료 시간으로 삼은 뒤, 트랜잭션을 커밋하고 나서 네트워크 전달을 한다. 이렇게 하면 전달 중 DB 락을 쥐지 않는다 ——
+// 획득은 긴 트랜잭션 대신 'lease'를 쓴다: 행을 sending으로 두고 next_attempt_at을 미래로 밀어
+// lease 만료 시간으로 삼은 뒤, 트랜잭션을 커밋하고 나서 네트워크 전송을 한다. 이렇게 하면 전송 중 DB 락을 쥐지 않는다 ——
 // 네트워크 요청은 수 초 걸릴 수 있어(클라이언트 타임아웃 15초), 행 락을 계속 쥐면 같은 DB의 다른 쓰기를 마비시킨다.
 //
-// 대가는 프로세스가 전달 도중 크래시하면 행이 sending에 멈추는 것이다. 이건 **자가 치유 가능**하다: 리스 만료 후
+// 대가는 프로세스가 전송 도중 크래시하면 행이 sending에 멈추는 것이다. 이건 **자가 치유 가능**하다: lease 만료 후
 // next_attempt_at이 과거로 떨어지면, 다음 라운드 획득이 같은 행을 다시 집어 올린다(획득 조건의
 // state IN ('pending','sending') 참조). 재시도 카운트는 획득 시 이미 +1 되므로, 크래시가
 // 무한 재시도를 유발하지 않는다 —— MaxNotifyAttempts회 기회를 다 쓰면 failed로 떨어져 수동 처리를 기다린다.
 
-// MaxNotifyAttempts는 한 전달의 최대 시도 횟수다(첫 시도 포함).
-// 전달 엔진이 아니라 여기에 정의한다: 상태 기계 자체의 정책이고, 엔진은 실행자일 뿐이다.
+// MaxNotifyAttempts는 한 전송의 최대 시도 횟수다(첫 시도 포함).
+// 전송 엔진이 아니라 여기에 정의한다: 상태 기계 자체의 정책이고, 엔진은 실행자일 뿐이다.
 const MaxNotifyAttempts = 3
 
 // MaxDigestBatchSize는 단일 요약 배치가 한 번에 병합할 수 있는 최대 전달 건수다.
@@ -35,7 +35,7 @@ const MaxNotifyAttempts = 3
 // 더 키워도 절단 위치만 더 뒤로 밀 뿐이다.
 const MaxDigestBatchSize = 500
 
-// NotificationDelivery는 렌더링에 필요한 채널 설정과 이벤트 스냅샷을 포함한 전달 작업 하나다.
+// NotificationDelivery는 렌더링에 필요한 채널 설정과 이벤트 스냅샷을 포함한 전송 작업 하나다.
 type NotificationDelivery struct {
 	ID            int64           `json:"id"`
 	EventID       int64           `json:"event_id"`
@@ -104,7 +104,7 @@ func scanNotificationDelivery(sc interface{ Scan(...any) error }) (*Notification
 }
 
 // claimQuery는 한 번의 획득을 기술한다: 먼저 sel로 후보를 골라 잠그고, 그다음 sending으로 두고
-// 리스를 연장한다. sel의 lease 위치는 호출자가 $n으로 자리를 두고 직접 인자를 전달한다.
+// lease를 연장한다. sel의 lease 위치는 호출자가 $n으로 자리를 두고 직접 인자를 전달한다.
 type claimQuery struct {
 	sql  string
 	args []any
@@ -117,7 +117,7 @@ type claimQuery struct {
 // 재시도 횟수를 소모하지 않는다. 반대로 먼저 획득하고 버리면, 레이트 리밋에 막힌 행은 이미 attempts가 한 번 계산되어
 // 3회 예산이 순전히 대기로 소진되어 결국 failed로 떨어진다.
 //
-// 조건에 '리스 만료된 sending'을 포함한다 —— 그게 크래시 자가 치유의 지점이다. lease는 단일
+// 조건에 'lease 만료된 sending'을 포함한다 —— 그게 크래시 자가 치유의 지점이다. lease는 단일
 // 전달의 최악 소요 시간(채널 HTTP 클라이언트 타임아웃 15초)보다 훨씬 커야 한다, 안 그러면 같은 행을 두 dispatcher가
 // 동시에 전달한다. 비활성 채널도 함께 차단한다: 비활성화 작업이 기존 전달을 skipped로 표시하지만,
 // 여기서 한 번 더 막아 비활성화와 획득이 동시에 일어날 때의 누락을 방지한다.
@@ -206,7 +206,7 @@ WHERE id IN (`+ph+`)`, append([]any{batchID}, idArgs...)...)
 	return out, err
 }
 
-// claimDeliveries는 '선택 + sending 설정·리스 연장 + 전체 행 읽기'를 전부 한 트랜잭션에서 수행한다.
+// claimDeliveries는 '선택 + sending 설정·lease 연장 + 전체 행 읽기'를 전부 한 트랜잭션에서 수행한다.
 // postClaim은 선택적 부가 단계다(요약 배치가 이를 써서 batch_id를 기록).
 func (d *DB) claimDeliveries(ctx context.Context, lease time.Duration, cq claimQuery, postClaim func(*sql.Tx, []int64) error) ([]*NotificationDelivery, error) {
 	tx, err := d.BeginTx(ctx, nil)
@@ -222,8 +222,8 @@ func (d *DB) claimDeliveries(ctx context.Context, lease time.Duration, cq claimQ
 	if len(ids) == 0 {
 		return nil, tx.Commit()
 	}
-	// sending으로 두고 next_attempt_at을 미래로 민다: 이 미래 시각이 곧 리스 만료 시간이라,
-	// '리스 미만료'와 '재시도 시간 미도달'이 같은 조건식을 공유하게 되어, 새 열이 필요 없다.
+	// sending으로 두고 next_attempt_at을 미래로 민다: 이 미래 시각이 곧 lease 만료 시간이라,
+	// 'lease 미만료'와 '재시도 시간 미도달'이 같은 조건식을 공유하게 되어, 새 열이 필요 없다.
 	ph, idArgs := placeholders(3, ids)
 	if _, err := tx.ExecContext(ctx, `UPDATE notification_deliveries
 SET state=$1, attempts=attempts+1, next_attempt_at=now()+make_interval(secs => $2)

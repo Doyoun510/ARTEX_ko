@@ -58,7 +58,7 @@ func ParameterKey(endpointID int64, location, name string) string {
 
 // NormalizeParamName 파라미터명 정규화(endpoint.params 요소의 '동일 참조' 판정).
 // 규칙: lower + trim, 동의어 병합 안 함(userId/user_id/uid는 서로 다른 것으로 간주). 쓰기와 조회가 이 구현을 공유하므로,
-// '파라미터명으로 같은 회사 인터페이스 조회'가 재현 가능하도록 보장한다.
+// '파라미터명으로 같은 회사 엔드포인트 조회'가 재현 가능하도록 보장한다.
 func NormalizeParamName(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }

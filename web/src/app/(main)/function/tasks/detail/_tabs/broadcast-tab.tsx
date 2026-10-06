@@ -240,7 +240,7 @@ function AssetList({ assets, dense = false }: { assets: FindingAsset[]; dense?: 
   );
 }
 
-// 상류/하류 항목에 마우스를 올리면 뜨는 노드 카드: 유형/상태/출처/시간 + 요약 + payload 일부 + 관련 자산.
+// 상위/하위 항목에 마우스를 올리면 뜨는 노드 카드: 유형/상태/출처/시간 + 요약 + payload 일부 + 관련 자산.
 // 데이터는 이 페이지가 이미 받은 refs에서 오며 추가 요청은 하지 않는다 — 브로드캐스트 API가 이웃 노드를 통째로 돌려준다.
 function RelatedNodeCard({ node, assets }: { node: TaskNode; assets: FindingAsset[] }) {
   const kind = viewKind(node);
@@ -271,7 +271,7 @@ function RelatedNodeCard({ node, assets }: { node: TaskNode; assets: FindingAsse
   );
 }
 
-// 브로드캐스트 한 건에 관련된 상류/하류: 상류 = 이 노드를 가리키는 엣지, 하류 = 이 노드에서 나가는 엣지.
+// 브로드캐스트 한 건에 관련된 상위/하위: 상위 = 이 노드를 가리키는 엣지, 하위 = 이 노드에서 나가는 엣지.
 function RelatedList({
   title,
   rows,
@@ -414,8 +414,8 @@ function BroadcastRow({
             <AssetList assets={assets[node.id] ?? []} />
             {(upstream.length > 0 || downstream.length > 0) && (
               <div className="flex flex-col gap-3 sm:flex-row">
-                <RelatedList title="상류 · 이 노드의 출처" rows={upstream} refs={refs} assets={assets} />
-                <RelatedList title="하류 · 이 노드에서 생성됨" rows={downstream} refs={refs} assets={assets} />
+                <RelatedList title="상위 · 이 노드의 출처" rows={upstream} refs={refs} assets={assets} />
+                <RelatedList title="하위 · 이 노드에서 생성됨" rows={downstream} refs={refs} assets={assets} />
               </div>
             )}
             <div>

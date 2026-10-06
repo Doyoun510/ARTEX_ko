@@ -638,3 +638,11 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **지정 표현**: README의 기록 빈도는 “250 ms당 최대 한 번 기록”, VALIDATION의 과거 검증 설명은 “이번 검증의 통과 항목으로 처리하지 않았고” 및 “Agent 라벨과 이력”으로 정리했다. 과거 통과 기록은 이번 실행 결과가 아니다.
 - **정적 검토·보존**: 원본/현재 줄 수·LF·들여쓰기·코드·포맷 지정자/인수 순서·이스케이프·문서 코드 블록/링크/예시를 대조했다. 테스트 입력·fixture·기대값·로직과 A001–A010 보완값을 유지했다. SQL 비주석 변경은 앞서 허용한 표시 문자열 3곳뿐이며 추가 SQL 표시값·계약·마이그레이션 변경은 없다. 이번 범위의 번역 누락·새 용어/계약 보류는 발견하지 못했다. 범위 밖 문구와 기존 U7/U15 후속 항목·다른 단위 상태는 유지하며 전체 감사/전체 번역 완료를 뜻하지 않는다.
 - **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 기존 로컬 변경·미추적 담당표·다른 파일·Git index와 기존 감사 보고서를 보존했다. 누적 diff `/tmp/artex-audit-fix-omissions.diff`, 검토 보고 `/tmp/artex-audit-fix-omissions-review.md`. fetch·병합·stage·commit·push·다음 묶음 없음.
+
+
+### 통합 감사 보완 3 · A027–A045·A080–A088 [이번 범위 용어·표기·기대값 정적 대조 완료 / 실행 미검증]
+- **기준·현재 확인**: work/ko-translation, HEAD `92ad8541e268be689e052b9b648789209af7807f`에서 직전 번역 누락 보완·확정 용어 커밋을 확인했다. 통합 감사 28개 항목은 모두 현재 소스에 남아 있어 문맥별로 수정했다. 대상 기존 변경·staged 변경·MERGE_HEAD는 없었으며 fetch·병합하지 않았다.
+- **수정**: LLM failover의 순환 전환·회로 차단·재시도 대기 시간·안전 구간, 의도/탐색 그래프의 상위·하위, 동작·심각도 등급·planner·공격 표면·자산 조회의 엔드포인트와 지정 알림 delivery/전송 속도 제한 문맥을 맞췄다. 알림 dispatcher의 lease 설명은 db/notification.go·notification_delivery.go·notification_test.go·server/notifier.go에서 함께 정리했다. 일반 데이터 전달·실제 폴링·영어·상태값은 유지했다.
+- **기대값·표기**: A041 안내를 직접 검사하는 sidequestion/sidequestion_test.go:180 및 agent/side_questions_test.go:107의 Contains 기대 문자열만 대응시켰다. db/notification_test.go의 lease 주석/실패 안내는 같은 확정 표기로 정리하고 입력·기대 상태·조건은 유지했다. A044는 두 JSX 경계에 명시적 공백을 추가했고 A045는 지정 산문/Mermaid 라벨/명령 주석의 전각 괄호만 정리했다. A080은 db/companies.go:636의 표시 목록 strings.Join 구분자만 ", "로 변경했다.
+- **정적 보존·잔여**: 소스/문서/테스트 26개·96행 변경, 파일별 줄 수·LF/CRLF·들여쓰기·개행·코드·키·enum·포맷/인수 순서·이스케이프·Markdown/Mermaid 구조·명령을 대조했다. 이번 28개 항목의 새 용어/계약 보류는 발견하지 못했다. 지정 위치 밖의 추가 전송/전송 속도 제한 및 플랫폼 동작 표기 후보는 상세 보고서에 별도로 남기며 이번에 확대 수정하지 않았다. A025–A026·A046 이후 정책/호환성·기존 U7/U15 후속 항목·다른 단위 이력은 유지한다. DB 데이터 소급 번역 마이그레이션이나 기능/정책 변경은 없다.
+- **보존·실행·산출물**: 기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index와 기존 감사 보고서를 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. 전체 diff `/tmp/artex-audit-fix-terms.diff`, 항목별 정적 검토 `/tmp/artex-audit-fix-terms-review.md`. 전체 감사/전체 번역 완료나 테스트 통과를 주장하지 않으며 fetch·병합·stage·commit·push·다음 묶음은 진행하지 않았다.

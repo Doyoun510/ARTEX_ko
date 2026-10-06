@@ -256,14 +256,14 @@ func TestClaimRealtimeDeliveriesHonorsLeaseAndMode(t *testing.T) {
 		t.Fatalf("finding id가 이벤트에서 전달되지 않음, 얻음 %d", got[0].FindingID)
 	}
 
-	// 리스 미만료라 두 번째 획득은 비어야 한다 —— 이것이 '같은 행을 두 dispatcher가 동시에 전달하지 않음'
+	// lease 미만료라 두 번째 획득은 비어야 한다 —— 이것이 '같은 행을 두 dispatcher가 동시에 전달하지 않음'
 	// 의 보장이다.
 	again, err := d.ClaimRealtimeDeliveries(ctx, realtime.ID, 10, time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(again) != 0 {
-		t.Fatalf("리스 기간 내 중복 획득은 안 됨, 얻음 %d건", len(again))
+		t.Fatalf("lease 기간 내 중복 획득은 안 됨, 얻음 %d건", len(again))
 	}
 
 	// digest 채널의 전달은 실시간 획득에 걸리면 안 된다.
@@ -277,7 +277,7 @@ func TestClaimRealtimeDeliveriesHonorsLeaseAndMode(t *testing.T) {
 }
 
 // TestClaimExpiredLeaseRecovers는 크래시 자가 치유를 다룬다: 프로세스가 전달 도중 죽으면 sending
-// 행이 남는데, 리스 만료 후 다시 획득될 수 있어야 한다, 안 그러면 이 전달은 영원히 막힌다.
+// 행이 남는데, lease 만료 후 다시 획득될 수 있어야 한다, 안 그러면 이 전달은 영원히 막힌다.
 func TestClaimExpiredLeaseRecovers(t *testing.T) {
 	d := notifyTestDB(t)
 	ctx := context.Background()
@@ -290,7 +290,7 @@ func TestClaimExpiredLeaseRecovers(t *testing.T) {
 	if err != nil || len(first) != 1 {
 		t.Fatalf("첫 획득 실패: %v (%d건)", err, len(first))
 	}
-	// 리스를 수동으로 과거로 밀어 '리스 만료'를 시뮬레이션한다.
+	// lease를 수동으로 과거로 밀어 'lease 만료'를 시뮬레이션한다.
 	if _, err := d.Exec(`UPDATE notification_deliveries SET next_attempt_at = now() - interval '1 minute' WHERE id=$1`, first[0].ID); err != nil {
 		t.Fatal(err)
 	}
@@ -299,7 +299,7 @@ func TestClaimExpiredLeaseRecovers(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(second) != 1 {
-		t.Fatalf("리스 만료된 sending 행은 다시 획득될 수 있어야 함, 얻음 %d건", len(second))
+		t.Fatalf("lease 만료된 sending 행은 다시 획득될 수 있어야 함, 얻음 %d건", len(second))
 	}
 	if second[0].Attempts != 2 {
 		t.Fatalf("재획득은 시도 횟수를 누적해야 함, 얻음 %d", second[0].Attempts)
@@ -387,7 +387,7 @@ func TestDigestBatchDueAndStableBatchID(t *testing.T) {
 	// 안 그러면 한 번의 재시도로 '이 배치는 함께 보냈다'는 사실이 지워진다.
 	//
 	// 한 건만이 아니라 배치 전체를 재배치해야 한다 —— 전달 엔진이 요약 메시지를 보낼 때 그렇게 처리한다
-	// (메시지 하나가 배치 전체를 대표하므로 성패를 함께한다). 한 건만 재배치하면 나머지는 아직 리스 기간 내라,
+	// (메시지 하나가 배치 전체를 대표하므로 성패를 함께한다). 한 건만 재배치하면 나머지는 아직 lease 기간 내라,
 	// 재획득이 당연히 그 한 건만 가져온다.
 	allIDs := make([]int64, 0, len(batch))
 	for _, dl := range batch {
@@ -396,7 +396,7 @@ func TestDigestBatchDueAndStableBatchID(t *testing.T) {
 	if err := d.RescheduleDeliveries(ctx, allIDs, time.Second, "模拟失败"); err != nil {
 		t.Fatal(err)
 	}
-	// 리스를 과거로 밀어 백오프 시간이 도달한 것을 시뮬레이션한다.
+	// lease를 과거로 밀어 백오프 시간이 도달한 것을 시뮬레이션한다.
 	if _, err := d.Exec(`UPDATE notification_deliveries SET next_attempt_at = now() - interval '1 minute' WHERE channel_id=$1`, ch.ID); err != nil {
 		t.Fatal(err)
 	}

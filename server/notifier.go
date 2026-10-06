@@ -29,7 +29,7 @@ const (
 	// notifyTick은 전달 엔진의 폴링 간격. 3초는 이 엔진 실시간성의 상한이고,
 	// '취약점 DB 기록'부터 '메시지가 IM에 도달'까지의 주요 지연 원인이다.
 	notifyTick = 3 * time.Second
-	// notifyLease는 전달을 수령할 때의 리스 기간. 단일 전달의 최악 소요 시간
+	// notifyLease는 전달을 수령할 때의 lease 기간. 단일 전달의 최악 소요 시간
 	// (notify 패키지 HTTP 클라이언트 타임아웃 15초)보다 뚜렷이 커야 하며, 아니면 같은 행을 두
 	// dispatcher가 동시에 전달하는 일이 생긴다.
 	notifyLease = 3 * time.Minute
@@ -44,13 +44,13 @@ const (
 	notifyUnlimitedBurstPerTick = 50
 	// notifyMaxSendsPerChannelPerTick은 단일 채널이 라운드당 최대 몇 건 전달하는지.
 	//
-	// 이 상한은 **리스 기간**에서 역산: 수령 시 행에 찍는 것이 리스(notifyLease = 3분)이고,
-	// 한 라운드에서 직렬 전달하는 건수가 많아 최악 소요가 리스를 넘으면, 뒤 몇 건은 다 보내기 전에 리스가 만료된다.
+	// 이 상한은 **lease 기간**에서 역산: 수령 시 행에 찍는 것이 lease(notifyLease = 3분)이고,
+	// 한 라운드에서 직렬 전달하는 건수가 많아 최악 소요가 lease를 넘으면, 뒤 몇 건은 다 보내기 전에 lease가 만료된다.
 	// 단일 프로세스 내에서는 무관(Run은 단일 goroutine 직렬 실행, tick은 재진입 안 함)하지만, **두
-	// 프로세스가 같은 DB에 연결**되면, 상대가 리스 만료된 행을 다시 수령해 중복 전송하고,
+	// 프로세스가 같은 DB에 연결**되면, 상대가 lease 만료된 행을 다시 수령해 중복 전송하고,
 	// attempts를 이중으로 증가시키며, 원 프로세스가 아직 전달 중일 때 실패로 판정한다.
 	//
-	// 값: 3분 리스 / 30초 단일 타임아웃 = 6은 **리스를 딱 꽉 채움**, 여유 0이라,
+	// 값: 3분 lease / 30초 단일 타임아웃 = 6은 **lease를 딱 꽉 채움**, 여유 0이라,
 	// 쓸 수 없다; 5를 쓰면 최악 소요 150초로 30초 여유를 남긴다. 이 관계는
 	// TestNotifyTickBudgetFitsWithinLease가 고정한다 —— notifyLease,
 	// notifySendTimeout 또는 이 값 중 어느 하나라도 바꾸면 그 단언이 실패한다.
@@ -168,7 +168,7 @@ func (n *Notifier) step(ctx context.Context) {
 //   - claimLimit은 이 배치가 최대 몇 건의 취약점을 담는지. 메모리 상한에만 제약되고 요청 예산과는 무관.
 //
 // 예전에 rate_per_min을 digest에 적용하려고, 라운드당 요청 예산
-// (notifyMaxSendsPerChannelPerTick, 리스에서 역산)을 그대로 배치 크기로 넘겼다.
+// (notifyMaxSendsPerChannelPerTick, lease에서 역산)을 그대로 배치 크기로 넘겼다.
 // 그 결과 rate_per_min=20 채널이 3초 tick에서 토큰을 1개만 보충받아, 요약
 // 메시지가 취약점 1건만 담아 —— digest가 '요약 문구가 붙은 실시간 푸시'로 퇴화하고, 독자는
 // '최근 30분 취약점 1건 추가'의 연속을 받으며, db.MaxDigestBatchSize는 영원히 도달 불가.
@@ -237,7 +237,7 @@ func (n *Notifier) stepDigest(ctx context.Context, ch *db.NotificationChannel, a
 	}
 	// 스냅샷이 깨져 메시지에 못 들어간 전달은 명시적으로 실패 판정해야 한다. 그러지 않으면 그것들은
 	// included 밖에 남아 메시지에도 실패 목록에도 들어가지 않고 —— 전송 성공 시 그 상태가
-	// 이후 일괄 표시에서 누락되어, 리스가 만료되어 반복 수령될 때까지 영원히 sending에 머문다.
+	// 이후 일괄 표시에서 누락되어, lease가 만료되어 반복 수령될 때까지 영원히 sending에 머문다.
 	if skipped := excludeDeliveries(deliveries, included); len(skipped) > 0 {
 		reason := "이벤트 스냅샷을 파싱할 수 없어 이 취약점을 메시지로 렌더링할 수 없음"
 		if fErr := n.pg.FailDeliveries(ctx, deliveryIDs(skipped), reason); fErr != nil {
