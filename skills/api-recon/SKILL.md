@@ -133,10 +133,10 @@ Phase 0 분류 + OUTDIR
 2. [ ] **실행 전 필수 확인 A + Phase 1**: 스크립트 복사 → **즉시** harvest → `wc -l` 확인 → [Phase 1](#phase-1--정적)
 3. [ ] **Phase 1b**: 앵커 주변 검색 범위 확대 + 바인딩 계층 → `param_candidates.json` → [Phase 1b](#phase-1b--파라미터-역분석)
 4. [ ] **Phase 2**: 인증·인가 확인의 세 관문 → `config.json` → [Phase 2](#phase-2--인증인가-확인의-세-관문)
-5. [ ] **실행 전 필수 확인 B**: runtime 스크립트 수정 → [Phase 3](#phase-3--运行时)
+5. [ ] **실행 전 필수 확인 B**: runtime 스크립트 수정 → [Phase 3](#phase-3--런타임)
 6. [ ] **Phase 3**: depth / coverage / both, 로그인 후 화면 진입 확인, 파라미터 트리거 매트릭스 → `param_samples.json`
-7. [ ] **Phase 4**(필요한 경우): 권한 트리 → patch stubs → Phase 3 다시 실행 → [Phase 4](#phase-4--权限树还原)
-8. [ ] **Phase 5**: 산출물 병합 + 보고서 + `insert_assets` → [Phase 5](#phase-5--合并与报告)
+7. [ ] **Phase 4**(필요한 경우): 권한 트리 → patch stubs → Phase 3 다시 실행 → [Phase 4](#phase-4--권한-트리-복원)
+8. [ ] **Phase 5**: 산출물 병합 + 보고서 + `insert_assets` → [Phase 5](#phase-5--병합과-보고서)
 
 ---
 
@@ -276,116 +276,116 @@ coverage의 각 회차에서 내보냅니다: `__API_RECON_LOG__`, `__API_RECON_
 
 ---
 
-## Phase 3 — 运行时
+## Phase 3 — 런타임
 
-须已过门禁 B；遵守 [边界与禁止](#경계와-금지-사항agent-필독--위반-시-범위-이탈) · 无凭据 mock 策略。
+실행 전 필수 확인 B를 통과한 상태여야 합니다. [경계와 금지 사항](#경계와-금지-사항agent-필독--위반-시-범위-이탈) · 자격 증명 없는 mock 전략을 준수합니다.
 
-`config.json` 设置 `"runtimeMode": "depth" | "coverage" | "both"`（模板见 reference）。
+`config.json`에서 `"runtimeMode": "depth" | "coverage" | "both"`를 설정합니다(템플릿은 reference 참조).
 
-### Hook 与 stub（depth + coverage 共用）
+### Hook과 stub(depth + coverage 공통)
 
-| 层 | 范围 | 目的 |
+| 계층 | 범위 | 목적 |
 |---|---|---|
-| L1 精确 | auth/权限/bootstrap stub | 过首屏鉴权 |
-| L2 负向修正 | 所有 JSON 响应 | 未登录码 → 成功 |
-| L3 兜底 | 未命中 L1 的 `/api` 等 | 空成功体，撑开 UI |
+| L1 정확 | auth/권한/bootstrap stub | 첫 화면 인증·인가 확인 통과 |
+| L2 실패 응답 보정 | 모든 JSON 응답 | 미로그인 코드 → 성공 |
+| L3 기본 응답 처리 | L1에 매칭되지 않은 `/api` 등 | 빈 성공 본문으로 UI 표시 |
 
-- **depth**：fake auth + `forward` 改业务码 + `stubs`；遍历 `routes`（hash/history）；产出 `runtime_api.json`
-- **coverage**：**document-start** 注入 `preload.js`（CDP `addScriptToEvaluateOnNewDocument` 或 Userscript）
+- **depth**: fake auth + `forward`로 애플리케이션 응답 코드 변경 + `stubs`. `routes` 순회(hash/history). `runtime_api.json` 생성
+- **coverage**: **document-start**에 `preload.js` 추가(CDP `addScriptToEvaluateOnNewDocument` 또는 Userscript)
 
-验证：`window.__API_RECON_PRELOAD__` 存在；业务 path 不回 `/login`。
+검증: `window.__API_RECON_PRELOAD__`가 존재하고 애플리케이션 path가 `/login`으로 돌아가지 않아야 합니다.
 
 ```bash
 cd recon && npm install
 node runtime_harvest.js config.json
 ```
 
-### 3b — coverage 动态枚举（必做）
+### 3b — coverage 동적 열거(필수)
 
-1. 主导航/侧栏 — 每项点击，等网络 1–3s
-2. Tab — `role=tab`、`.ant-tabs-tab`
-3. 表格 — 首行查看/编辑/详情
-4. 工具栏 — 导出、筛选、新建（**避免不可逆删除**）
-5. 每进模块 — 合并 API/路由
-6. SPA — 对 `routes.txt` 未覆盖 path 受控 `pushState`（MPA 禁止）
+1. 메인 탐색/사이드바 — 각 항목 클릭 후 네트워크를 1–3s 기다립니다
+2. Tab — `role=tab`, `.ant-tabs-tab`
+3. 표 — 첫 행의 보기/편집/상세
+4. 도구 모음 — 내보내기, 필터, 생성(**비가역적 삭제는 피합니다**)
+5. 모듈에 진입할 때마다 — API/라우트 병합
+6. SPA — `routes.txt`에서 다루지 않은 path에 제어된 `pushState` 적용(MPA에서는 금지)
 
-**参数触发矩阵**（必做）：每模块按操作类型各录一次，**diff 多样本**：
+**파라미터 트리거 매트릭스**(필수): 각 모듈에서 동작 유형별로 한 번씩 기록하고 **diff로 여러 샘플을 대조합니다**:
 
-| 操作 | 通常多出的参数 |
+| 동작 | 일반적으로 추가되는 파라미터 |
 |---|---|
-| 列表首屏 | 分页 + 默认筛选 |
-| 点搜索 | keyword、filter |
-| 高级筛选 | 更多 optional |
-| 新建/编辑 | 完整 entity |
-| 批量/导出/排序 | `ids[]`、`exportType`、`sortField` |
+| 목록 첫 화면 | 페이지네이션 + 기본 필터 |
+| 검색 클릭 | keyword, filter |
+| 고급 필터 | 더 많은 optional |
+| 생성/편집 | 전체 entity |
+| 일괄/내보내기/정렬 | `ids[]`, `exportType`, `sortField` |
 
-**stub 下 outbound body/headers 仍真实**——以请求为准。录制 → `scan_raw.json`、`param_samples.json`、`api_detail.json`。
+**stub 환경에서도 outbound body/headers는 실제 내용입니다**——요청을 기준으로 삼습니다. 레코딩 → `scan_raw.json`, `param_samples.json`, `api_detail.json`.
 
-- **Vue**：`neutralizeVueRouter: true` + document-start preload
-- **React**：`routes.txt` + 侧栏点击 + `pushState`
-- **both**：先 3a depth，再 3b coverage
+- **Vue**: `neutralizeVueRouter: true` + document-start preload
+- **React**: `routes.txt` + 사이드바 클릭 + `pushState`
+- **both**: 먼저 3a depth, 다음으로 3b coverage
 
 ---
 
-## Phase 4 — 权限树还原
+## Phase 4 — 권한 트리 복원
 
-**触发**：模块页空白 / 每路由仅 bootstrap（如 locale）→ 内容门未过。
+**트리거**: 모듈 화면이 비어 있음 / 각 라우트에 bootstrap만 있음(예: locale)→ 콘텐츠 관문을 통과하지 못한 상태.
 
-| 现象 | 含义 |
+| 현상 | 의미 |
 |---|---|
-| 进壳成功 | 渲染门 + 拦截器门已过 |
-| 侧栏缺项/点击空白 | stub shape 或权限码不全 |
-| 每路由 API 相同且极少 | `v-if permission` 未通过 |
-| `routes.txt` 远少于 bundle | 须从 auth 模块补全 |
+| 로그인 후 화면 진입 성공 | 렌더링 관문 + 인터셉터 관문 통과 |
+| 사이드바 항목 누락/클릭 시 빈 화면 | stub shape 또는 권한 코드가 불완전함 |
+| 각 라우트의 API가 동일하며 매우 적음 | `v-if permission`을 통과하지 못함 |
+| `routes.txt`가 bundle보다 훨씬 적음 | 반드시 auth 모듈에서 보완해야 함 |
 
 ```bash
 grep -rhoaE '"/api[^"]*(permission|perm|role|menu|acl)[^"]*"' OUTDIR/js/*.js | sort -u | head -30
 grep -rhoaE 'userRouteAuth|getResultTree|routeMap|routeLink|menuList|authList' OUTDIR/js/*.js | head -20
 ```
 
-典型链：`role_permissions`（flat codes）+ `permissions/all`（tree）→ `getResultTree` → `userRouteAuth[CODE].url`。
+일반적인 연결 관계: `role_permissions`(flat codes)+ `permissions/all`(tree)→ `getResultTree` → `userRouteAuth[CODE].url`.
 
 ```bash
 python3 recon/extract_route_map.py recon/js recon/
 python3 recon/build_perm_tree.py recon/js recon/ --config recon/config.json
 ```
 
-中间产出：`route_map.json`、`userRouteAuth.json`、`permissions_tree.json`、`*_stub.json`、`perm_codes_all.txt`。
+중간 산출물: `route_map.json`, `userRouteAuth.json`, `permissions_tree.json`, `*_stub.json`, `perm_codes_all.txt`.
 
-stub 检查：外层 `response_code` 与拦截器门一致；flat codes 与 tree 对齐；`routes` 覆盖 `route_map` 全部 link。
+stub 확인: 바깥쪽 `response_code`가 인터셉터 관문과 일치하고, flat codes가 tree와 맞아야 하며, `routes`가 `route_map`의 모든 link를 포함해야 합니다.
 
-更新 `config.json` 后**重跑 Phase 3**。大型 SPA 可调 `waitUntil`、`routeTimeout`、`perRouteMs`（见 reference A3/I 节）。
+`config.json`을 갱신한 뒤 **Phase 3을 다시 실행합니다**. 대규모 SPA에서는 `waitUntil`, `routeTimeout`, `perRouteMs`를 조정할 수 있습니다(reference A3/I절 참조).
 
 ---
 
-## Phase 5 — 合并与报告
+## Phase 5 — 병합과 보고서
 
-### 产出表
+### 산출물 표
 
-| 文件 | 阶段 | 内容 |
+| 파일 | 단계 | 내용 |
 |---|---|---|
-| `js/`、`api_static.txt`、`routes.txt`、`chunkmap.txt` | 1 | 静态 bundle 与 path |
-| `param_candidates.json` | 1b | 静态参数字段候选 |
-| `config.json` | 2 | 三道门 + runtime 配置 |
-| `runtime_api.json` | 3a | depth 详细录制（含 WS/SSE） |
-| `param_samples.json`、`scan_raw.json`、`api_detail.json` | 3b | 多样本、点击日志、detail |
-| `route_map.json` 等 | 4 | 权限树中间文件（若执行） |
-| `params_merged.json` | 5 | 合并参数字段 + 置信度 |
+| `js/`, `api_static.txt`, `routes.txt`, `chunkmap.txt` | 1 | 정적 bundle과 path |
+| `param_candidates.json` | 1b | 정적 파라미터 필드 후보 |
+| `config.json` | 2 | 세 관문 + runtime 설정 |
+| `runtime_api.json` | 3a | depth 상세 레코딩(WS/SSE 포함) |
+| `param_samples.json`, `scan_raw.json`, `api_detail.json` | 3b | 여러 샘플, 클릭 로그, detail |
+| `route_map.json` 등 | 4 | 권한 트리 중간 파일(실행한 경우) |
+| `params_merged.json` | 5 | 병합한 파라미터 필드 + 신뢰도 |
 | `api_merged.txt` | 5 | `METHOD /path [params] [static\|runtime\|both]` |
-| `site_map.json` | 5 | 路由、API、params、功能点、局限 |
-| **insert_assets** | 5 | 将所有服务、端点资产写入资产库 |
+| `site_map.json` | 5 | 라우트, API, params, 기능 지점, 한계 |
+| **insert_assets** | 5 | 모든 서비스·엔드포인트 자산을 자산 저장소에 기록 |
 
-### 5b — 参数合并
+### 5b — 파라미터 병합
 
-从 `param_samples.json` diff，**无通用合并脚本**。置信度规则见 reference J7（高/中/低/待触发）。
+`param_samples.json`의 diff를 대조하며 **범용 병합 스크립트는 없습니다**. 신뢰도 규칙은 reference J7을 참조합니다(높음/중간/낮음/트리거 대기).
 
-### 5c — 错误反推
+### 5c — 오류 기반 역추론
 
-授权范围内可发不完整请求读 400（**属参数 recon，非漏洞测试**）：`field 'x' is required`、枚举错误等。注意 `data` 包装、`variables`、加密前 `bizData`。
+허용된 범위 안에서 불완전한 요청을 보내 400을 읽을 수 있습니다(**파라미터 recon이며 취약점 테스트가 아닙니다**): `field 'x' is required`, 열거 오류 등. `data` 래퍼, `variables`, 암호화 전 `bizData`에 유의합니다.
 
-报告须注明：runtimeMode、静态/运行时 API 数、参数置信度、未覆盖模块、相对参考脚本的 `CHANGES.md` 摘要。
+보고서에 반드시 명시할 내용: runtimeMode, 정적/런타임 API 개수, 파라미터 신뢰도, 다루지 않은 모듈, 참조 스크립트 대비 `CHANGES.md` 요약.
 
-`site_map.json` 建议结构：
+`site_map.json`의 권장 구조:
 
 ```json
 {
@@ -404,22 +404,22 @@ stub 检查：外层 `response_code` 与拦截器门一致；flat codes 与 tree
 }
 ```
 
-更多字段与 grep 配方见 [reference.md](reference.md)。
+추가 필드와 grep 방법은 [reference.md](reference.md)를 참조합니다.
 
 ---
 
-## 通用说明
+## 공통 안내
 
-- **框架无关**：webpack/Vite/Angular lazy load 方法相同
-- **传输**：REST/JSON、GraphQL、WebSocket、SSE；gRPC-web 不在范围
-- **SSR**：客户端 fetch 可录；RSC/Server Actions 不完全可枚举
-- **盲区**：JSVMP、WASM、HMAC/mTLS 强校验 → 静态 + 标注局限
-- **参数盲区**：条件联动、hidden params、WASM 组包 → 「待触发」/「不可达」
-- **静态是安全网**：runtime 被挡时静态仍能枚举 endpoint
+- **프레임워크와 무관**: webpack/Vite/Angular lazy load 방법은 동일합니다
+- **전송**: REST/JSON, GraphQL, WebSocket, SSE. gRPC-web은 범위 밖입니다
+- **SSR**: 클라이언트 fetch는 기록할 수 있지만 RSC/Server Actions는 모두 열거할 수 없습니다
+- **확인하지 못하는 영역**: JSVMP, WASM, HMAC/mTLS의 강한 검증 → 정적 분석 + 한계 표시
+- **파라미터 확인이 어려운 영역**: 조건에 따른 연동, hidden params, WASM 요청 구성 → '트리거 대기'/'접근 불가'
+- **정적 분석은 안전망**: runtime이 차단돼도 정적 분석으로 endpoint를 열거할 수 있습니다
 
 ---
 
-## 附加资源
+## 추가 리소스
 
-- Grep 配方、`config.json` 模板、排障、Hook、参数逆向 J 节、site_map 模板：**[reference.md](reference.md)**
-- 参考脚本路径见 [脚本与门禁](#스크립트와-실행-전-필수-확인) 表
+- Grep 방법, `config.json` 템플릿, 문제 해결, Hook, 파라미터 역분석 J절, site_map 템플릿: **[reference.md](reference.md)**
+- 참조 스크립트 경로는 [스크립트와 실행 전 필수 확인](#스크립트와-실행-전-필수-확인) 표를 참조합니다

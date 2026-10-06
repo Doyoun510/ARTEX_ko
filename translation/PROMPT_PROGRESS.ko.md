@@ -498,3 +498,20 @@ server/ 비테스트 파일에 남은 중국어는 전부 **의도적 DNT**(설�
 - **잔여·테스트**: 이번 범위의 용어 보류 32곳은 모두 해소했으며 추가 용어/계약 보류·미분류 번역 누락은 발견하지 못했다. reference:52의 중국어 grep 검색 정규식은 코드 DNT, SKILL:136/138/139의 중국어 fragment는 범위 밖 제목 연결 보존으로 분류한다. 본문/docstring의 직접 비교·파싱·테스트 기대값 의존은 검색에서 발견하지 못해 테스트 수정은 없다. 외부 SDK 소비자·실제 모델 해석은 미확인이다.
 - **후속·보존**: 로그인/세션 금지와 reference G절의 조건부 실제 세션 안내 간 원문 정책 충돌, U11 기대값 불일치 공유 2건, ScopeSentry frontmatter 확인 항목, U7 후속 보류와 모든 기존 기록을 유지한다. 정책 우선순위·예외·새 출력 언어 지시는 추가하지 않았다. U15 나머지가 남으므로 전체 완료가 아니다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index를 보존했다.
 - **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 누적 6개 파일 전체 diff `/tmp/artex-u15-api-static-params.diff`, 갱신된 보고서 `/tmp/artex-u15-api-static-params-review.md`. fetch·병합·stage·commit·push·다음 묶음은 진행하지 않았다.
+
+
+### U15 · 세 번째 묶음(API 정찰 런타임·권한 트리·보고서) [부분 번역·정적 검토 완료 / 용어·원문 정책/설명 후속 보류 / 실행 미검증]
+- **범위·시작 상태**: 로컬 `work/ko-translation`, HEAD `19c3ceb4813588cadc84a3afa451a78b92f9b870`의 두 번째 묶음 커밋을 확인했다. 대상 파일의 기존 변경·staged 변경·진행 중 병합은 없었다. `SKILL.md` Phase 3부터 끝(279–425행), `reference.md` C/D 199–251·F/G/H/I 263–387행, preload.js·runtime_harvest.js·build_perm_tree.py·extract_route_map.py 전체를 검토했다. 스크립트는 중국어 주석만 번역했다.
+- **파일별 변경·연결부**: SKILL 67행의 자연어와 앞부분 136·138·139행의 Phase 3/4/5 fragment 3개, reference 82행, preload 중국어 주석 14행, runtime 중국어 주석 2행을 번역했다. 두 Python 파일은 전체 영어이므로 수정하지 않았다. 변경 제목 22개와 skills/ 전체의 fragment를 대조했으며 추가 연결부는 발견하지 못했다. 앞 묶음은 허용된 fragment 3곳 외 바이트 동일하다.
+- **용어·계약·잔여**: 미등록 负向修正, L3 stub 문맥 兜底, 中和, 反调试가 포함된 7개 문장/표 행/주석은 전체 원문 유지했다(SKILL 290·291, reference 244·248, preload 29·82·122). 원문 전체·위치·문맥·후보·근거는 상세 보고서에 모았다. preload:192의 중국어 NEGATIVE_RE 및 완료된 reference:52의 grep 검색 정규식은 코드 DNT로 보존했다. 중국어 실행/표시 문자열 수정 후보는 발견하지 못했다. 명령·JSON/config·예시·실제 출력은 변환하지 않았다. 미분류 번역 누락·새 계약 불명확 항목은 발견하지 못했으며 용어집은 수정하지 않았다.
+- **정적 보존·테스트**: 원본/현재 줄 수 SKILL 425/425·reference 500/500·preload 348/348·runtime 228/228·build_perm_tree 210/210·extract_route_map 42/42. reference/preload/두 Python의 CRLF와 SKILL/runtime의 LF, 들여쓰기·개행·Markdown 구조·기존 영어·숫자·포맷·이스케이프·명령·정규식·설정 키/값을 대조했다. 스크립트 주석 밖 코드는 바이트 동일하고 reference 완료 A/B/E/J절도 동일하다. 관련 생성/소비 경로와 이름이 다른 서버 skill 테스트를 읽기 전용으로 확인했으며 변경한 자연어를 직접 비교하는 기대값은 검색에서 발견하지 못했다. 테스트 수정은 없고 SDK/실제 모델 해석은 미확인이다.
+- **원문 문제·후속**: 실제 인증/세션 의존 금지와 reference G절의 조건부 실제 세션 안내·I6의 실제 session 비교 지시를 원문 의미대로 유지했다. 정책 우선순위나 예외를 추가하지 않았다. reference:267의 D절 정규식 참조(실제 안내는 E절), :350의 routes 확장 설명(build_perm_tree.py:196–206은 stubs만 갱신), depth/coverage 공통 안내와 preload의 forward=true 시 L1/L3 mock 미적용 경로 차이는 원문 설명 후속 검토로 기록했다. 번역에서 코드/안내를 임의 수정하지 않았다.
+- **상태·보존·산출물**: ScopeSentry frontmatter·U11 공유 2건·U7 후속 보류·모든 이전 기록·기존 TRANSLATION_PROMPT 변경·미추적 담당표·다른 파일·Git index를 보존했다. 용어 보류와 U15 나머지 범위가 남으므로 U15 전체 완료가 아니다. 실행 검증은 **사용자 요청으로 미실행**이다. 전체 diff `/tmp/artex-u15-api-runtime.diff`, 상세 보고서 `/tmp/artex-u15-api-runtime-review.md`. fetch·병합·stage·commit·push·다음 묶음은 진행하지 않았다.
+
+
+### U15 · 세 번째 묶음 확정 용어 보류 해소 [세 번째 묶음 번역·정적 검토 완료 / 원문 정책·설명 후속 검토 보류 / 실행 미검증]
+- **용어·번역**: 최신 용어집의 중복·충돌을 확인하고 负向修正=실패 응답 보정(L2), 兜底=기본 응답 처리(L3), 中和=무력화(클라이언트 로그인 이동·라우트 가드 억제), 反调试=안티 디버깅을 `[확정]`으로 등록했다. 다른 兜底 문맥과 서버 인증·인가 계약은 변경하지 않았다. H01~H07의 표 행·주석 7곳을 모두 번역했으며 H01은 지정 표기 그대로다. 앞선 부분 번역 기록은 이력으로 보존한다.
+- **최종 정적 검토**: 이번 추가 소스 변경은 SKILL:290·291, reference:244·248, preload:29·82·122의 7행뿐이다. 누적 변경은 SKILL 72행(자연어 69·fragment 3), reference 84행, preload 주석 17행, runtime 주석 2행이다. 원본/현재 줄 수 425/425·500/500·348/348·228/228·210/210·42/42와 LF/CRLF, 줄 배치·들여쓰기·기존 영어·포맷·이스케이프·Markdown·명령·키·설정값·정규식은 동일하다. 기존 제목/fragment와 완료된 앞 묶음, 스크립트 주석 밖 코드는 유지했다.
+- **잔여·테스트**: 이번 묶음의 용어 보류 7곳은 해소했고 추가 용어/계약 보류·미분류 번역 누락은 발견하지 못했다. preload:192의 중국어 NEGATIVE_RE와 완료된 reference:52의 로그인 검색 정규식은 코드 DNT로 보존한다. 직접 연결된 테스트 기대값 변경 필요는 발견하지 못했고 테스트는 수정·실행하지 않았다. 외부 SDK와 실제 모델 동작은 미확인이다.
+- **후속·보존**: 로그인·세션 원문 정책 충돌, D/E절 참조 문제, routes 확장 설명 문제, depth/coverage 동작 차이는 후속 항목으로 유지하며 이번에 수정하지 않았다. U11 공유 2건·U7 후속 보류·ScopeSentry 확인 항목·기존 기록·로컬 변경·미추적 담당표·Git index를 보존한다. U15 전체 완료는 아니다.
+- **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 누적 전체 diff `/tmp/artex-u15-api-runtime.diff`, 갱신된 보고서 `/tmp/artex-u15-api-runtime-review.md`. fetch·병합·stage·commit·push·다음 묶음은 진행하지 않았다.

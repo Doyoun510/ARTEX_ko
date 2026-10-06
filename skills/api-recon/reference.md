@@ -197,9 +197,9 @@ grep -rhoaE '([A-Z_][A-Z0-9_]*):\{name:"[^"]*",link:"/[^"]+"\}' js | head
 
 ---
 
-## C. coverage 模式：preload 配置
+## C. coverage 모드: preload 설정
 
-编辑 `scripts/preload.js` 顶部 `CONFIG` 对象，或通过 CDP 注入前替换：
+`scripts/preload.js` 위쪽의 `CONFIG` 객체를 편집하거나 CDP를 통한 추가 전에 교체합니다:
 
 ```javascript
 const CONFIG = {
@@ -211,14 +211,14 @@ const CONFIG = {
   neutralizeVueRouter: true,
   observe: { storageReads: false, cookieReads: false, xhrHeaders: true },
   neutralize: { fields: ['response_code', 'code'], success: 0 },
-  stubs: [ /* 同 config.json stubs */ ],
+  stubs: [ /* config.json stubs와 동일 */ ],
   apiPattern: /\/(api|apis|v\d+|dev|internal|graphql)\//i,
 };
 ```
 
-验证：`window.__API_RECON_PRELOAD__ === true` 且 pathname 稳定。
+검증: `window.__API_RECON_PRELOAD__ === true`이고 pathname이 안정적으로 유지돼야 합니다.
 
-导出录制结果：
+레코딩 결과 내보내기:
 
 ```javascript
 JSON.stringify({
@@ -231,21 +231,21 @@ JSON.stringify({
 
 ---
 
-## D. preload / runtime Hook 能力
+## D. preload / runtime Hook 기능
 
-preload（coverage）与 runtime_harvest（depth）内置的浏览器 Hook 能力及覆盖范围：
+preload(coverage)와 runtime_harvest(depth)에 내장된 브라우저 Hook 기능과 적용 범위:
 
-| Hook 能力 | 对 API 发现的价值 | 覆盖 |
+| Hook 기능 | API 발견에 주는 가치 | 지원 범위 |
 |---|---|---|
-| Hook fetch / XHR.open | 录请求 URL/方法 | ✅ `recordDetail` + `__API_RECON_LOG__` |
-| Hook XHR.setRequestHeader | 发现 Authorization 等头 | ✅ `observe.xhrHeaders` |
-| Hook localStorage/cookie 读 | 确认会话键名 | ⚠️ 可选 `observe.storageReads/cookieReads` |
-| Vue 获取路由 | 补全 frontendRoutes | ✅ `__API_RECON_ROUTES__`（已加载路由） |
-| Vue 路由守卫中和 / 登录跳转阻断 | 撑开模块触发 API | ✅ `neutralizeVueRouter` + 原生跳转中和 |
-| React 获取路由 | 补路由 | ⚠️ 静态 + 点击；无专用 Hook |
-| 页面跳转阻断（登录 path） | 留页分析 | ⚠️ 仅阻断登录 path，避免挡业务导航 |
-| Hook 加密库（CryptoJS/SM 等） | 加密参数 → 明文 API body | ❌ 须手工 Hook 加密函数入参；结论写 config |
-| 反调试 bypass | 否则 runtime 录不到 API | ❌ 须手工处理；静态仍可用 |
+| Hook fetch / XHR.open | 요청 URL/메서드 기록 | ✅ `recordDetail` + `__API_RECON_LOG__` |
+| Hook XHR.setRequestHeader | Authorization 등의 헤더 발견 | ✅ `observe.xhrHeaders` |
+| Hook localStorage/cookie 읽기 | 세션 키 이름 확인 | ⚠️ 선택 사항 `observe.storageReads/cookieReads` |
+| Vue 라우트 가져오기 | frontendRoutes 보완 | ✅ `__API_RECON_ROUTES__`(로드된 라우트) |
+| Vue 라우트 인증 가드 무력화 / 로그인 이동 차단 | 모듈을 표시해 API 트리거 | ✅ `neutralizeVueRouter` + 원래 이동 기능 무력화 |
+| React 라우트 가져오기 | 라우트 보완 | ⚠️ 정적 분석 + 클릭. 전용 Hook 없음 |
+| 페이지 이동 차단(로그인 path) | 해당 페이지에서 분석 유지 | ⚠️ 로그인 path만 차단하여 애플리케이션 탐색을 막지 않도록 함 |
+| Hook 암호화 라이브러리(CryptoJS/SM 등) | 암호화 파라미터 → 평문 API body | ❌ 반드시 직접 Hook으로 암호화 함수의 입력 파라미터를 관찰해야 함. 결론은 config에 기록 |
+| 안티 디버깅 bypass | 그렇지 않으면 runtime에서 API를 기록할 수 없음 | ❌ 반드시 직접 처리해야 함. 정적 분석은 여전히 사용 가능 |
 
 ---
 
@@ -260,60 +260,60 @@ grep -rhoaE '/api/[a-zA-Z0-9_./-]+' js | sort -u
 
 ---
 
-## F. 排障
+## F. 문제 해결
 
-| 现象 | 原因 → 处理 |
+| 현상 | 원인 → 처리 |
 |---|---|
-| 静态 API 很少 | endpoint 方言不匹配 → 放宽正则（D 节） |
-| chunk 数 ≪ manifest | CSS-only 或未部署 chunk；404 已重试 |
-| runtime 仍显示登录页 | 渲染门错误 → 复查 A1：键名、容器、编码、domain |
-| 进壳但模块空白 | 内容门 → forge 菜单（A3）；`routes` path 可能不对 |
-| 每路由只有 bootstrap/locale | 权限码不全 → I 节权限树还原；检查 `role_permissions` + `permissions/all` 双 stub |
-| 侧栏有项但子页空白 | tree 缺 intermediate 节点或 code 与 `userRouteAuth` 不一致 |
-| 每个 API 都跳登录 | 拦截器门 → 确认 `neutralize`；嵌套字段需扩展 walk 逻辑 |
-| WS 帧为 0 | 需用户交互后才 subscribe；加长 `perRouteMs` |
-| 响应体空 | 仅 `forward: true` 时有真实响应 |
-| Chromium 缺失 | 安装 chromium 或设置 `config.chromium` / `CHROMIUM` |
-| Mock 很多仍回登录 | Hook 太晚或缺 `location.href` setter → document-start + preload |
-| 列表全空 | L3 空数组正常；继续点 Tab/设置/详情 |
-| 误把 Redux action 当路由 | 过滤含 get/set/change/clear/toggle/upload 的内部 path |
-| Vue 仍跳登录 | preload 非 document-start → 改注入时机；或 `neutralizeVueRouter: false` 时手动清守卫 |
-| 响应里有 URL 但未进 log | 开 `extractUrlsFromResponse`；或从 `__API_RECON_DETAIL__` 人工提取 |
-| 不知 Authorization 头名 | 开 `observe.xhrHeaders` 或 DevTools 查看请求头 |
-| runtime 极慢 / 超时 | 改 `waitUntil: domcontentloaded`；降 `routeTimeout`；勿用 `networkidle2` |
-| 代理连接失败 | 检查 `proxy` / 环境变量；Puppeteer 与 curl 代理端口一致 |
+| 정적 API가 매우 적음 | endpoint 표현 방식이 맞지 않음 → 정규 표현식을 넓힘(D절) |
+| chunk 개수 ≪ manifest | CSS-only 또는 배포되지 않은 chunk. 404는 이미 재시도함 |
+| runtime에서 여전히 로그인 화면이 표시됨 | 렌더링 관문 오류 → A1 재확인: 키 이름, 저장 위치, 인코딩, domain |
+| 로그인 후 화면에 진입했으나 모듈이 비어 있음 | 콘텐츠 관문 → 메뉴 forge(A3). `routes` path가 잘못됐을 수 있음 |
+| 각 라우트에 bootstrap/locale만 있음 | 권한 코드가 불완전함 → I절 권한 트리 복원. `role_permissions` + `permissions/all`의 두 stub 확인 |
+| 사이드바에는 항목이 있으나 하위 화면이 비어 있음 | tree에 intermediate 노드가 없거나 code가 `userRouteAuth`와 일치하지 않음 |
+| 모든 API가 로그인으로 이동함 | 인터셉터 관문 → `neutralize` 확인. 중첩 필드는 walk 로직 확장이 필요함 |
+| WS 프레임이 0임 | 사용자 상호작용 후에만 subscribe함. `perRouteMs`를 늘림 |
+| 응답 본문이 비어 있음 | `forward: true`일 때만 실제 응답이 있음 |
+| Chromium이 없음 | chromium 설치 또는 `config.chromium` / `CHROMIUM` 설정 |
+| Mock이 많으나 여전히 로그인으로 돌아감 | Hook이 너무 늦거나 `location.href` setter가 없음 → document-start + preload |
+| 목록이 모두 비어 있음 | L3의 빈 배열은 정상. Tab/설정/상세를 계속 클릭 |
+| Redux action을 라우트로 잘못 취급함 | get/set/change/clear/toggle/upload가 포함된 내부 path를 필터링 |
+| Vue가 여전히 로그인으로 이동함 | preload가 document-start가 아님 → 추가 시점 변경. 또는 `neutralizeVueRouter: false`이면 인증 가드를 직접 제거 |
+| 응답에 URL이 있으나 log에 기록되지 않음 | `extractUrlsFromResponse` 활성화 또는 `__API_RECON_DETAIL__`에서 직접 추출 |
+| Authorization 헤더 이름을 모름 | `observe.xhrHeaders` 활성화 또는 DevTools에서 요청 헤더 확인 |
+| runtime이 매우 느림 / 시간 초과 | `waitUntil: domcontentloaded`로 변경. `routeTimeout`을 낮춤. `networkidle2`를 사용하지 않음 |
+| 프록시 연결 실패 | `proxy` / 환경 변수 확인. Puppeteer와 curl 프록시 포트가 일치해야 함 |
 
 ---
 
-## G. hardened 目标
+## G. hardened 대상
 
-服务端逐步校验会话（不可 forge 的签名 cookie、服务端渲染且不可 stub 的菜单）时，runtime 会在 shell 处卡住。预期行为：
+서버에서 세션을 단계적으로 검증하는 경우(forge할 수 없는 서명된 cookie, 서버에서 렌더링하며 stub 처리할 수 없는 메뉴), runtime이 shell에서 막힙니다. 예상 동작:
 
-- **静态足够做 endpoint 枚举** — 模块 path 在代码里
-- 若授权允许，用**真实会话**跑同一 harness：`forward: true`、无需 neutralize，捕获真实 methods/params/responses
-
----
-
-## H. 单次任务清单
-
-1. 确认授权范围
-2. **阅读** `scripts/harvest_static.py` → 按目标调整 → 运行 → 审 `api_static.txt`、`routes.txt`
-3. **Phase 1b**：path 锚点扩窗 + 绑定层 → `param_candidates.json`（J 节）
-4. 逆向 A1/A2/A3 → 写站点专属 `config.json`
-5. **阅读并调整** `runtime_harvest.js` / `preload.js` 后再执行
-6. `runtimeMode=depth`：`npm install` → 运行调整后的 harvest 脚本
-7. `runtimeMode=coverage/both`：document-start 注入调整后的 preload → browser MCP 动态枚举 + **参数触发矩阵**
-8. 模块不渲染 → **I 节权限树还原** → patch stubs → 重跑
-9. 参数多样本 diff + 错误反推 → `params_merged.json`
-10. 合并 → `site_map.json` + `api_merged.txt`，诚实标注覆盖、缺口及脚本改动点
+- **정적 분석으로 endpoint 열거를 충분히 수행할 수 있습니다** — 모듈 path는 코드에 있습니다
+- 허용된 범위라면 **실제 세션**으로 같은 harness를 실행합니다: `forward: true`, neutralize 불필요, 실제 methods/params/responses 캡처
 
 ---
 
-## I. 权限树还原（Phase 4 深化）
+## H. 단일 작업 체크리스트
 
-当 forge 简单 `menus: [{ path, show: true }]` 无效、子模块仍不 mount 时使用。
+1. 허용된 범위 확인
+2. **읽기** `scripts/harvest_static.py` → 대상에 맞게 조정 → 실행 → `api_static.txt`, `routes.txt` 검토
+3. **Phase 1b**: path 앵커 주변 검색 범위 확대 + 바인딩 계층 → `param_candidates.json`(J절)
+4. A1/A2/A3 역분석 → 사이트 전용 `config.json` 작성
+5. **읽고 조정** `runtime_harvest.js` / `preload.js`, 그다음 실행
+6. `runtimeMode=depth`: `npm install` → 조정한 harvest 스크립트 실행
+7. `runtimeMode=coverage/both`: document-start에 조정한 preload 추가 → browser MCP 동적 열거 + **파라미터 트리거 매트릭스**
+8. 모듈이 렌더링되지 않음 → **I절 권한 트리 복원** → patch stubs → 다시 실행
+9. 파라미터의 여러 샘플 diff + 오류 기반 역추론 → `params_merged.json`
+10. 병합 → `site_map.json` + `api_merged.txt`, 다룬 범위·누락·스크립트 변경점을 사실대로 표시
 
-### I1. 定位 auth 模块
+---
+
+## I. 권한 트리 복원(Phase 4 심화)
+
+단순한 형태로 forge한 `menus: [{ path, show: true }]`가 효과 없고 하위 모듈이 여전히 mount되지 않을 때 사용합니다.
+
+### I1. auth 모듈 찾기
 
 ```bash
 grep -l 'userRouteAuth' js/*.js
@@ -321,67 +321,67 @@ grep -l 'routeMap\|routeLink' js/*.js
 grep -rhoaE 'getResultTree|role_permissions|permissions/all' js | head
 ```
 
-记录：**权限 API path**、**响应字段名**、**消费 chunk 文件名**。
+기록: **권한 API path**, **응답 필드명**, **소비 chunk 파일명**.
 
-### I2. 提取 routeMap
+### I2. routeMap 추출
 
 ```bash
 python3 scripts/extract_route_map.py recon/js recon/
-# 产出 recon/route_map.json
+# 산출물 recon/route_map.json
 ```
 
-若 `[!] no routeMap pattern found`：放宽 `extract_route_map.py` 中正则，或手工 grep：
+`[!] no routeMap pattern found`이면: `extract_route_map.py`의 정규 표현식을 넓히거나 직접 grep합니다:
 
 ```bash
 grep -rhoaE '([A-Z_][A-Z0-9_]*):\{name:"[^"]*",link:"/[^"]+"\}' js | head -20
 ```
 
-### I3. 构建权限树 + stub
+### I3. 권한 트리 + stub 구성
 
 ```bash
 python3 scripts/build_perm_tree.py recon/js recon/ --config recon/config.json
 ```
 
-脚本逻辑：
-1. 解析 `userRouteAuth={MONITOR:{url:...},...}`（含 webpack 别名 `He=o.DASHBOARD`）
-2. 用 `route_map.json` 解析 alias → 真实 path
-3. 按 code 前缀推断 parent（`MONITOR_ALERT` → `MONITOR`）
-4. 输出 `permissions_tree.json`、`permissions_all_stub.json`、`role_permissions_stub.json`
-5. `--config` 时自动写入 `config.json` 的 `stubs` 与扩展 `routes`
+스크립트 로직:
+1. `userRouteAuth={MONITOR:{url:...},...}` 파싱(webpack 별칭 `He=o.DASHBOARD` 포함)
+2. `route_map.json`으로 alias → 실제 path 해석
+3. code 접두로 parent 추론(`MONITOR_ALERT` → `MONITOR`)
+4. `permissions_tree.json`, `permissions_all_stub.json`, `role_permissions_stub.json` 출력
+5. `--config`가 있으면 `config.json`의 `stubs`에 자동 기록하고 `routes` 확장
 
-**按目标调整**（在脚本顶部）：
-- `DEFAULT_ROOTS`：顶级模块 code 列表
-- `DEFAULT_PREFIX_PARENT`：`PREFIX_` → parent 映射
-- `DEFAULT_EXTRA_PARENT`：非前缀关系的 orphan 节点
+**대상에 맞게 조정**(스크립트 위쪽):
+- `DEFAULT_ROOTS`: 최상위 모듈 code 목록
+- `DEFAULT_PREFIX_PARENT`: `PREFIX_` → parent 매핑
+- `DEFAULT_EXTRA_PARENT`: 접두 관계가 아닌 orphan 노드
 
-### I4. 校验 stub 一致性
+### I4. stub 일관성 확인
 
 ```bash
-# permissions 数量应 ≈ userRouteAuth 条目数
+# permissions 개수 ≈ userRouteAuth 항목 개수여야 함
 wc -l recon/perm_codes_all.txt
-# routes 应覆盖 route_map 全部 link
+# routes는 route_map의 모든 link를 포함해야 함
 python3 -c "import json; m=json.load(open('recon/route_map.json')); r=set(json.load(open('recon/config.json'))['routes']); print('missing', [v['link'] for v in m.values() if v['link'] not in r])"
 ```
 
-### I5. 重跑 runtime 并对比
+### I5. runtime 다시 실행 및 비교
 
 ```bash
 node recon/runtime_harvest.js recon/config.json
-# 对比 forge 前后 runtime_api.json 条数；检查 /attack、/asset 等是否出现模块 API
+# forge 전후 runtime_api.json 개수를 비교. /attack, /asset 등에 모듈 API가 나타나는지 확인
 ```
 
-| forge 前 | forge 后（成功） |
+| forge 전 | forge 후(성공) |
 |---|---|
-| 每路由相同 3–5 条 bootstrap | 不同路由触发不同 module API |
-| 仅 `/api/locale/language` | 出现 `/api/web/...` 模块 endpoint |
-| `routes.txt` 个位路由 | `routes` 80–110+ 来自 route_map |
+| 각 라우트에 동일한 3–5개 bootstrap | 라우트마다 다른 module API가 트리거됨 |
+| `/api/locale/language`만 있음 | `/api/web/...` 모듈 endpoint가 나타남 |
+| `routes.txt`의 라우트가 한 자릿수 | `routes` 80–110+개는 route_map에서 가져옴 |
 
-### I6. 仍失败时
+### I6. 여전히 실패하는 경우
 
-- **coverage 模式**：点击侧栏 + Tab，权限 gating 可能在交互后才请求
-- **stub 字段**：对比真实 API（curl + 真实 session）与 stub 的 nesting
-- **额外守卫**：grep `hasPermission|checkRole|func.` 等按钮级检查，扩展 `role_permissions.permissions`
-- **静态兜底**：模块 API path 仍在 `api_static.txt`，runtime 仅补 METHOD/body；参数保留 `param_candidates.json` + 已录样本
+- **coverage 모드**: 사이드바 + Tab 클릭. 권한 gating 요청은 상호작용 후에만 발생할 수 있습니다
+- **stub 필드**: 실제 API(curl + 실제 session)와 stub의 nesting 비교
+- **추가 인증 가드**: grep으로 `hasPermission|checkRole|func.` 등의 버튼 단위 검사를 찾고 `role_permissions.permissions` 확장
+- **정적 분석으로 대체**: 모듈 API path는 여전히 `api_static.txt`에 있고 runtime은 METHOD/body만 보완합니다. 파라미터는 `param_candidates.json` + 기록한 샘플 유지
 
 ---
 
