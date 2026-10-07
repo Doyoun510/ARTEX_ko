@@ -14,6 +14,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -164,6 +175,7 @@ function JudgeCard() {
   const [profiles, setProfiles] = React.useState<LLMProfile[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const restoreInFlight = React.useRef(false);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -200,6 +212,8 @@ function JudgeCard() {
   }
 
   async function restorePrompt() {
+    if (saving || restoreInFlight.current) return;
+    restoreInFlight.current = true;
     // 프롬프트를 비우고 저장 → 다음 요청에서 서버가 반환하는 내장 템플릿 전문을 입력란에 채웁니다.
     setSaving(true);
     try {
@@ -210,6 +224,7 @@ function JudgeCard() {
     } catch (e) {
       toast.error("복원 실패: " + (e as Error).message);
     } finally {
+      restoreInFlight.current = false;
       setSaving(false);
     }
   }
@@ -246,16 +261,43 @@ function JudgeCard() {
                 <div>
                   <p className="text-sm font-medium">승인 프롬프트</p>
                   <p className="text-xs text-muted-foreground">모델이 이를 기준으로 ALLOW / ASK / DENY를 판정하며 직접 편집할 수 있습니다</p>
+                  <p className="text-xs text-muted-foreground">
+                    저장된 사용자 지정 정책은 자동으로 번역되지 않습니다.
+                    <br />
+                    비워서 저장하면 내장 기본 템플릿을 사용합니다.
+                  </p>
                 </div>
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={restorePrompt} disabled={saving}>
-                  기본 템플릿 복원
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs" disabled={saving}>
+                      기본 템플릿 복원
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>내장 기본 템플릿으로 복원하시겠습니까?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        사용자 지정 정책을 지우고 즉시 저장합니다.
+                        <br />
+                        화면에서 변경한 다른 판정 설정도 함께 저장됩니다.
+                        <br />
+                        필요한 정책은 먼저 복사해 보관하세요.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void restorePrompt()} disabled={saving}>
+                        복원하고 저장
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
               <Textarea
                 className="min-h-[22rem] flex-1 resize-none font-mono text-xs leading-relaxed"
                 value={cfg.prompt}
                 onChange={(e) => patch({ prompt: e.target.value })}
-                placeholder="비워 두면 내장 템플릿 사용"
+                placeholder="비워서 저장하면 내장 템플릿 사용"
                 spellCheck={false}
               />
               <p className="text-right text-[11px] text-muted-foreground">{cfg.prompt.length}자</p>
