@@ -780,3 +780,19 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **정적 대응·보존**: 함수/문장 경계로 확인했다. 실행 중단 없음·기존 진행 보존·다음 동작 전 적용·kill_work 조건·%d와 인수 및 그 밖의 문장/주석/운영 코드는 그대로다. tools.go는 2054/2054줄이며 LF·끝 개행·들여쓰기·포맷을 보존했다. 추적 테스트/프런트에서 지정 전체 표현 및 대응 원문 특징 문자열을 재검색했으며 직접 기대값 수정 필요를 발견하지 못했다. 테스트는 수정하거나 실행하지 않았다.
 - **이력·후속**: 로컬 tool-semantic-review.md·tool-semantic-findings.tsv는 수정 전 원문/번역/발견 근거를 보존하고 승인 후 번역·정적 대응 상태를 별도로 기록했다. M012·M013은 원문 자체 설명 문제로 미수정 유지한다. A/S 96개 집계·M001–M010 승인 이력·A046–A049 및 다른 후속 보류는 유지한다. 전체 저장소 의미 전수 대조와 실제 DB/모델 동작 확인은 미완료다.
 - **산출물·실행**: 커밋 검토용 /tmp/artex-tool-semantic-approved.diff에는 agent/tools.go와 PROMPT_PROGRESS만 포함하며 감사 MD/TSV는 Git 제외 경로에 로컬로만 보관한다. 이전 미커밋 PROGRESS·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### U3/U4 보조 모델 안내 의미 감사 [확정 대상 전체 정적 대조 완료 / M014·M015 수정 후보 / 실행 미검증]
+- **기준·범위**: HEAD 6d2160e의 M011 승인 보완 커밋을 확인했다. retester.go·compaction.go·noa.go·coldgraph.go·finding_workflow.go·finding_recorder.go 전체를 읽고 실제 생성→소비 경로를 확정했다. RetesterDefaultPrompt 전체, compressionSystemPrompt 및 압축 입력 네 안내, findingWorkflowTools/FindingGuidance·번호 규약·힌트 트래픽 스키마·자체 오류의 17개 모델용 자연어 리터럴을 끝까지 대조했다. FindingGuidance 생성부는 지정 파일 안에 있다.
+- **원문·형식**: U3 번역 1b5e613의 직접 부모 0e10bfc, U4 번역 a44df30의 직접 부모 1b5e613에서 중국어 원문을 확보했다. 이후 451bd13·478544d 용어 승인 보완을 구분했다. 여섯 파일은 원문/현재 15/15·548/548·48/48·330/330·128/128·22/22줄이며 주석/리터럴 밖 코드가 동일하다. 숫자·포맷·템플릿·이스케이프와 도구·키·enum·인수·조회/쓰기 범위를 정적으로 대조했다.
+- **결과**: M014는 retester.go:6의 发起时를 최초 보고 당시로 옮긴 시간 참조 차이다. DB는 재검증 시작 시점의 현재 취약점 스냅샷을 만든다. M015는 finding_workflow.go:58·73·77의 텍스트 인계/취약점 텍스트 기록/텍스트 증거를 문자로 옮긴 표현이다. 두 항목 네 위치의 원문 전체·현재 번역·수정 후보·근거를 로컬 감사 MD/TSV에 기록했고 소스는 수정하지 않았다. 그 밖의 확정 본문에서 지시 강도·조건·예외·재검증 결론/증거·인계 순서·계보 및 압축 보존 정보의 의미 차이를 발견하지 못했다.
+- **제외·테스트·한계**: noa.go 오류는 로그이며 SDK 내부 압축 프롬프트는 미대조다. coldgraph.go는 알고리즘 연결 문맥으로 확인했고 finding_recorder.go의 findingTrafficGuidance는 정의 외 사용을 발견하지 못해 활성 모델 안내로 집계하지 않았다. 기본/마무리·U5 기검토 본문은 재감사하지 않았다. 관련 agent/server/db 테스트를 읽고 직접 기대값 의존을 검색했으며 M014/M015 후보의 기대값 변경 필요는 발견하지 못했다. 실제 DB·SDK·모델 동작/출력 및 전체 저장소 의미 전수 대조는 미확인이다.
+- **보존·산출물**: A/S 96개·M001–M013 승인/발견 이력·M012/M013 원문 설명 후속·A046–A049 및 다른 후속 보류를 유지한다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·Git index를 보존한다. support-guidance-semantic-review.md·support-guidance-semantic-findings.tsv는 Git 제외 translation/audit/에 로컬로만 보관한다. 커밋용 diff에는 이번 PROGRESS 기록만 포함한다.
+- **실행**: 사용자 요청으로 미실행. 소스·용어집·테스트 수정 및 fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### U3/U4 보조 모델 안내 승인 보완 · M014·M015 [승인 수정·정적 대응 완료 / 실행 미검증]
+- **승인 범위**: RetesterDefaultPrompt의 retester.go:6에서 최초 보고 당시의→재검증 시작 당시의, findingWorkflowTools의 finding_workflow.go:58·73·77에서 문자만 인계하고→텍스트만 인계하고, 문자 취약점이 등록됐다는→취약점의 텍스트 기록이 등록됐다는, 문자/명령 증거→텍스트/명령 증거 네 표현만 수정했다.
+- **정적 보존·테스트**: 현재 상수/함수·문장 경계로 확인했다. 소스는 15/15·128/128줄이며 LF·끝 개행·들여쓰기·지정 표현 밖 바이트가 동일하다. 정책·조건·금지·증거 요구·인계 순서·코드·키·영어·도구명·포맷/인수는 보존했다. 관련 agent/server/db 테스트에서 지정 전체/부분 표현과 상수/동적 안내 사용을 읽기 전용으로 확인했다. 직접 기대값 수정 필요는 발견하지 못했고 Worker 를 취소·보고 전 트래픽 자동 연관·바인딩에 성공한 뒤 검사는 유지한다. 테스트는 미수정·미실행이다.
+- **감사·이력**: 로컬 support-guidance-semantic-review.md·support-guidance-semantic-findings.tsv에 중국어 원문·수정 전 번역·발견 근거를 유지하고 승인 후 번역 및 정적 대응 완료 상태를 별도로 기록했다. 기존 A/S 집계·M001–M013 승인/발견 이력·M012/M013 원문 설명 후속·A046–A049와 다른 정책·기능·호환성 보류는 유지한다. 실제 DB·SDK·모델 영향 및 전체 저장소 의미 전수 검증은 미확인이다.
+- **산출물·실행**: 커밋용 diff는 agent/retester.go·agent/finding_workflow.go·PROMPT_PROGRESS만 포함한다. 감사 MD/TSV는 Git 제외 translation/audit/에 로컬로만 보관한다. 기존 로컬 변경·미추적 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 작업 없음.
