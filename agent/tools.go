@@ -1704,7 +1704,7 @@ func (t *ToolSet) killWorkTool() actool.CoreTool {
 // which re-plans its next step (already-gathered context is kept). For in-intent
 // nudges ("X는 그만하고 Y에 집중"); if the whole direction is wrong use kill_work + a new intent.
 func (t *ToolSet) steerWorkTool() actool.CoreTool {
-	return t.writeExpTool("steer_work", "실행 중인 의도(work) 하나에 방향 조정 지시를 실시간으로 주입하며, 실행을 중단하거나 기존 진행 내용을 버리지 않습니다: worker가 다음 동작 전에 당신의 지시를 받아 그에 맞춰 조정합니다. 'X는 그만하고 Y에 집중' 같은 [의도 내] 방향 조정에 씁니다. 방향 전체가 잘못됐다면 kill_work로 중지한 뒤 새 의도를 생성해야 합니다. 먼저 get_worker_output으로 무엇을 하고 있는지 보기를 권장합니다.",
+	return t.writeExpTool("steer_work", "실행 중인 의도(work) 하나에 방향 조정 지시를 실시간으로 추가하며, 실행을 중단하거나 기존 진행 내용을 버리지 않습니다: worker가 다음 동작 전에 당신의 지시를 받아 그에 맞춰 조정합니다. 'X는 그만하고 Y에 집중' 같은 [의도 내] 방향 조정에 씁니다. 방향 전체가 잘못됐다면 kill_work로 중지한 뒤 새 의도를 생성해야 합니다. 먼저 get_worker_output으로 무엇을 하고 있는지 보기를 권장합니다.",
 		obj(map[string]any{
 			"intent_id": idp("방향을 조정할 의도 id(= work 핸들)"),
 			"message":   str("worker에 전달할 방향 조정 지시이며, 무엇을 멈추고 무엇으로 전환할지 명확히 적습니다"),
@@ -1732,7 +1732,7 @@ func (t *ToolSet) steerWorkTool() actool.CoreTool {
 			if err := t.steerWork(id, a.Message); err != nil {
 				return actool.Errorf(err.Error()), nil
 			}
-			return actool.Text(fmt.Sprintf("의도 %d의 work에 방향 조정 지시를 주입했습니다(다음 동작부터 적용)", id)), nil
+			return actool.Text(fmt.Sprintf("의도 %d의 work에 방향 조정 지시를 추가했습니다(다음 동작부터 적용)", id)), nil
 		})
 }
 

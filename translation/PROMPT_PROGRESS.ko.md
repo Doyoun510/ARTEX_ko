@@ -721,3 +721,101 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **A090**: ProxyAddr description 1곳을 “현재 실행에 적용되는 프록시 주소(사용자 프롬프트에서 참조하거나 if/else 안내 문구 선택에 사용 가능)”으로 정정했다. 캡처 OFF의 전역 프록시 및 사용자 템플릿 if/else 소비와 대조했다. 변수·기본 예시·source·프록시 동작은 그대로다. 기존 seed upsert(db.go:215–220)는 이후 초기화에서 기존 DB 변수 메타데이터에도 설명을 반영할 수 있지만 사용자 프롬프트 본문을 바꾸지 않는다. 이번에는 DB를 열거나 갱신하지 않았다.
 - **정적 보존·테스트**: 승인 13+1줄 밖 소스 바이트 동일, mock 4223/4223줄·db 602/602줄, LF·들여쓰기·끝 개행·포맷 지정자/변수/이스케이프 보존을 확인했다. 직접 연결된 테스트 기대값 의존은 발견하지 못해 테스트 수정은 없다. 별도 fixture의 规划者 및 ProxyAddr 템플릿 입력은 보존한다. A052·U7/U15 후속·기존 팀원 기록·다른 단위 상태를 유지한다.
 - **보존·산출물·실행**: 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·Git index를 보존했다. `/tmp/artex-audit-fix-mock-proxy.diff`, `/tmp/artex-audit-fix-mock-proxy-review.md` 및 감사 상태 MD/TSV를 갱신했다. 실행 검증은 **사용자 요청으로 미실행**이다. stage·commit·push·다음 작업 없음.
+
+
+### 통합 감사 보완 11 · A050 기록 예시·A052 고유명 최종 분류 [분류·정적 검토 완료 / 원문 정책·호환성 후속 유지 / 실행 미검증]
+- **로컬 기준·커밋**: work/ko-translation, HEAD와 로컬 origin/work/ko-translation 참조가 모두 `f3611044ad4e29acee8878fd4f3a0963c3bd573b`이며 직전 mock 안내·ProxyAddr 설명 커밋이 반영됐다. 로컬 ahead/behind 0/0, staged·MERGE_HEAD 없음. fetch하지 않았으므로 현재 원격 최신성이나 별도 push 통신 성공을 확인했다고 주장하지 않는다.
+- **A050 기록 경로**: llmRecordDetail(data.ts:4158–4223)의 request_body/raw_request는 mock handler:2254→api.llmRecordDetail→function/llm-records/page.tsx:140–156,239–249,514–545의 정규화/HTTP 원문 표시·복사에 쓰인다. 4165/4190의 system 및 4166/4192의 user 지시는 두 뷰에서 같은 기록을 표현하고, 4196은 raw_request의 모델용 도구 schema 설명 예시다. 활성 Agent 편집/모델 실행 입력으로 재사용되는 경로는 발견하지 못했다.
+- **A050 감사 경로·해소**: interceptDetails:3513·3515·3544는 structuredClone→mock history detail→approval-records.tsx:441–478의 감사 user_message/context 표시로 소비된다. mock 승인 decide는 상태/결과 메타데이터만 바꾸며 도구를 실행하지 않는다. 지정 8곳을 “원문 기록 예시 보존”으로 분류하고 반복 번역 보류에서 분리했다. 이는 계약상 DNT라는 뜻이 아니며 실제 DB/모델 출력을 확인한 것도 아니다. 승인 편집용 13곳은 그대로 유지한다. 명령·HTTP/JSON/SSE·문자 수·다이제스트·[模型] 토큰을 보존했다.
+- **A052**: docker-compose.bench.yml:1의 腾讯 TSec Benchmark는 원문 고유명 보존으로 분류한다. 공식 영문 표기는 미확인이며 임의 영문 이름을 만들지 않는다. 주석은 Compose 설정/계약에 쓰이지 않고 공식 영문 확인은 현재 기능·계약 유지의 필수 조건이 아니다. 원문 고유명 자체를 번역 누락으로 집계하지 않는다.
+- **감사 잔여·한계**: A090 설명 정정은 직전 커밋에 포함됐다. 전달 감사 원본 4개를 내용 변경 없이 translation/audit/에 보관하고 A001–A090·S001–S006의 ID·과거 위치·발견 근거를 복구했다. 원본으로 A048은 U15 로그인·실제 세션 정책 충돌임을 확인했다. A049는 depth/coverage 기능 차이를 주 미해결 상태로, NEGATIVE_RE 원문 보존을 별도 하위 DNT로 구분한다. U7(A046 live 중국어 동사, A047 공통 블록 중복/커스텀 본문)과 mock api-recon/실제 SKILL 범위 차이는 유지한다. 승인 A050 13곳 수정과 지정 기록의 원문 기록 예시 보존, A052 고유명 보존, A090 설명 수정 완료를 유지한다. 원본 근거 복구와 현재 소스 인용 재대조 범위는 별도로 기록하며 새 의미 전수 감사나 실행 검증으로 단정하지 않는다. 전체 한국어 문장 의미 전수 대조는 미완료다.
+- **보존·산출물·실행**: 저장소에서는 이번 미커밋 기록의 원본 확보·근거 연결 설명만 정정하고 translation/audit/에 원본 4개와 current-status.md·.tsv, remaining-issues.md를 보관했다. 소스·용어집·테스트·fixture·과거 커밋 기록·기존 TRANSLATION_PROMPT 변경·미추적 담당표/전달 파일·Git index는 보존했다. 이전 임시 산출물은 과거 이력으로 유지하며 지속 보관 결과는 translation/audit/를 기준으로 한다. 이번 전체 diff /tmp/artex-audit-recovery.diff. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 핵심 프롬프트 의미 감사 · U1/U2/U7 [지정 본문 전체 정적 대조 완료 / 의미 후보·용어 보완 잔여 / 실행 미검증]
+- **기준·상태**: HEAD `b5468a7839ada1f322b4f1e4ff7d219481f15135`의 직전 감사 문서 복구 커밋을 확인했다. work/ko-translation, staged·MERGE_HEAD 없음. 기준 문서 4종과 translation/audit 현재 기록을 적용했으며 fetch하지 않아 origin 최신성은 주장하지 않는다.
+- **실제 대상**: U1 autoDefaultTmpl·pentestDefaultTmpl·DefaultAssistantPrompt·ReporterDefaultPrompt·chatWorkDirSpec, U2 goalsDefaultTmpl·goalsScopeTail·plannerDefaultTmpl·constraintBlock, U7 JudgeContextBoundary·JudgeOutputContract·DefaultJudgePrompt 전체를 대조했다. 실제 소비 경로에 연결된 U3 정의의 artifactSpec·genericWrapUpDefault·plannerWrapUpDefault·plannerTaskTimeoutDefault도 읽기 전용으로 포함해 총 16개 본문/조립 단위다. U3/U4 worker/mainagent 전체 본문·동적 user 지시·도구 설명 전체·DB 사용자 정책은 포함하지 않았다.
+- **원문 기준**: U1은 7303d46, U2는 aa0edc0, 연결 마무리/산출물은 1b5e613, U7 세 상수는 cfef293·dac067a·141d36f 각각의 직접 부모에서 번역 직전 중국어 원문을 확보했다. 대상별 전체 SHA와 원문/현재 범위·전문을 보고서에 보관했다. 16개 모두 원문 확보·본문 끝까지 의미 대조를 했으며 대상 내부의 문자열/주석 밖 정적 구조·리터럴 개수·템플릿 변수 순서도 보조 대조했다. 실제 렌더/SDK 실행은 하지 않았다.
+- **새 발견**: M001–M007 7개를 별도 기록했다. 확정 용어 불일치 4개는 힌트 추가, 인젝션 포인트, 공격의 인젝션/권한 우회, 목표 달성 검증·정량적 확인 문맥이다. 의미 추가 확인 후보 3개는 Auto의 少空转 정도 표현, Reporter 接管의 대상 한정, planner 定论의 확정 한정 표현이다. 실제 모델 행동 변화나 정책 오류를 관측했다고 단정하지 않으며 소스는 수정하지 않았다.
+- **보존·기존 보류**: 승인된 中文→한국어 출력 지시, Reporter 작업 라벨 정정, 120자 지시와 별도 파서 2400바이트, U7 앵커/키/enum/예시·명령·원문 정책을 구분했다. A046–A049와 remaining-issues의 U7/U15 정책·호환성·기능 문제, 다른 단위의 기존 상태는 유지한다. 지정 본문 대조가 U1/U2 기존 테스트 보류나 U7 후속 보류 전체 해소를 뜻하지 않는다.
+- **한계·산출물·실행**: translation/audit/prompt-semantic-review.md 및 prompt-semantic-findings.tsv. 지정 본문 중 원문 미확보·미독 범위는 없지만 전체 저장소 한국어 의미 전수 대조는 미완료다. 실제 DB/모델 출력·테스트는 미확인이고 실행 검증은 **사용자 요청으로 미실행**이다. 소스·용어집·테스트·정책·DB·기존 감사 문서·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존했다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 핵심 프롬프트 의미 감사 승인 보완 · M001–M007 [승인 수정·정적 대응 완료 / 기존 정책·호환성 후속 유지 / 실행 미검증]
+- **대상·수정**: agent/promptcatalog.go의 autoDefaultTmpl 18·22행, pentestDefaultTmpl 38행, ReporterDefaultPrompt 95행과 agent/planner.go의 plannerDefaultTmpl 312·316·320·330행에서 사용자가 지정한 8개 표현만 수정했다. 少空转는 진행 없는 동작 줄이기, 힌트는 추가, 注入点은 인젝션 포인트, 接管 예시는 장악, 定论는 확정된 결론, 공격은 인젝션/권한 우회, 목표 달성은 정량적 확인/달성 검증 항목으로 적용했다.
+- **용어집**: 독립 接管 중복·충돌을 확인하고 Reporter 피해 예시처럼 대상을 특정하지 않은 문맥의 장악 1개만 [확정] 등록했다. 기존 계정·서브도메인·서버/도메인 장악 문맥과 다른 확정 항목은 유지했다.
+- **정적 검토·테스트**: 지정 문장/상수 경계로 적용했다. 소스 2개는 각각 4줄 변경이며 원본/현재 줄 수·LF·끝 개행·코드·영어·도구명·키·enum·숫자·템플릿 변수·포맷·인수·금지/조건과 지정 표현 밖 내용은 동일하다. 관련 테스트의 직접 전체/부분 문자열 및 상수명 의존을 확인했으며 기대값 변경 필요는 발견하지 못해 테스트를 수정하지 않았다. 테스트 통과나 실제 모델 동작을 확인한 것은 아니다.
+- **감사 이력·상태**: prompt-semantic-review.md와 prompt-semantic-findings.tsv에 원문·승인 전 번역·발견 근거를 이력으로 보존하고 승인 수정 후 번역/정적 대응 상태를 별도로 기록했다. current-status.md의 새 M 7개는 A/S 기존 96개 집계와 분리했다. A046–A049와 다른 정책·기능·호환성 문제 및 전체 저장소 의미 전수 대조 미완료는 유지한다.
+- **보존·산출물·실행**: 기존 미커밋 감사 내용·TRANSLATION_PROMPT 변경·미추적 담당표/전달 파일·기타 로컬 변경·Git index를 보존했다. 누적 전체 diff `/tmp/artex-prompt-semantic-approved.diff`. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 핵심 프롬프트 의미 감사 · U3 worker/U4 mainagent [지정 본문 전체 정적 대조 완료 / M008–M010 용어 잔여 / 실행 미검증]
+- **기준·상태**: HEAD `1d8380d63580483235a637a9cebb9dc7599bf2da`(work/ko-translation), M001–M007 승인 보완 255304c와 감사 산출물 추적 제외 1d8380d 반영 확인. staged·MERGE_HEAD 없음. 기준 문서 4종과 로컬 감사 상태·잔여·이전 의미 감사 기록을 적용했다. fetch하지 않아 원격 최신성은 주장하지 않는다.
+- **실제 범위**: workerDefaultTmpl(230–243), workerTrafficBlock(250–255), workerArtifactSpec(267–269), settleWrapUpPrompt(154), renderIntentTask(316–318), renderWorkerGraphOverview(325–338), workerTaskTimeoutDefault(wrapup:120), mainAgentDefaultTmpl(mainagent:87–101), mainAgentWrapUpDefault(wrapup:46) 전체와 Worker.Execute 고정 시작/자산/재개/수동 입력 안내(406·420·490·510·517·519–520·522–523)를 중국어 원문과 끝까지 대조했다. 완료된 artifactSpec·generic/planner 마무리·constraintBlock은 이전 감사 기록을 참조하고 신규 연결만 확인했다. mainagent의 전용 작업 타임아웃 기본 문구/선택 경로는 없다.
+- **원문·이력**: U3는 1b5e613의 직접 부모 `0e10bfcde7cc32c51064b04fc5b3e14d56743309`, U4 본문은 a44df30의 직접 부모 `1b5e61362ddd81d11e1eb9cd39b384fbab12da5c`에서 확보했다. mainagent 마무리는 U3 부모 기준이다. 이후 42e1deb의 사실 분할 부정어 및 패시브 정찰 정정이 현재에 반영됨을 확인했다. 해당 대상 이후 기능 변경은 발견하지 못했다.
+- **새 발견·테스트**: M008 공격 注入의 주입 2곳, M009 add_intent 의도 추가의 직접 주입 1곳, M010 指纹의 지문 2곳을 확정 용어 불일치로 보고한다. 후보는 각각 인젝션/추가/핑거프린트이며 이번에는 소스 미수정이다. 역할·조건·예외·도구 순서·실제 재현 증거·종료/재개·마무리 의무를 대조했고 추가적인 새 의미 변경은 발견하지 못했다. 관련 전체/부분 문자열·역할/상수 검색과 테스트 소비 대조에서 M 후보의 직접 기대값 의존은 발견하지 못했다. 산출물 제목/traffic_search와 overview 누출 금지 검사·override fixture를 구분했으며 테스트는 수정/실행하지 않았다.
+- **보존·한계**: 9개 본문 단위의 문자열/주석 밖 구조·리터럴 수·영어 원문 토큰·템플릿/포맷/이스케이프/숫자/강조를 정적 보조 대조했다. 실제 DB·SDK·모델 동작은 미확인이다. M001–M007 이력, A/S 96개 집계, A046–A049 및 다른 정책·기능·호환성 후속은 유지한다. 지정 본문 원문 미확보/미독은 없지만 전체 저장소 의미 전수 대조는 미완료다.
+- **산출물·실행**: Git 제외된 로컬 translation/audit/worker-mainagent-semantic-review.md·worker-mainagent-semantic-findings.tsv만 작성하고 이 기록만 추가했다. 기존 프롬프트 변경·미추적 담당표/audit-input/기타 파일·Git index를 보존한다. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 핵심 프롬프트 의미 감사 승인 보완 · M008–M010 [승인 수정·정적 대응 완료 / 기존 후속 유지 / 실행 미검증]
+- **승인 범위**: workerDefaultTmpl의 234·240행 공격 기법 주입 2곳을 인젝션으로, 238·240행 지문 2곳을 핑거프린트로 변경했다. mainAgentDefaultTmpl 92행의 직접 주입한다 1곳을 직접 추가한다로 변경했다. 현재 문장·상수 경계를 확인하여 정확히 5곳만 적용했다. 기존 확정 용어를 사용하며 용어집은 수정하지 않았다.
+- **보존·정적 대조**: worker.go 535/535줄, mainagent.go 202/202줄. 지정 표현 밖 문장·정책·조건·증거 요구·코드·영어·도구명·숫자·템플릿/포맷·들여쓰기·개행을 보존했다. 240행의 기존 조사는 승인 범위 밖이므로 그대로 유지했다. 전체/부분 문자열 및 상수명의 테스트 의존을 읽기 전용 재검색하고 prompt_test.go의 산출물/트래픽/override 검사와 review_context_test.go의 overview 검사 경로를 대조했다. 직접 기대값 수정 필요는 발견하지 못했고 테스트는 미수정이다.
+- **감사 기록**: Git 제외된 worker-mainagent-semantic-review.md·worker-mainagent-semantic-findings.tsv에 수정 전 원문/번역/발견 근거를 유지하고 승인 후 번역과 정적 대응 완료 상태를 별도로 추가했다. M001–M007·A/S 96개 집계·A046–A049 및 다른 정책·기능·호환성 후속은 유지한다. 전체 저장소 의미 전수 대조는 미완료다.
+- **산출물·실행**: 커밋 검토용 /tmp/artex-worker-mainagent-approved.diff에는 소스 두 파일과 PROMPT_PROGRESS만 포함한다. 로컬 감사 보고서는 커밋용 diff에 포함하지 않는다. 기존 미커밋 PROGRESS 기록·TRANSLATION_PROMPT 변경·미추적 담당표/audit-input/기타 파일·Git index를 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+- **M010 조사 승인 보완**: workerDefaultTmpl의 “버전/핑거프린트이 CVE에 매칭됨”을 “버전/핑거프린트가 CVE에 매칭됨”으로 조사 한 곳만 정정했다. 앞선 조사 보존 설명은 당시 이력이며 이번 사용자 승인으로 해소했다. 코드·조건·증거 요구·535줄·LF·기존 변경·Git index를 보존했다. 로컬 감사 보고서/TSV에 승인 후 상태를 반영하며 커밋용 diff는 소스 두 파일과 PROGRESS만 포함한다. 실행 검증은 **사용자 요청으로 미실행**이다.
+
+
+### 핵심 도구 설명 의미 감사 · U5 전체 [지정 자연어 전체 정적 대조 완료 / M011 용어 후보·M012/M013 원문 설명 후속 / 실행 미검증]
+- **기준·범위**: HEAD `e29d563da4370aab6d49e93b72693759ae6965a2`(work/ko-translation)에서 직전 M008–M010 승인 보완 및 조사 보완 e29d563 반영 확인. staged·MERGE_HEAD 없음. 최신 기준 문서 4종과 로컬 감사 이력을 적용하고 tools.go/tools_insert.go/tools_digest.go/toolcatalog.go의 26개 도구 설명·파라미터/schema·자체 오류/성공/결과 자유 서술 231개 및 범위 이해에 필요한 주석을 원문과 끝까지 대조했다. toolcatalog에는 직접 중국어 모델용 리터럴이 없고 DB 설명/schema 재정의·기본값 처리 경로를 확인했다.
+- **원문·대응**: 4caba7f부터 0406037까지 10개 번역 묶음의 직접 부모에서 해당 중국어 원문을 확보했다. 현재와 주석/문자열 밖 코드·키·enum·인수·분기·반환 구조가 같으며 네 파일의 줄 수는 2054/699/165/201로 동일하다. 포맷 지정자 종류/순서/개수·이스케이프·템플릿·숫자를 별도로 대조했다. 기존 승인 coverage.note/status·DNS 레코드 표현·연결 공백 등은 이력으로 보존했다.
+- **결과**: M011은 steer_work 설명/성공 안내(tools.go:1707,1735)의 지시 추가 문맥에서 주입→추가 용어 후보 1개(두 곳)다. M012는 커버리지 비활성화 시 add_task_scope/auto-scope 처리의 오래된 주석, M013은 PlannerTools의 전체 저장소 조회 주석으로 둘 다 중국어/영어 원문부터 존재하는 설명·구현 불일치이며 번역 오류와 분리했다. 소스는 수정하지 않았다. 그 밖의 필수/금지/권고·조건·예외·범위·읽기 전용·증거·순서·종료/재개 의미 차이는 이번 대조에서 발견하지 못했다.
+- **소비·테스트**: BuiltinToolSeeds→wireTools/SeedTool→ToolResolve/DecorateTool→AugmentTools 경로와 편집 Description/Schema/default, nil guard·finding 첫 줄/JSON·범위 membership·UTF-8 budget 관련 테스트를 읽기 전용 대조했다. DB 사용자 편집 설명과 외부 오류/summary/detail/evidence는 번역 기본값과 구분했다. 직접 기대값 수정 필요는 발견하지 못했으며 테스트는 수정/실행하지 않았다. 실제 DB 저장 설명·모델 출력은 미확인이다.
+- **이력·한계·산출물**: A/S 96개 집계·M001–M010 승인 이력·A046–A049 및 기존 후속 보류는 유지한다. 이번 지정 자연어 미독/원문 미확보 범위는 없지만 외부 SDK/MCP 설명·DB 편집 본문 전체·다른 단위는 별도 범위이며 전체 저장소 의미 전수 대조는 미완료다. Git 제외 로컬 translation/audit/tool-semantic-review.md·tool-semantic-findings.tsv에 원문/현재/근거/후속을 기록했다. 커밋 검토용 /tmp/artex-tool-semantic-progress.diff에는 이 기록만 포함한다. 기존 로컬 변경·미추적 파일·Git index를 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 핵심 도구 설명 의미 감사 승인 보완 · M011 [승인 수정·정적 대응 완료 / M012·M013 원문 설명 후속 유지 / 실행 미검증]
+- **승인 범위**: agent/tools.go의 steerWorkTool 설명(1707행)의 “방향 조정 지시를 실시간으로 주입하며”를 “방향 조정 지시를 실시간으로 추가하며”로, 성공 안내(1735행)의 “방향 조정 지시를 주입했습니다”를 “방향 조정 지시를 추가했습니다”로 정확히 두 곳만 수정했다. 기존 확정 용어를 적용하고 용어집은 수정하지 않았다.
+- **정적 대응·보존**: 함수/문장 경계로 확인했다. 실행 중단 없음·기존 진행 보존·다음 동작 전 적용·kill_work 조건·%d와 인수 및 그 밖의 문장/주석/운영 코드는 그대로다. tools.go는 2054/2054줄이며 LF·끝 개행·들여쓰기·포맷을 보존했다. 추적 테스트/프런트에서 지정 전체 표현 및 대응 원문 특징 문자열을 재검색했으며 직접 기대값 수정 필요를 발견하지 못했다. 테스트는 수정하거나 실행하지 않았다.
+- **이력·후속**: 로컬 tool-semantic-review.md·tool-semantic-findings.tsv는 수정 전 원문/번역/발견 근거를 보존하고 승인 후 번역·정적 대응 상태를 별도로 기록했다. M012·M013은 원문 자체 설명 문제로 미수정 유지한다. A/S 96개 집계·M001–M010 승인 이력·A046–A049 및 다른 후속 보류는 유지한다. 전체 저장소 의미 전수 대조와 실제 DB/모델 동작 확인은 미완료다.
+- **산출물·실행**: 커밋 검토용 /tmp/artex-tool-semantic-approved.diff에는 agent/tools.go와 PROMPT_PROGRESS만 포함하며 감사 MD/TSV는 Git 제외 경로에 로컬로만 보관한다. 이전 미커밋 PROGRESS·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### U3/U4 보조 모델 안내 의미 감사 [확정 대상 전체 정적 대조 완료 / M014·M015 수정 후보 / 실행 미검증]
+- **기준·범위**: HEAD 6d2160e의 M011 승인 보완 커밋을 확인했다. retester.go·compaction.go·noa.go·coldgraph.go·finding_workflow.go·finding_recorder.go 전체를 읽고 실제 생성→소비 경로를 확정했다. RetesterDefaultPrompt 전체, compressionSystemPrompt 및 압축 입력 네 안내, findingWorkflowTools/FindingGuidance·번호 규약·힌트 트래픽 스키마·자체 오류의 17개 모델용 자연어 리터럴을 끝까지 대조했다. FindingGuidance 생성부는 지정 파일 안에 있다.
+- **원문·형식**: U3 번역 1b5e613의 직접 부모 0e10bfc, U4 번역 a44df30의 직접 부모 1b5e613에서 중국어 원문을 확보했다. 이후 451bd13·478544d 용어 승인 보완을 구분했다. 여섯 파일은 원문/현재 15/15·548/548·48/48·330/330·128/128·22/22줄이며 주석/리터럴 밖 코드가 동일하다. 숫자·포맷·템플릿·이스케이프와 도구·키·enum·인수·조회/쓰기 범위를 정적으로 대조했다.
+- **결과**: M014는 retester.go:6의 发起时를 최초 보고 당시로 옮긴 시간 참조 차이다. DB는 재검증 시작 시점의 현재 취약점 스냅샷을 만든다. M015는 finding_workflow.go:58·73·77의 텍스트 인계/취약점 텍스트 기록/텍스트 증거를 문자로 옮긴 표현이다. 두 항목 네 위치의 원문 전체·현재 번역·수정 후보·근거를 로컬 감사 MD/TSV에 기록했고 소스는 수정하지 않았다. 그 밖의 확정 본문에서 지시 강도·조건·예외·재검증 결론/증거·인계 순서·계보 및 압축 보존 정보의 의미 차이를 발견하지 못했다.
+- **제외·테스트·한계**: noa.go 오류는 로그이며 SDK 내부 압축 프롬프트는 미대조다. coldgraph.go는 알고리즘 연결 문맥으로 확인했고 finding_recorder.go의 findingTrafficGuidance는 정의 외 사용을 발견하지 못해 활성 모델 안내로 집계하지 않았다. 기본/마무리·U5 기검토 본문은 재감사하지 않았다. 관련 agent/server/db 테스트를 읽고 직접 기대값 의존을 검색했으며 M014/M015 후보의 기대값 변경 필요는 발견하지 못했다. 실제 DB·SDK·모델 동작/출력 및 전체 저장소 의미 전수 대조는 미확인이다.
+- **보존·산출물**: A/S 96개·M001–M013 승인/발견 이력·M012/M013 원문 설명 후속·A046–A049 및 다른 후속 보류를 유지한다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·Git index를 보존한다. support-guidance-semantic-review.md·support-guidance-semantic-findings.tsv는 Git 제외 translation/audit/에 로컬로만 보관한다. 커밋용 diff에는 이번 PROGRESS 기록만 포함한다.
+- **실행**: 사용자 요청으로 미실행. 소스·용어집·테스트 수정 및 fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### U3/U4 보조 모델 안내 승인 보완 · M014·M015 [승인 수정·정적 대응 완료 / 실행 미검증]
+- **승인 범위**: RetesterDefaultPrompt의 retester.go:6에서 최초 보고 당시의→재검증 시작 당시의, findingWorkflowTools의 finding_workflow.go:58·73·77에서 문자만 인계하고→텍스트만 인계하고, 문자 취약점이 등록됐다는→취약점의 텍스트 기록이 등록됐다는, 문자/명령 증거→텍스트/명령 증거 네 표현만 수정했다.
+- **정적 보존·테스트**: 현재 상수/함수·문장 경계로 확인했다. 소스는 15/15·128/128줄이며 LF·끝 개행·들여쓰기·지정 표현 밖 바이트가 동일하다. 정책·조건·금지·증거 요구·인계 순서·코드·키·영어·도구명·포맷/인수는 보존했다. 관련 agent/server/db 테스트에서 지정 전체/부분 표현과 상수/동적 안내 사용을 읽기 전용으로 확인했다. 직접 기대값 수정 필요는 발견하지 못했고 Worker 를 취소·보고 전 트래픽 자동 연관·바인딩에 성공한 뒤 검사는 유지한다. 테스트는 미수정·미실행이다.
+- **감사·이력**: 로컬 support-guidance-semantic-review.md·support-guidance-semantic-findings.tsv에 중국어 원문·수정 전 번역·발견 근거를 유지하고 승인 후 번역 및 정적 대응 완료 상태를 별도로 기록했다. 기존 A/S 집계·M001–M013 승인/발견 이력·M012/M013 원문 설명 후속·A046–A049와 다른 정책·기능·호환성 보류는 유지한다. 실제 DB·SDK·모델 영향 및 전체 저장소 의미 전수 검증은 미확인이다.
+- **산출물·실행**: 커밋용 diff는 agent/retester.go·agent/finding_workflow.go·PROMPT_PROGRESS만 포함한다. 감사 MD/TSV는 Git 제외 translation/audit/에 로컬로만 보관한다. 기존 로컬 변경·미추적 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### U11 server 모델 안내 의미 감사 [확정 본문 정적 대조 완료 / M016–M021 후보 / 실행 미검증]
+- **기준·범위**: HEAD 97fd0c3에서 M014/M015 승인 보완 커밋을 확인했다. server/ 추적 102개/운영 Go 55개를 검색하고 생성/등록/전달 경로로 확정한 12개 생성 파일의 모델용 자연어 165개와 모델 설명 교체에 연결된 SQL 비교값 1개를 끝까지 대조했다. orchestration·platform_tools·assembly·finding_retests·finding_workflow·finding_traffic 외 customtool·conversations·scheduler·chat_mentions·chatupload·engine도 포함했다. task_llm/manager/server_mgmt는 provider/도구/스냅샷/검증 연결부와 UI-only를 구분했다.
+- **원문·보존**: bc7ca5e·db2c94c·d9768cf·b5aaf5e·18cd66c·bf425ef·9ccc5ae의 직접 부모, conversations 모델 header/병합은 별도 68704c8 직접 부모에서 대응 중국어 원문을 확보했다. 이후 용어/계약·승인 보완을 구분했다. 확정 파일들의 주석·리터럴 밖 코드/분기/인수와 숫자·포맷·이스케이프·schema 키/enum·출력 구조를 정적으로 대조했다. 코드가 같아도 리터럴 비교 계약이 보존됐다는 뜻은 아니다.
+- **결과**: M016은 finding_workflow.go:22 legacy 설명을 SQL description=$2의 정확한 비교값인데 번역한 계약 불일치다. 옛 중국어 저장값과 매칭되지 않을 경로가 있으며 실제 DB 행/flag는 미확인이다. M017은 orchestration.go:367 힌트 주입→추가, M018은 :250 우아한 마무리→정상적인 마무리, M019는 :251 planner 하트비트→heartbeat, M020은 engine.go:562 공회전 알림→진행 없음 알림, M021은 finding_traffic.go:369 문자/명령 증거→텍스트/명령 증거 후보다. 총 6건이며 소스·용어집·테스트는 수정하지 않았다.
+- **소비부·테스트**: 실제 hostTools/Spec→DB 재정의/필터→Options.Tools, trigger/attachment/mention→Chat, steer/empty-turn hook→모델 재개 안내를 대조했다. ControlWork는 API-only로 제외하고 SteerWork/KillWork는 모델 콜백 오류로 포함했다. 관련 server 테스트를 읽고 직접 기대값/프런트 의존을 검색했으며 5개 자연어 후보의 하드코딩 기대값 수정 필요는 발견하지 못했다. emptyTurnNudge 테스트는 상수 자체를 비교한다. 기존 migration 테스트가 정확한 중국어 역사 설명/host_search flag 회귀를 보장한다고 단정하지 않는다.
+- **범위·한계·후속**: 확정 166개에는 원문 미확보 없음. 나머지 server 파일은 검색/연결 확인 수준이고 모든 한국어 본문 의미 대조 완료로 표시하지 않는다. SDK 내부·실제 DB 사용자 편집 본문·외부 실제 출력·모델 동작은 미확인이다. 기검토 agent 기본/마무리·U5·FindingGuidance는 재감사하지 않았다. A/S 96개·M001–M015 승인 이력·M012/M013 원문 설명·A046–A049 및 다른 정책·기능·호환성 보류는 유지한다.
+- **산출물·실행**: server-model-semantic-review.md·server-model-semantic-findings.tsv는 Git 제외 translation/audit/에 로컬로만 보관한다. 커밋용 diff에는 이번 PROGRESS 추가만 포함한다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·기존 감사·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행. fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### U11 server 모델 안내 승인 보완 · M016–M021 [승인 수정·정적 대응 완료 / DB·테스트 후속 유지 / 실행 미검증]
+- **승인 범위**: finding_workflow.go:22의 legacy SQL 비교 리터럴을 bf425ef 직접 부모 42e1deb의 중국어 원문 바이트로 복원하여 DNT 계약으로 보존했다. 현재 모델 설명 traffic.TrafficSearchDescription과 SQL·플래그·재시도·DB 저장값·마이그레이션 로직은 변경하지 않았다. orchestration.go:367의 힌트 주입→추가, :250 우아한 마무리→정상적인 마무리, :251 planner 하트비트→heartbeat, engine.go:562 공회전 알림→진행 없음 알림, finding_traffic.go:369 문자/명령 증거→텍스트/명령 증거 지정 표현만 수정했다.
+- **정적 보존·테스트**: 네 소스는 172/172·920/920·1245/1245·414/414줄이며 지정 리터럴/표현 밖 바이트·LF·들여쓰기·조건·정책·영어·키·enum·도구명·숫자·포맷·인수를 보존했다. TestFindingWorkflowMigrationPreservesUserConfiguration은 reporter/hint 사용자 설명과 schema/바인딩 보존을 검사하지만 정확한 역사 중국어 traffic_search 설명 교체 및 해당 host_search 플래그 초기화를 직접 검사하지 않는다. 옛 설명과 flag=false로 현재 TrafficSearchDescription 교체를 검증하는 경우, 사용자 편집 traffic_search 설명이 그대로 유지되는 별도 경우를 테스트 보완 후보로 남긴다. emptyTurnNudge 검사는 상수 자체를 비교하며 나머지 표현의 직접 기대값 수정 필요는 발견하지 못했다. 테스트는 미수정·미실행이다.
+- **후속·이력**: 역사 비교값 복원은 실제 DB 복구와 다르다. 이미 한국어 legacy 또는 완료 플래그가 저장된 실제 DB는 상태 미확인으로 별도 확인이 필요하며 이번에 변경하지 않았다. 프런트 function/tasks/page.tsx:3087·3333·3338·3353·3357 및 detail/_tabs/overview-tab.tsx:898의 하트비트/우아한 마무리는 별도 후속으로 미수정이다. 로컬 감사 MD/TSV에 수정 전 원문·번역·근거를 이력으로 보존하고 승인 후 상태를 별도 기록했다. 기존 A/S 96개·M001–M015·M012/M013 원문 문제·A046–A049와 다른 후속 보류를 유지한다.
+- **산출물·실행**: 커밋용 /tmp/artex-server-model-approved.diff에는 소스 네 파일과 PROMPT_PROGRESS만 포함하며 감사 MD/TSV는 Git 제외 경로에 로컬로만 보관한다. 기존 미커밋 감사 기록·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존한다. 실제 DB/모델 동작과 전체 저장소 의미 전수 대조는 미확인이다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 작업 설정 프런트 용어 보완 · M018/M019 연결 표시 [승인 수정·정적 대응 완료 / 실행 미검증]
+- **기준·승인 범위**: HEAD 09069c404c72ee3f0381a58854448f8808d5ee05에서 직전 M016–M021 보완 커밋 반영을 확인했다. 대상 파일 기존 변경·staged·MERGE_HEAD 없음. 최신 기준 문서와 확정 문맥을 적용하여 function/tasks/page.tsx:3087·3333·3338·3357의 하트비트→heartbeat, :3353의 우아한 마무리→정상적인 마무리, detail/_tabs/overview-tab.tsx:898의 하트비트→heartbeat만 수정했다. 조사나 별도 고정 명사 추가는 필요하지 않았다. 정상적인 마무리는 종료·정리 절차이며 목표 달성/성공 의미로 바꾸지 않았다.
+- **연결·정적 검토**: 설정은 heartbeatMin→heartbeatSec→api.createTask(planHeartbeatSeconds)→plan_heartbeat_seconds 경로이며 UI 표시/개발자 주석만 수정했다. overview 제목은 엔진 상태/실행 중 Worker/최근 활동을 보여 주는 CardTitle이며 저장·파싱 키가 아니다. 지정 표현의 비교/파싱·테스트 직접 의존은 검색에서 발견하지 못했고 테스트 기대값 변경은 필요하지 않은 것으로 확인했다. web/ 내 같은 한글 용어 검색에서 지정 여섯 곳 외 추가 후보는 발견하지 못했다.
+- **보존·후속**: 두 파일의 줄 수·LF·JSX 구조·들여쓰기·개행과 지정 표현 밖 바이트·코드·키/값·조건·숫자·포맷을 보존했다. 기존 TRANSLATION_PROMPT 변경·미추적 파일·Git index와 감사 이력을 보존한다. M016 실제 DB의 한국어 legacy/완료 플래그 상태 및 역사 설명/사용자 편집 설명 회귀 테스트 후보, 기존 정책·기능·호환성 후속은 그대로 유지한다. 과거 프런트 미수정 기록은 이력이며 이번 승인 범위만 해소했다.
+- **산출물·실행**: /tmp/artex-frontend-heartbeat-approved.diff는 프런트 소스 두 파일과 PROMPT_PROGRESS만 포함한다. 로컬 감사 frontend-heartbeat-review.md·frontend-heartbeat-findings.tsv는 Git 제외 translation/audit/에만 작성한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 묶음 진행 없음.

@@ -55,7 +55,7 @@ func findingWorkflowTools(agentKey string, tools []actool.CoreTool) ([]actool.Co
 		case "report_finding":
 			note = "\n기본적으로 보고서 Agent 가 보고서를 작성하기 전에 트래픽을 대조하고 바인딩한다. 보고자는 evidence 에 검증 명령, 핵심 출력, 이미 있는 실제 트래픽 ID 및 그 용도를 남겨, 보고서 Agent 가 실행 기록과 대조해 확인하도록 한다; 바인딩을 위해 따로 패킷을 조회할 필요는 없다. 명시적 즉시 바인딩도 호환한다: traffic_refs 또는 evidence_hint_id 로 이미 확인된 참조를 제출할 수 있고, 후자는 본 작업이 지정한 hint 의 구조화된 참조를 읽는다; 어느 하나라도 무효면 이번 보고는 전부 실패한다. TCP/무패킷에는 이 선택 파라미터가 필요 없다. 반환되는 finding_id 와 finding_node_id 는 각각 독립 기록과 탐색 노드를 나타낸다."
 		case "add_hint", "add_task_hint":
-			note = "\n확인된 취약점을 인계할 때는, 해당 힌트의 traffic_refs 에 이미 확인된 트래픽의 ID, 용도, 설명과 순서를 남기고(단건은 최상위에, 배치는 해당 hints 요소에 둔다), text 에 그것이 증명하는 구체적인 취약점을 설명한다. 호출자는 문자만 인계하고 기존 트래픽 참조를 버려서는 안 된다. 확인되지 않은 후보는 증거로 전달할 수 없다."
+			note = "\n확인된 취약점을 인계할 때는, 해당 힌트의 traffic_refs 에 이미 확인된 트래픽의 ID, 용도, 설명과 순서를 남기고(단건은 최상위에, 배치는 해당 hints 요소에 둔다), text 에 그것이 증명하는 구체적인 취약점을 설명한다. 호출자는 텍스트만 인계하고 기존 트래픽 참조를 버려서는 안 된다. 확인되지 않은 후보는 증거로 전달할 수 없다."
 		case "get_finding_traffic", "bind_finding_traffic", "list_findings", "list_task_findings", "node_detail", "get_task_node_detail", "update_finding_report":
 			note = findingIDGuidance
 		}
@@ -70,11 +70,11 @@ func findingWorkflowTools(agentKey string, tools []actool.CoreTool) ([]actool.Co
 			guidance += "\n플랫폼 대화에 작업 컨텍스트가 없을 때는 report_finding 을 직접 호출하지 말고; add_task_hint 로 이미 있는 해당 작업에 인계하여 작업 Agent 가 등록하게 하고, list_task_findings 로 결과를 대조한다."
 		}
 		if has["prove_goal"] || has["goal_met"] {
-			guidance += "\n목표 완료를 판정하기 전에, 먼저 이번에 이미 있는 증거의 보고/인계를 완료한다. 증거 인계가 아직 끝나지 않았는데 문자 취약점이 등록됐다는 이유만으로 작업을 끝내거나 Worker 를 취소하지 마라; 무패킷은 대기나 강제 패킷 수집을 요구하지 않는다."
+			guidance += "\n목표 완료를 판정하기 전에, 먼저 이번에 이미 있는 증거의 보고/인계를 완료한다. 증거 인계가 아직 끝나지 않았는데 취약점의 텍스트 기록이 등록됐다는 이유만으로 작업을 끝내거나 Worker 를 취소하지 마라; 무패킷은 대기나 강제 패킷 수집을 요구하지 않는다."
 		}
 	}
 	if has["update_finding_report"] && has["bind_finding_traffic"] && has["get_finding_traffic"] {
-		guidance += "\n\n**보고 전 트래픽 자동 연관(켜짐)**: 당신은 이번에 트리거된 취약점에 대해 트래픽을 대조하고 바인딩한 뒤 보고서를 작성할 책임이 있다. 먼저 report_finding 반환 JSON 또는 get_task_node_detail / list_task_findings 에서 명확한 finding_id 와 finding_node_id 를 얻는다. 취약점 상세, 해당 의도의 실행 기록 및 기존 증거 목록을 읽고, 보고자가 인계한 실제 ID 를 우선 사용한다. 이번 검증이 HTTP 이고 트래픽 도구를 쓸 수 있으면, traffic_search 로 후보를 선별하고, traffic_get 으로 요청/응답이 그 취약점을 실제로 뒷받침하는지 하나씩 확인한다; 도메인과 시간은 선별에만 쓰고 귀속을 증명하지 않는다. 확인된 증거를 재현 순서에 따라 bind_finding_traffic(finding_id, traffic_refs) 로 연관하고, baseline / proof / verification / supporting 를 선택해 용도를 설명한다. 이번 취약점에 대해서만 동작을 수행할 수 있으며, 취약점을 중복 생성하거나 대상을 다시 탐지하지 않는다. 바인딩에 성공한 뒤 get_finding_traffic 을 다시 호출해 최신 version 을 얻고, 필요한 본문을 읽은 다음, 실제로 읽은 version 을 evidence_version 으로 update_finding_report 에 전달한다(그 finding_id 파라미터는 여전히 finding_node_id 를 쓴다). 이미 있는 바인딩은 중복해서 추가할 필요가 없다. TCP, 미수집, 도구 사용 불가 또는 정확히 일치하는 것이 없을 때는 자동 바인딩을 건너뛰고, 문자/명령 증거에 근거해 정상적으로 보고서를 쓰고 이유를 설명하며, 트래픽을 채우려고 추측해서는 안 된다. 바인딩 실패를 성공이라 주장하지 마라; 기존 증거를 유지하고 바인딩하지 않은 이유를 보고서에 설명한다."
+		guidance += "\n\n**보고 전 트래픽 자동 연관(켜짐)**: 당신은 이번에 트리거된 취약점에 대해 트래픽을 대조하고 바인딩한 뒤 보고서를 작성할 책임이 있다. 먼저 report_finding 반환 JSON 또는 get_task_node_detail / list_task_findings 에서 명확한 finding_id 와 finding_node_id 를 얻는다. 취약점 상세, 해당 의도의 실행 기록 및 기존 증거 목록을 읽고, 보고자가 인계한 실제 ID 를 우선 사용한다. 이번 검증이 HTTP 이고 트래픽 도구를 쓸 수 있으면, traffic_search 로 후보를 선별하고, traffic_get 으로 요청/응답이 그 취약점을 실제로 뒷받침하는지 하나씩 확인한다; 도메인과 시간은 선별에만 쓰고 귀속을 증명하지 않는다. 확인된 증거를 재현 순서에 따라 bind_finding_traffic(finding_id, traffic_refs) 로 연관하고, baseline / proof / verification / supporting 를 선택해 용도를 설명한다. 이번 취약점에 대해서만 동작을 수행할 수 있으며, 취약점을 중복 생성하거나 대상을 다시 탐지하지 않는다. 바인딩에 성공한 뒤 get_finding_traffic 을 다시 호출해 최신 version 을 얻고, 필요한 본문을 읽은 다음, 실제로 읽은 version 을 evidence_version 으로 update_finding_report 에 전달한다(그 finding_id 파라미터는 여전히 finding_node_id 를 쓴다). 이미 있는 바인딩은 중복해서 추가할 필요가 없다. TCP, 미수집, 도구 사용 불가 또는 정확히 일치하는 것이 없을 때는 자동 바인딩을 건너뛰고, 텍스트/명령 증거에 근거해 정상적으로 보고서를 쓰고 이유를 설명하며, 트래픽을 채우려고 추측해서는 안 된다. 바인딩 실패를 성공이라 주장하지 마라; 기존 증거를 유지하고 바인딩하지 않은 이유를 보고서에 설명한다."
 	}
 	if guidance != "" || has["get_finding_traffic"] || has["update_finding_report"] {
 		guidance += findingIDGuidance

@@ -19,7 +19,7 @@ func (s *Server) seedFindingWorkflowTools() {
 	if value, _, _ := s.m.pg.GetSetting(hostSearchDescriptionFlag); value != "true" {
 		// Only replace the original built-in text. A user-edited description is
 		// authoritative and must survive upgrades.
-		legacy := "기록 프록시가 이미 캡처한 대상 트래픽을 조회한다(host를 반드시 지정, URL 부분 문자열이나 본문 키워드로 추가 필터 가능). body_contains는 이미 캡처한 요청/응답 헤더와 본문에서 전문 검색하며, 임의 부분 문자열과 중국어를 지원한다(최소 3자). 응답 속 비밀번호·키·에러·내부망 주소 등을 찾는 데 쓴다. 매우 경량인 인덱스(id/method/url/status/resp_len)만 반환하고 응답 내용은 포함하지 않는다. 기본 3건만 반환, 페이지당 최대 10건; 결과가 많으면 page로 페이지 이동(page=0부터); 특정 건의 요청/응답 원문은 traffic_get(id)로 본다. 방문한 자원을 회람하거나 엔드포인트를 찾을 때 먼저 이것을 써, 같은 URL을 curl로 반복하지 않게 한다."
+		legacy := "查询记录代理已抓取的目标流量（必须指定 host，可再按 URL 子串或正文关键词过滤）。body_contains 会在已抓取的请求/响应头与正文中做全文搜索，支持任意子串和中文（至少 3 个字符），可用来找响应里的密码、密钥、报错、内网地址等。仅返回极轻量索引(id/method/url/status/resp_len)，不含任何响应内容。默认只返回 3 条、每页最多 10 条；结果多时用 page 翻页（page=0 起）；要看某条的请求/响应原文用 traffic_get(id)。回看已访问资源、找端点先用它，避免重复 curl 同一 URL。"
 		if _, err := s.m.pg.Exec(`UPDATE tools SET description=$1,updated_at=now() WHERE key='traffic_search' AND system AND description=$2`, traffic.TrafficSearchDescription, legacy); err != nil {
 			// Log and leave the flag unset so the next startup retries; do not
 			// return, or a transient error here would also skip the reporter
