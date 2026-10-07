@@ -834,3 +834,18 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **정적 보존·테스트**: 현재 상수/Tools schema·문장 경계로 확인했고 정확히 두 표현만 변경했다. traffic.go는 2130/2130줄이며 LF·끝 개행·들여쓰기·지정 표현 밖 바이트·설명/다른 예시·조건·키·숫자·포맷을 보존했다. 관련 traffic/server/agent 테스트에서 두 표현·TrafficSearchDescription 의존을 재검색했다. traffic_store_test.go:122·140의 중국어 원문 본문/검색 fixture는 schema 설명에서 추출하는 값이 아니며 그대로 보존한다. finding_workflow_test.go:249의 호스트/포트 안내 부분 검사는 이번 변경과 무관하다. 직접 기대값 수정 필요는 발견하지 못했으며 입력·fixture·기대값·테스트는 미수정이다.
 - **기록·후속**: 로컬 traffic-model-semantic-review.md·traffic-model-semantic-findings.tsv는 수정 전 원문/번역/발견 근거를 이력으로 유지하고 승인 후 표현·분류·정적 대응 완료 상태를 별도 기록한다. A/S 96개·기존 M 이력·M016 실제 DB 상태/회귀 테스트 후보와 정책·기능·호환성 후속은 유지한다. 실제 DB/모델 동작·전체 저장소 의미 전수 대조는 미확인이다.
 - **산출물·실행**: /tmp/artex-traffic-model-approved.diff에는 traffic/traffic.go와 누적 PROMPT_PROGRESS 변경만 포함한다. 감사 MD/TSV는 Git 제외 translation/audit/에 로컬로만 보관한다. 기존 미커밋 PROGRESS·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### U15 스킬 본문 의미 감사 [확정 세 문서 전체 정적 대조 완료 / M024 용어 후보 / 실행 미검증]
+- **기준·범위**: HEAD 96439f9319f497d81cfd2cc3e4d33e60d5e275b5에서 M022·M023 승인 보완 커밋을 확인했다. staged·MERGE_HEAD·대상 기존 변경 없음. 최신 네 기준 문서와 로컬 감사 이력을 적용하고 api-recon/SKILL.md·reference.md와 scopesentry/SKILL.md의 번역 본문을 첫 줄부터 끝까지 원문과 대조했다. 현재 문서 전체는 425·500·367줄이다. Skill 등록/전달 및 reference 연결 경로를 읽기 전용으로 확인했다.
+- **원문·승인 변경**: 70d6125·19c3ceb·41efa3c·729e4f8의 직접 부모에서 각 번역 묶음의 원문을 확보했다. 앞 묶음 fragment·후속 확정 용어, cd23b6d의 절 참조/config 설명 정정, f412bf1의 frontmatter 종료선/name=scopesentry 정정은 승인 이력으로 구분했다. 확정 본문의 원문 미확보/미독 범위는 없다.
+- **결과·테스트**: M024는 scopesentry/SKILL.md:168 Mermaid의 子域名入库→서브도메인 저장을 자산 등록 문맥의 확정 표기 서브도메인 등록으로 맞추는 후보다. 원문 전체·현재 번역·근거·후보를 로컬 MD/TSV에 기록했고 소스는 미수정이다. 직접 테스트 기대값 의존은 검색/관련 테스트 읽기에서 발견하지 못했다. 나머지 대조 본문에서 새 의미·조건/지시 강도 오류를 발견하지 못했다. 명령·JSON/DSL·검색값·정규식·placeholder를 산문과 구분했고 fenced 블록/제목-fragment를 정적으로 대조했다. 실제 테스트/렌더 결과는 미확인이다.
+- **한계·후속·보존**: A048 로그인/세션 정책 충돌과 A049.2 depth/coverage stub/forward/L2 차이는 원문 문제로 유지하며 A049.1 NEGATIVE_RE DNT와 분리한다. 기존 A/S96개·M001–M023·M012/M013·M016 DB/회귀 테스트 후보·U7/U15 및 다른 후속 보류를 보존한다. 스크립트는 필요한 동작 근거만 읽었고 영어 playwright-cli는 재감사하지 않았다. 실제 SDK/DB/모델/외부 동작 및 전체 저장소 의미 전수 대조는 미확인이다.
+- **산출물·실행**: skills-semantic-review.md·skills-semantic-findings.tsv는 Git 제외 translation/audit/에 로컬로만 작성한다. 커밋용 /tmp/artex-skills-semantic-progress.diff에는 이번 PROGRESS 추가만 포함한다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### U15 ScopeSentry 확정 용어 승인 보완 · M024 [승인 수정·정적 대응 완료 / 실행 미검증]
+- **승인 범위**: scopesentry/SKILL.md:168의 Mermaid 라벨 서브도메인 저장→서브도메인 등록 한 곳만 수정했다. 자산 등록 문맥의 기존 확정 용어를 적용하며 용어집·코드·테스트는 수정하지 않았다.
+- **정적 보존**: 현재 3.3 흐름도의 C 노드로 위치를 확인했다. 367줄·LF·끝 개행·들여쓰기와 지정 표현 밖 바이트가 동일하다. 노드 ID C·화살표·배치·task==阶段1任务名 검색값·다른 라벨·frontmatter/name=scopesentry는 보존했다. 기존 감사에서 직접 테스트 기대값 의존은 발견하지 못했으며 테스트는 미수정·미실행이다.
+- **기록·후속**: 로컬 skills-semantic-review.md·skills-semantic-findings.tsv에는 원문·수정 전 번역·발견 근거를 유지하고 승인 후 표현과 정적 대응 완료 상태를 별도로 기록했다. 기존 A/S96개·M 이력 및 A046–A049·M012/M013·M016 등 정책·기능·호환성 후속은 유지한다. 실제 SDK/모델 동작·전체 저장소 의미 전수 검증은 미확인이다.
+- **산출물·실행**: 커밋용 /tmp/artex-skills-semantic-approved.diff에는 ScopeSentry SKILL.md와 누적 PROMPT_PROGRESS 변경만 포함한다. 감사 MD/TSV는 Git 제외 translation/audit/에만 로컬 보관한다. 기존 미커밋 PROGRESS·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push 없음.
