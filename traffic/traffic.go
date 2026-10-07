@@ -131,7 +131,7 @@ const (
 // TrafficSearchDescription is persisted into the tool catalog for new and
 // upgraded installations. Keep it in the traffic package so the runtime tool
 // and the catalog migration cannot drift apart.
-const TrafficSearchDescription = "기록 프록시가 캡처한 대상 트래픽을 조회한다(host 필수; 호스트 단독, 호스트:포트 또는 완전한 URL을 지원하며, URL 부분 문자열이나 본문 키워드로 추가 필터 가능). 포트를 지정하면 해당 서비스의 트래픽만 반환해 같은 IP의 다른 포트가 섞이는 것을 방지한다. body_contains는 캡처된 요청/응답 헤더와 본문에서 전문 검색하며, 임의 부분 문자열과 중국어를 지원한다(최소 3자). 매우 경량인 인덱스(id/method/url/status/resp_len)만 반환하고 응답 내용은 포함하지 않는다; 결과가 비어 있지 않으면 반드시 traffic_get으로 요청/응답을 한 건씩 확인한 뒤, 현재 취약점을 실제로 뒷받침하는 ID를 bind_finding_traffic에 넘긴다. 기본 3건만 반환, 페이지당 최대 10건; 결과가 많으면 page로 페이지 이동."
+const TrafficSearchDescription = "레코딩 프록시가 캡처한 대상 트래픽을 조회한다(host 필수; 호스트 단독, 호스트:포트 또는 완전한 URL을 지원하며, URL 부분 문자열이나 본문 키워드로 추가 필터 가능). 포트를 지정하면 해당 서비스의 트래픽만 반환해 같은 IP의 다른 포트가 섞이는 것을 방지한다. body_contains는 캡처된 요청/응답 헤더와 본문에서 전문 검색하며, 임의 부분 문자열과 중국어를 지원한다(최소 3자). 매우 경량인 인덱스(id/method/url/status/resp_len)만 반환하고 응답 내용은 포함하지 않는다; 결과가 비어 있지 않으면 반드시 traffic_get으로 요청/응답을 한 건씩 확인한 뒤, 현재 취약점을 실제로 뒷받침하는 ID를 bind_finding_traffic에 넘긴다. 기본 3건만 반환, 페이지당 최대 10건; 결과가 많으면 page로 페이지 이동."
 
 // Traffic runs the recording proxy and owns the file tree + index.
 type Traffic struct {
@@ -2011,7 +2011,7 @@ func (t *Traffic) Tools() []actool.CoreTool {
 			"properties": map[string]any{
 				"host":          map[string]any{"type": "string", "description": "host로 필터(필수; 예: '107.172.96.177', '107.172.96.177:8082' 또는 'http://107.172.96.177:8082/path')"},
 				"contains":      map[string]any{"type": "string", "description": "URL 부분 문자열 필터(선택, 예: 'api' / 'login')"},
-				"body_contains": map[string]any{"type": "string", "description": "본문 전문 검색(선택, 최소 3자), 요청/응답의 헤더와 본문을 매칭, 예: 'password' / 'root:x:0' / '내부망 테스트'"},
+				"body_contains": map[string]any{"type": "string", "description": "본문 전문 검색(선택, 최소 3자), 요청/응답의 헤더와 본문을 매칭, 예: 'password' / 'root:x:0' / '内网测试'"},
 				"limit":         map[string]any{"type": "integer", "description": "페이지당 건수, 기본 3, 최대 10"},
 				"page":          map[string]any{"type": "integer", "description": "페이지 번호, 0부터 시작, 기본 0(ts 내림차순 페이지)"},
 			},
