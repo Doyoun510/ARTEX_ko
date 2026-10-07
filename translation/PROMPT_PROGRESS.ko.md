@@ -765,3 +765,18 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **산출물·실행**: 커밋 검토용 /tmp/artex-worker-mainagent-approved.diff에는 소스 두 파일과 PROMPT_PROGRESS만 포함한다. 로컬 감사 보고서는 커밋용 diff에 포함하지 않는다. 기존 미커밋 PROGRESS 기록·TRANSLATION_PROMPT 변경·미추적 담당표/audit-input/기타 파일·Git index를 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
 
 - **M010 조사 승인 보완**: workerDefaultTmpl의 “버전/핑거프린트이 CVE에 매칭됨”을 “버전/핑거프린트가 CVE에 매칭됨”으로 조사 한 곳만 정정했다. 앞선 조사 보존 설명은 당시 이력이며 이번 사용자 승인으로 해소했다. 코드·조건·증거 요구·535줄·LF·기존 변경·Git index를 보존했다. 로컬 감사 보고서/TSV에 승인 후 상태를 반영하며 커밋용 diff는 소스 두 파일과 PROGRESS만 포함한다. 실행 검증은 **사용자 요청으로 미실행**이다.
+
+
+### 핵심 도구 설명 의미 감사 · U5 전체 [지정 자연어 전체 정적 대조 완료 / M011 용어 후보·M012/M013 원문 설명 후속 / 실행 미검증]
+- **기준·범위**: HEAD `e29d563da4370aab6d49e93b72693759ae6965a2`(work/ko-translation)에서 직전 M008–M010 승인 보완 및 조사 보완 e29d563 반영 확인. staged·MERGE_HEAD 없음. 최신 기준 문서 4종과 로컬 감사 이력을 적용하고 tools.go/tools_insert.go/tools_digest.go/toolcatalog.go의 26개 도구 설명·파라미터/schema·자체 오류/성공/결과 자유 서술 231개 및 범위 이해에 필요한 주석을 원문과 끝까지 대조했다. toolcatalog에는 직접 중국어 모델용 리터럴이 없고 DB 설명/schema 재정의·기본값 처리 경로를 확인했다.
+- **원문·대응**: 4caba7f부터 0406037까지 10개 번역 묶음의 직접 부모에서 해당 중국어 원문을 확보했다. 현재와 주석/문자열 밖 코드·키·enum·인수·분기·반환 구조가 같으며 네 파일의 줄 수는 2054/699/165/201로 동일하다. 포맷 지정자 종류/순서/개수·이스케이프·템플릿·숫자를 별도로 대조했다. 기존 승인 coverage.note/status·DNS 레코드 표현·연결 공백 등은 이력으로 보존했다.
+- **결과**: M011은 steer_work 설명/성공 안내(tools.go:1707,1735)의 지시 추가 문맥에서 주입→추가 용어 후보 1개(두 곳)다. M012는 커버리지 비활성화 시 add_task_scope/auto-scope 처리의 오래된 주석, M013은 PlannerTools의 전체 저장소 조회 주석으로 둘 다 중국어/영어 원문부터 존재하는 설명·구현 불일치이며 번역 오류와 분리했다. 소스는 수정하지 않았다. 그 밖의 필수/금지/권고·조건·예외·범위·읽기 전용·증거·순서·종료/재개 의미 차이는 이번 대조에서 발견하지 못했다.
+- **소비·테스트**: BuiltinToolSeeds→wireTools/SeedTool→ToolResolve/DecorateTool→AugmentTools 경로와 편집 Description/Schema/default, nil guard·finding 첫 줄/JSON·범위 membership·UTF-8 budget 관련 테스트를 읽기 전용 대조했다. DB 사용자 편집 설명과 외부 오류/summary/detail/evidence는 번역 기본값과 구분했다. 직접 기대값 수정 필요는 발견하지 못했으며 테스트는 수정/실행하지 않았다. 실제 DB 저장 설명·모델 출력은 미확인이다.
+- **이력·한계·산출물**: A/S 96개 집계·M001–M010 승인 이력·A046–A049 및 기존 후속 보류는 유지한다. 이번 지정 자연어 미독/원문 미확보 범위는 없지만 외부 SDK/MCP 설명·DB 편집 본문 전체·다른 단위는 별도 범위이며 전체 저장소 의미 전수 대조는 미완료다. Git 제외 로컬 translation/audit/tool-semantic-review.md·tool-semantic-findings.tsv에 원문/현재/근거/후속을 기록했다. 커밋 검토용 /tmp/artex-tool-semantic-progress.diff에는 이 기록만 포함한다. 기존 로컬 변경·미추적 파일·Git index를 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 핵심 도구 설명 의미 감사 승인 보완 · M011 [승인 수정·정적 대응 완료 / M012·M013 원문 설명 후속 유지 / 실행 미검증]
+- **승인 범위**: agent/tools.go의 steerWorkTool 설명(1707행)의 “방향 조정 지시를 실시간으로 주입하며”를 “방향 조정 지시를 실시간으로 추가하며”로, 성공 안내(1735행)의 “방향 조정 지시를 주입했습니다”를 “방향 조정 지시를 추가했습니다”로 정확히 두 곳만 수정했다. 기존 확정 용어를 적용하고 용어집은 수정하지 않았다.
+- **정적 대응·보존**: 함수/문장 경계로 확인했다. 실행 중단 없음·기존 진행 보존·다음 동작 전 적용·kill_work 조건·%d와 인수 및 그 밖의 문장/주석/운영 코드는 그대로다. tools.go는 2054/2054줄이며 LF·끝 개행·들여쓰기·포맷을 보존했다. 추적 테스트/프런트에서 지정 전체 표현 및 대응 원문 특징 문자열을 재검색했으며 직접 기대값 수정 필요를 발견하지 못했다. 테스트는 수정하거나 실행하지 않았다.
+- **이력·후속**: 로컬 tool-semantic-review.md·tool-semantic-findings.tsv는 수정 전 원문/번역/발견 근거를 보존하고 승인 후 번역·정적 대응 상태를 별도로 기록했다. M012·M013은 원문 자체 설명 문제로 미수정 유지한다. A/S 96개 집계·M001–M010 승인 이력·A046–A049 및 다른 후속 보류는 유지한다. 전체 저장소 의미 전수 대조와 실제 DB/모델 동작 확인은 미완료다.
+- **산출물·실행**: 커밋 검토용 /tmp/artex-tool-semantic-approved.diff에는 agent/tools.go와 PROMPT_PROGRESS만 포함하며 감사 MD/TSV는 Git 제외 경로에 로컬로만 보관한다. 이전 미커밋 PROGRESS·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존했다. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
