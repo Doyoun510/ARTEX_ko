@@ -17,11 +17,11 @@ const (
 	// settingNotifyEnabled은 푸시 마스터 스위치. 기본 켜짐: 유지보수 기간에 원클릭으로 지혈하는 용도이고,
 	// 기능 활성화 조건이 아니다 —— 진짜 활성화 조건은 '채널을 설정했는지'다.
 	settingNotifyEnabled = "notify_enabled"
-	// settingNotifyPublicBaseURL은 취약점 상세 회신 링크를 생성하는 외부 접근 주소
-	// (예: https://artex.example.com). 비우면 메시지에 회신 링크 버튼이 없다.
+	// settingNotifyPublicBaseURL은 취약점 상세 링크를 생성하는 외부 접근 주소
+	// (예: https://artex.example.com). 비우면 메시지에 상세 링크 버튼이 없다.
 	// 프로젝트에 재사용할 외부 주소 설정이 없어 여기에 하나 추가.
 	settingNotifyPublicBaseURL = "notify_public_base_url"
-	// settingNotifyDigestMinutes는 요약 모드의 주기(분).
+	// settingNotifyDigestMinutes는 모아 보내기 모드의 주기(분).
 	settingNotifyDigestMinutes = "notify_digest_interval_min"
 )
 
@@ -36,7 +36,7 @@ const (
 	// notifyFanOutPerTick은 라운드마다 디스패치하는 이벤트 수를 제한해, 채널을 처음 활성화할 때
 	// 과거 적체를 한 번에 전부 전송 작업으로 펼치는 것을 방지.
 	notifyFanOutPerTick = 200
-	// notifyDefaultDigestMinutes는 요약 주기의 기본값.
+	// notifyDefaultDigestMinutes는 모아 보내기 주기의 기본값.
 	notifyDefaultDigestMinutes = 30
 	// notifyUnlimitedBurstPerTick은 채널이 전송 속도 제한 미설정일 때 라운드당 전송 상한.
 	// '채널 하나를 무제한으로 설정 + 한 번에 수천 건 취약점 스캔'이
@@ -137,7 +137,7 @@ func (n *Notifier) step(ctx context.Context) {
 			continue
 		}
 		// 토큰 버킷의 계량 단위는 **메시지 건수**(HTTP 요청 수와 동등)이지 취약점 건수가 아니다.
-		// 실시간 모드에서는 둘이 같고(취약점 하나당 메시지 하나); 요약 모드에서는 한 배치의 취약점을 합쳐
+		// 실시간 모드에서는 둘이 같고(취약점 하나당 메시지 하나); 모아 보내기 모드에서는 한 배치의 취약점을 합쳐
 		// 메시지 하나로 만들어 토큰 하나만 소비한다.
 		//
 		// 두 모드 모두 먼저 토큰 버킷에 묻고, 다음에 할당량만큼 수령 —— 순서를 뒤집으면 안 되며, 아니면 전송 속도 제한에 막힌
@@ -159,18 +159,18 @@ func (n *Notifier) step(ctx context.Context) {
 	}
 }
 
-// digestTickPlan은 요약 채널의 이번 라운드 토큰 소비와 배치 크기 상한을 반환.
+// digestTickPlan은 모아 보내기 채널의 이번 라운드 토큰 소비와 배치 크기 상한을 반환.
 //
 // 두 반환값은 **서로 다른 단위**이며, 이것이 함수로 분리한 이유다:
 //
 //   - tokens는 메시지 건수. 한 배치의 취약점을 메시지 하나로 합쳐 HTTP 요청 한 번을 보내므로 항상 1.
-//     따라서 rate_per_min은 digest에도 여전히 적용된다(분당 최대 이만큼의 요약 메시지).
+//     따라서 rate_per_min은 digest에도 여전히 적용된다(분당 최대 이만큼의 모아 보내기 메시지).
 //   - claimLimit은 이 배치가 최대 몇 건의 취약점을 담는지. 메모리 상한에만 제약되고 요청 예산과는 무관.
 //
 // 예전에 rate_per_min을 digest에 적용하려고, 라운드당 요청 예산
 // (notifyMaxSendsPerChannelPerTick, lease에서 역산)을 그대로 배치 크기로 넘겼다.
-// 그 결과 rate_per_min=20 채널이 3초 tick에서 토큰을 1개만 보충받아, 요약
-// 메시지가 취약점 1건만 담아 —— digest가 '요약 문구가 붙은 실시간 푸시'로 퇴화하고, 독자는
+// 그 결과 rate_per_min=20 채널이 3초 tick에서 토큰을 1개만 보충받아, 모아 보내기
+// 메시지가 취약점 1건만 담아 —— digest가 '모아 보내기 문구가 붙은 실시간 푸시'로 퇴화하고, 독자는
 // '최근 30분 취약점 1건 추가'의 연속을 받으며, db.MaxDigestBatchSize는 영원히 도달 불가.
 //
 // 이 증상은 엔드투엔드 테스트에서 발견하기 어렵다(기존 케이스는 모두 충분히 큰 limit을 수동으로
@@ -211,7 +211,7 @@ func (n *Notifier) stepDigest(ctx context.Context, ch *db.NotificationChannel, a
 	window := n.digestInterval()
 	due, err := n.pg.DigestBatchDue(ctx, ch.ID, window)
 	if err != nil {
-		log.Printf("[notify] 요약 배치 판단 실패 channel=%d: %v", ch.ID, err)
+		log.Printf("[notify] 모아 보내기 배치 판단 실패 channel=%d: %v", ch.ID, err)
 		return
 	}
 	if !due {
@@ -219,7 +219,7 @@ func (n *Notifier) stepDigest(ctx context.Context, ch *db.NotificationChannel, a
 	}
 	deliveries, err := n.pg.ClaimDigestBatch(ctx, ch.ID, allow, notifyLease)
 	if err != nil {
-		log.Printf("[notify] 요약 배치 수령 실패 channel=%d: %v", ch.ID, err)
+		log.Printf("[notify] 모아 보내기 배치 수령 실패 channel=%d: %v", ch.ID, err)
 		return
 	}
 	if len(deliveries) == 0 {
@@ -252,8 +252,8 @@ func (n *Notifier) stepDigest(ctx context.Context, ch *db.NotificationChannel, a
 
 // send는 전송하고 결과에 따라 상태를 전이한다.
 //
-// 같은 배치의 전송(요약 모드에서는 수십 건일 수 있음)은 하나의 전송 결과를 공유한다: 송달되거나, 배치 전체 재시도.
-// 건별 재시도는 하지 않음 —— 요약 메시지는 하나라, 그 일부만 재전송하면 배치 의미가 뒤틀린다.
+// 같은 배치의 전송(모아 보내기 모드에서는 수십 건일 수 있음)은 하나의 전송 결과를 공유한다: 송달되거나, 배치 전체 재시도.
+// 건별 재시도는 하지 않음 —— 모아 보내기 메시지는 하나라, 그 일부만 재전송하면 배치 의미가 뒤틀린다.
 //
 // 유일한 예외는 **채널 길이 상한으로 인한 분할**: 채널이 실제로 앞 K건만 담았다고 보고하면,
 // K+1건부터는 다음 배치로 남겨야 하며, 함께 성공으로 표시해선 안 된다. 아니면 잘려 나간
@@ -385,8 +385,8 @@ func (n *Notifier) renderSingle(ctx context.Context, dl *db.NotificationDelivery
 	return notify.Message{Items: []notify.Item{item}, HomeURL: baseURL}, nil
 }
 
-// renderBatch는 요약 메시지를 렌더링. 스냅샷을 건별로 파싱 —— 한 건이 깨지면 그 한 건만 건너뛰고,
-// 그것이 배치 요약 전체를 날리지 않게 한다.
+// renderBatch는 모아 보내기 메시지를 렌더링. 스냅샷을 건별로 파싱 —— 한 건이 깨지면 그 한 건만 건너뛰고,
+// 그 한 건 때문에 모아 보내기 메시지 전체가 누락되지 않게 한다.
 //
 // 반환값 included는 msg.Items와 **엄격히 일대일 대응**(i번째 전송 ↔ i번째 항목).
 // 이 대응 관계는 강한 요구사항: 호출자가 '채널이 앞 K건을 담았다고 보고'에 따라 앞 K개 전송을
@@ -401,7 +401,7 @@ func (n *Notifier) renderBatch(ctx context.Context, deliveries []*db.Notificatio
 		if err != nil {
 			// 불량 스냅샷은 메시지에도 included에도 들어가지 않음 —— 그 처리는 호출자가 담당
 			// (명시적으로 실패 표시, '송달됨'에 섞여 얼버무리지 않음).
-			log.Printf("[notify] 요약 배치에서 파싱 불가 스냅샷 건너뜀 delivery=%d: %v", dl.ID, err)
+			log.Printf("[notify] 모아 보내기 배치에서 파싱 불가 스냅샷 건너뜀 delivery=%d: %v", dl.ID, err)
 			continue
 		}
 		item, err := n.itemFor(ctx, snap, baseURL)
@@ -412,7 +412,7 @@ func (n *Notifier) renderBatch(ctx context.Context, deliveries []*db.Notificatio
 		included = append(included, dl)
 	}
 	if len(items) == 0 {
-		return notify.Message{}, nil, fmt.Errorf("요약 배치 %d건 전송 전부 파싱 불가", len(deliveries))
+		return notify.Message{}, nil, fmt.Errorf("모아 보내기 배치 %d건 전송 전부 파싱 불가", len(deliveries))
 	}
 	return notify.Message{
 		Items:         items,
@@ -422,7 +422,7 @@ func (n *Notifier) renderBatch(ctx context.Context, deliveries []*db.Notificatio
 	}, included, nil
 }
 
-// itemFor는 이벤트 스냅샷을 푸시 대기 항목으로 렌더링하며, 자산 이름과 상세 회신 링크도 파싱.
+// itemFor는 이벤트 스냅샷을 푸시 대기 항목으로 렌더링하며, 자산 이름과 상세 링크도 파싱.
 func (n *Notifier) itemFor(ctx context.Context, snap notify.Snapshot, baseURL string) (notify.Item, error) {
 	assets, err := n.pg.NotificationAssetNames(ctx, snap.AssetIDs)
 	if err != nil {
@@ -451,7 +451,7 @@ func (n *Notifier) itemFor(ctx context.Context, snap notify.Snapshot, baseURL st
 // takeTokens는 채널 토큰 버킷에서 **최대 want 개** 토큰을 가져오며, 실제로 가져온 수를 반환.
 //
 // 토큰 하나 = 메시지 하나(HTTP 요청 한 번). 실시간 모드에서는 호출자가 필요한 수만큼 넘기고;
-// 요약 모드에서는 한 배치의 취약점을 메시지 하나로만 보내므로 1을 넘긴다.
+// 모아 보내기 모드에서는 한 배치의 취약점을 메시지 하나로만 보내므로 1을 넘긴다.
 //
 // 버킷 용량은 그 채널의 분당 상한이고, 일정 속도로 보충. ratePerMin<=0은 전송 속도 제한 없음을 뜻하며,
 // 유한하지만 충분히 큰 값을 반환해, 단일 라운드 루프가 무한 적체에 끌려가는 것을 방지.
@@ -494,7 +494,7 @@ func (n *Notifier) enabled() bool {
 	return n.pg.GetBool(settingNotifyEnabled, true)
 }
 
-// publicBaseURL은 회신 링크용 외부 주소를 반환하며, 끝 슬래시를 제거.
+// publicBaseURL은 상세 링크용 외부 주소를 반환하며, 끝 슬래시를 제거.
 func (n *Notifier) publicBaseURL() string {
 	v, ok, err := n.pg.GetSetting(settingNotifyPublicBaseURL)
 	if err != nil || !ok {
@@ -503,7 +503,7 @@ func (n *Notifier) publicBaseURL() string {
 	return trimTrailingSlash(v)
 }
 
-// digestInterval은 요약 주기를 반환하며, 잘못됐거나 미설정이면 기본값으로 폴백.
+// digestInterval은 모아 보내기 주기를 반환하며, 잘못됐거나 미설정이면 기본값으로 폴백.
 func (n *Notifier) digestInterval() time.Duration {
 	v, ok, err := n.pg.GetSetting(settingNotifyDigestMinutes)
 	if err != nil || !ok {

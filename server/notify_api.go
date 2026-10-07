@@ -456,7 +456,7 @@ func notifyTestMessage(baseURL string) notify.Message {
 	}
 }
 
-// notifierBaseURL은 회신 링크용 외부 주소를 읽는다.
+// notifierBaseURL은 상세 링크용 외부 주소를 읽는다.
 func (s *Server) notifierBaseURL(pg *db.DB) string {
 	v, _, _ := pg.GetSetting(settingNotifyPublicBaseURL)
 	return trimTrailingSlash(v)

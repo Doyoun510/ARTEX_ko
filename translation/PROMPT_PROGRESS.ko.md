@@ -883,3 +883,13 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **중복 실행·저장 보존**: 요청 중 복원 트리거/확인 버튼은 saving으로 비활성화하고 restoreInFlight ref를 첫 await 전에 설정하여 React 상태 갱신 전 연속 확인 호출도 차단한다. finally에서 잠금을 해제한다. 기존 전체 cfg 저장({ ...cfg, prompt: "" })·조회 후 setCfg·성공/실패 안내·일반 저장·API/백엔드/정책/DB 경로는 유지한다. 자동 번역·옛 블록 교체·해시/바이트 승인 체계·백업 기능은 추가하지 않았다.
 - **정적 검토·후속**: 취소/확인/요청 중 경로와 기존 구성 요소의 연결을 정적으로 대조했다. 안내는 미저장 다른 설정도 함께 저장되는 현재 동작에 맞춘 것이다. A047.1/.2 옛 공통 블록 중복 부착은 알려진 호환성 제한 / 미해결로 유지한다. 확인창은 정책 백업·저장 원자성·옛 블록 호환성 해결을 제공하지 않는다. 기존 A/S·M 이력과 A046 live 실행·M016 실제 DB 상태 및 U15 정책/기능 후속을 보존한다.
 - **산출물·보존·실행**: 커밋용 /tmp/artex-a047-restore-guidance.diff에는 페이지와 PROMPT_PROGRESS만 포함한다. 구현 상세 보고서는 Git 제외 translation/audit/a047-restore-guidance-implementation-review.md에 로컬로만 보관한다. 기존 TRANSLATION_PROMPT 변경·미추적 파일·로컬 감사·Git index·제외 설정을 보존한다. 실행 검증은 **사용자 요청으로 미실행**이며 빌드·타입 검사·테스트·렌더·앱·Git 훅·fetch·병합·stage·commit·push 없음.
+
+
+### 알림·보고서 의미 감사 확정 용어 승인 보완 · M025–M028 [승인 수정·정적 대응 완료 / 실행 미검증]
+- **기준·범위**: work/ko-translation, HEAD `b0f523b9bac28a5eb9899713a5b1eb7d5eb75bf2`에서 staged·MERGE_HEAD 및 대상 기존 변경 부재를 확인했다. 로컬 notification-semantic-findings.tsv의 승인 위치를 현재 문장·함수 경계와 대조하여 소스 네 파일의 33개 행만 수정했다. 새 용어 등록·기능/정책/DB 변경은 없다.
+- **승인 수정**: db/notification.go의 별도 조회 없이 한 번 삽입하고(M025) 1곳, db/notification_delivery.go의 측정 단위가 다르다(M026) 1곳, 두 DB/서버 파일의 지정 digest 모드·주기·배치·메시지·로그/오류의 모아 보내기(M027) 26곳, server/notifier.go·notify_api.go의 상세 링크(M028) 5곳이다. 기존 상세가 앞에 있으면 회신만 제거하여 상세 상세 링크를 만들지 않았다. 일반 요약·집계·종합 보고서, 영어 digest, Markdown **요약**: 라벨과 server/server.go 범위 밖 후보는 보존했다.
+- **직접 의존·정적 보존**: 현재 생성부→FailDeliveries/로그·last_error→DTO/UI 표시 경로와 관련 테스트의 전체/부분 문자열 검사를 재확인했다. 지정 표현의 직접 테스트 기대값 변경 필요는 발견하지 못해 테스트를 수정하지 않았다. 모아 보내기 적용에 따른 조사 을→를 1곳을 함께 정리했다. 네 파일의 줄 수 551/446/555/515·LF·끝 개행·들여쓰기와 지정 표현 및 이 조사 밖 바이트, 코드·키·조건·SQL·계약값·숫자·포맷 지정자/인수·이스케이프를 보존했다. 동작/테스트 통과를 확인한 결과가 아니다.
+- **기록·후속**: Git 제외 translation/audit/의 MD·TSV에는 원문·수정 전 번역·발견 근거를 유지하고 승인 후 상태를 별도 기록했다. 커버리지 장부는 해당 네 파일의 발견 처리 상태만 갱신했다. A/S96개·M001–M024 이력, A047 중복 부착 제한·A048/A049·M012/M013·M016 실제 DB 및 기존 정책/기능/호환성·실행 후속은 유지한다. 전체 저장소 의미 전수 검증 완료를 뜻하지 않는다.
+- **산출물·보존·실행**: 커밋용 `/tmp/artex-notification-semantic-approved.diff`에는 소스 네 파일과 이번 PROGRESS 추가만 포함한다. 상세 보고서는 로컬 `translation/audit/notification-semantic-approved-review.md`에 보관하며 감사 문서는 커밋 대상에 포함하지 않는다. 기존 TRANSLATION_PROMPT 변경·미추적 파일·다른 변경·Git index·제외 설정을 보존했다. 실행 검증은 **사용자 요청으로 미실행**이며 fetch·병합·stage·commit·push 없음.
+
+- **M027 표현 보완**: renderBatch 주석 한 줄을 사용자 승인 표현 `// 그 한 건 때문에 모아 보내기 메시지 전체가 누락되지 않게 한다.`로 정리했다. 이전 승인 변경과 코드·포맷·555줄·LF·Git index를 보존했다. 주석 변경이며 테스트/실행 검증은 사용자 요청으로 미실행이다. 커밋용 diff는 기존 소스 네 파일과 PROGRESS만 포함하고 로컬 감사 보고서는 제외한다.

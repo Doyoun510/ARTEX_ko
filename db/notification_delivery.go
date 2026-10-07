@@ -24,9 +24,9 @@ import (
 // 전송 엔진이 아니라 여기에 정의한다: 상태 기계 자체의 정책이고, 엔진은 실행자일 뿐이다.
 const MaxNotifyAttempts = 3
 
-// MaxDigestBatchSize는 단일 요약 배치가 한 번에 병합할 수 있는 최대 전송 건수다.
+// MaxDigestBatchSize는 단일 모아 보내기 배치가 한 번에 병합할 수 있는 최대 전송 건수다.
 //
-// 존재 이유는 자원이다: 한 요약 주기에 취약점 수만 개가 나오면(충분히 가능 —— 전량 스캔
+// 존재 이유는 자원이다: 한 모아 보내기 주기에 취약점 수만 개가 나오면(충분히 가능 —— 전량 스캔
 // 한 번이면 된다), 상한이 없으면 획득이 전체 행을 메모리에 읽어 초장문 메시지로 렌더링하고,
 // 그다음 채널 길이 상한에 절반 이상 잘린다 —— 메모리도 낭비하고 잘린 취약점을 **조용히 손실**한다.
 // 상한을 두면 초과분은 DB에 남아 다음 배치가 되고, 다음 주기에 자연히 보내져 손실되지 않는다.
@@ -138,14 +138,14 @@ LIMIT $5`,
 }
 
 // DigestBatchDue는 이 채널이 만기 배치를 충분히 모았는지 보고한다: 전송 대기 항목이 있고, **가장 오래된 것**의
-// 나이가 요약 주기에 도달했는지.
+// 나이가 모아 보내기 주기에 도달했는지.
 //
 // 판정 근거는 벽시계가 아니라 가장 오래된 전송의 나이다: 그래서 막 만든 채널이 정시 정렬 때문에
-// 한 건짜리 '요약'을 즉시 뱉지 않고, 오래 적체된 배치도 한 라운드를 더 헛되이 기다리지 않는다.
+// 한 건짜리 '모아 보내기'를 즉시 뱉지 않고, 오래 적체된 배치도 한 라운드를 더 헛되이 기다리지 않는다.
 //
 // ClaimDigestBatch와 분리한 것은 의미가 다르기 때문이다: 이 함수는 '보낼지 말지'만 답하고,
 // 획득은 이 채널의 **전체** 대기 행을 가져간다(아직 나이가 안 찬 것 포함) —— 안 그러면 한 주기가
-// 여러 메시지로 쪼개져 요약의 의미가 사라진다.
+// 여러 메시지로 쪼개져 모아 보내기의 의미가 사라진다.
 func (d *DB) DigestBatchDue(ctx context.Context, channelID int64, minAge time.Duration) (bool, error) {
 	var due bool
 	err := d.QueryRowContext(ctx, `SELECT EXISTS (
@@ -158,7 +158,7 @@ func (d *DB) DigestBatchDue(ctx context.Context, channelID int64, minAge time.Du
 	return due, err
 }
 
-// ClaimDigestBatch는 어떤 채널의 현재 만기된 전송 대기 항목을 하나의 요약 배치로 획득한다,
+// ClaimDigestBatch는 어떤 채널의 현재 만기된 전송 대기 항목을 하나의 모아 보내기 배치로 획득한다,
 // 한 배치 최대 MaxDigestBatchSize건.
 //
 // 같은 배치의 모든 전송이 batch_id를 공유한다, 집합의 최소 id를 배치 번호로 쓴다(안정·가독·
@@ -176,9 +176,9 @@ func (d *DB) ClaimDigestBatch(ctx context.Context, channelID int64, limit int, l
 	//
 	// 일부러 '전송 속도 제한 할당량'을 배치 크기로 받지 않는다: 전송 속도 제한 단위는 메시지 건수다 —— 한 배치는
 	// 메시지 한 건만 보내고 토큰 하나를 소비하며, server 레이어의 takeTokens가 차감한다 —— '한 배치에 취약점
-	// 몇 건'과는 다른 차원이다. 예전엔 rate_per_min을 digest에 적용하려고 매 라운드
+	// 몇 건'과는 측정 단위가 다르다. 예전엔 rate_per_min을 digest에 적용하려고 매 라운드
 	// 요청 예산을 배치 크기로 넘겼는데, 결과적으로 rate=20/min 채널은 배치당 취약점 1건만 담아,
-	// digest가 요약 문구가 붙은 실시간 푸시로 퇴화했다. 전송 속도 제한을 바꾸려면 takeTokens의 want를 바꾸고,
+	// digest가 모아 보내기 문구가 붙은 실시간 푸시로 퇴화했다. 전송 속도 제한을 바꾸려면 takeTokens의 want를 바꾸고,
 	// 여기는 건들지 마라.
 	if limit > MaxDigestBatchSize {
 		limit = MaxDigestBatchSize
@@ -207,7 +207,7 @@ WHERE id IN (`+ph+`)`, append([]any{batchID}, idArgs...)...)
 }
 
 // claimDeliveries는 '선택 + sending 설정·lease 연장 + 전체 행 읽기'를 전부 한 트랜잭션에서 수행한다.
-// postClaim은 선택적 부가 단계다(요약 배치가 이를 써서 batch_id를 기록).
+// postClaim은 선택적 부가 단계다(모아 보내기 배치가 이를 써서 batch_id를 기록).
 func (d *DB) claimDeliveries(ctx context.Context, lease time.Duration, cq claimQuery, postClaim func(*sql.Tx, []int64) error) ([]*NotificationDelivery, error) {
 	tx, err := d.BeginTx(ctx, nil)
 	if err != nil {
@@ -307,7 +307,7 @@ WHERE id IN (`+ph+`)`,
 
 // DeferDeliveries는 전송 한 묶음을 pending으로 되돌려 즉시 재획득 가능하게 하고, **획득 시 계산한 그 시도 한 번을 취소**한다.
 //
-// 용도는 하나뿐이다: 요약 메시지를 채널 길이 상한에 맞춰 분할 전송할 때, 이 건에 못 담은 항목은 다음 배치로 남겨야 한다.
+// 용도는 하나뿐이다: 모아 보내기 메시지를 채널 길이 상한에 맞춰 분할 전송할 때, 이 건에 못 담은 항목은 다음 배치로 남겨야 한다.
 // 그건 실패가 아니라서 재시도 예산을 소모해선 안 된다 —— 획득 시 attempts가 낙관적으로 +1 되었으니,
 // 여기서 반드시 되돌려야 한다. 안 그러면 500건 적체가 단락당 20건으로 25단락으로 쪼개져,
 // 꼬리 항목이 3번째 단락에서 MaxNotifyAttempts로 failed 판정되는데, 그들은 아무 오류도 낸 적이 없다.
