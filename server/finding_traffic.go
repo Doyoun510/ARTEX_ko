@@ -366,7 +366,7 @@ func (s *Server) getFindingTrafficBody(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) toolGetFindingTraffic() actool.CoreTool {
-	return roTool("get_finding_traffic", "취약점에 이미 바인딩된 실제 트래픽 증거를 읽으며, 캡처 스위치에 의존하지 않는다. finding_id는 report_finding JSON이 반환한 독립 취약점 기록 ID를 쓴다(첫 줄의 탐색 노드 ID 아님). 먼저 binding_id 없이 목록과 version을 가져온다; 빈 목록은 정상이며, TCP 등 비 HTTP 취약점이거나 미수집일 때도 문자/명령 증거로 보고서를 쓸 수 있고 바인딩을 강제하지 않는다. 바인딩이 있으면 binding_id·side(request/response)·offset으로 본문을 분할해 읽는다. 보고서를 쓸 때는 읽은 version을 evidence_version으로 update_finding_report에 전달하며, 그 finding_id는 여전히 탐색 노드 ID를 쓴다.",
+	return roTool("get_finding_traffic", "취약점에 이미 바인딩된 실제 트래픽 증거를 읽으며, 캡처 스위치에 의존하지 않는다. finding_id는 report_finding JSON이 반환한 독립 취약점 기록 ID를 쓴다(첫 줄의 탐색 노드 ID 아님). 먼저 binding_id 없이 목록과 version을 가져온다; 빈 목록은 정상이며, TCP 등 비 HTTP 취약점이거나 미수집일 때도 텍스트/명령 증거로 보고서를 쓸 수 있고 바인딩을 강제하지 않는다. 바인딩이 있으면 binding_id·side(request/response)·offset으로 본문을 분할해 읽는다. 보고서를 쓸 때는 읽은 version을 evidence_version으로 update_finding_report에 전달하며, 그 finding_id는 여전히 탐색 노드 ID를 쓴다.",
 		objSchema(map[string]any{"finding_id": strParam("독립 취약점 기록 ID"), "binding_id": strParam("목록의 바인딩 ID, 생략하면 목록 반환"), "side": strParam("request 또는 response, 기본 response"), "offset": map[string]any{"type": "integer"}, "length": map[string]any{"type": "integer"}}, "finding_id"),
 		func(ctx context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {

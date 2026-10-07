@@ -247,8 +247,8 @@ func (s *Server) toolSpawnTask() actool.CoreTool {
 			"parent_ref":             strParam("선택: 상위 작업 id(상·하위 연결)"),
 			"source_task_ids":        map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": fmt.Sprintf("선택: 읽기 전용 상속 출처 작업 id 목록(최대 %d개). 하위 작업은 이 작업들이 이미 밝혀낸 자산/결론을 읽기 전용으로 참조해 출발점으로 삼을 수 있다; parent_ref의 순수 상·하위 포인터와 달리, 이것은 내용 상속이다.", db.MaxTaskSourceCount)},
 			"llm_profile_id":         map[string]any{"type": "integer", "description": "선택: 이 하위 작업의 planner/worker가 쓸 LLM 설정 id 지정(list_llm_profiles 참고); 비우면 상위 작업을 상속하고, 다시 전역 활성 설정으로 폴백"},
-			"timeout_seconds":        map[string]any{"type": "integer", "description": "선택: 작업 레벨 타임아웃(초). 시점이 되면 우아한 마무리를 트리거하고 timeout 종료 상태에 진입; 비우거나 0 = 무제한"},
-			"plan_heartbeat_seconds": map[string]any{"type": "integer", "description": "선택: planner 하트비트 트리거 간격(초). 지난 계획 종료/작업 시작으로부터 이 값만큼 지나고 그 사이 트리거가 없으면 → 계획 한 라운드 트리거(데드락 폴백 + 진행 중인 worker 감독을 위한 깨움). 비우거나 0 = 기본 600(10min);"},
+			"timeout_seconds":        map[string]any{"type": "integer", "description": "선택: 작업 레벨 타임아웃(초). 시점이 되면 정상적인 마무리를 트리거하고 timeout 종료 상태에 진입; 비우거나 0 = 무제한"},
+			"plan_heartbeat_seconds": map[string]any{"type": "integer", "description": "선택: planner heartbeat 트리거 간격(초). 지난 계획 종료/작업 시작으로부터 이 값만큼 지나고 그 사이 트리거가 없으면 → 계획 한 라운드 트리거(데드락 폴백 + 진행 중인 worker 감독을 위한 깨움). 비우거나 0 = 기본 600(10min);"},
 			"seed_first_intent":      map[string]any{"type": "boolean", "description": "선택: 간단한 작업에는 켤 수 있음, 생성 시 시드 의도 하나를 바로 내려(내용=설명+목표) worker가 첫 라운드 planner를 안 기다리고 바로 테스트를 시작; 기본 false(표준인 선계획 후실행)."},
 		}, "description", "goal"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
@@ -364,7 +364,7 @@ func (s *Server) toolListTaskFindings() actool.CoreTool {
 }
 
 func (s *Server) toolAddHint() actool.CoreTool {
-	return wrTool("add_task_hint", "지정한 작업에 전략 힌트를 주입한다(그 작업의 planner가 다음 라운드에 의도를 생성할 때 읽는다).\n"+
+	return wrTool("add_task_hint", "지정한 작업에 전략 힌트를 추가한다(그 작업의 planner가 다음 라운드에 의도를 생성할 때 읽는다).\n"+
 		"★배치 우선: 여러 힌트를 hints 배열에 넣어 한 번에 제출(ids 배열 반환, hints와 같은 길이·같은 순서, 실패 항목 id=0); 단건이면 hints를 생략하고 최상위 text에 바로 준다.",
 		objSchema(map[string]any{
 			"task_id":      strParam("작업 id"),

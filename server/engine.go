@@ -559,7 +559,7 @@ const defaultEmptyTurnNudges = 2
 // 의 SEThinkingDelta), 그래서 thinking-only는 빈 것으로 치지 않는다. 게다가 그 겹은 prompt 전체를 그대로 재전송하는데,
 // 이렇게 컨텍스트 형태로 결정되는 공회전에는 재전송이 모델에게 한 번 더 생각하게 할 뿐이다. 여기서는 지시 하나를 덧붙이는 것으로 바꿔, 모델이
 // 이미 만들어 둔 사고를 가지고 이어가게 한다, 입력이 바뀌어야 다른 행동을 낼 이유가 생긴다.
-const emptyTurnNudge = "[공회전 알림] 당신은 지난 라운드에 사고 과정만 출력했고, 본문 답변도 내놓지 않았으며, 어떤 도구도 호출하지 않았다, " +
+const emptyTurnNudge = "[진행 없음 알림] 당신은 지난 라운드에 사고 과정만 출력했고, 본문 답변도 내놓지 않았으며, 어떤 도구도 호출하지 않았다, " +
 	"이번 라운드는 산출이 없는 것과 같다. 방금 생각해 둔 다음 단계를 바로 실행하라: 도구를 호출하거나, 결론 텍스트를 내놓아라. 사고를 반복하지 마라."
 
 // isThinkingOnlyTurn reports whether the latest assistant turn produced neither
