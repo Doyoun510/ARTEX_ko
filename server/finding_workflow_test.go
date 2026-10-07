@@ -10,6 +10,7 @@ import (
 
 	"github.com/Autumn-27/artex/agent"
 	"github.com/Autumn-27/artex/db"
+	"github.com/Autumn-27/artex/traffic"
 	actool "github.com/Autumn-27/norma/tool"
 )
 
@@ -259,6 +260,97 @@ func TestFindingWorkflowMigrationPreservesUserConfiguration(t *testing.T) {
 	search, _ = pg.GetTool("traffic_search")
 	if contains(search.Agents, "reporter") {
 		t.Fatal("one-time migration undid later unbinding")
+	}
+}
+
+func TestFindingWorkflowHostSearchDescriptionMigration(t *testing.T) {
+	s, _, _ := trafficEvidenceServer(t)
+	pg := s.m.pg
+	const hostSearchDescriptionFlag = "finding_workflow_tools_v3_host_search_description"
+	const reporterFlag = "finding_workflow_tools_v2_reporter"
+	// bf425ef의 직접 부모 42e1deb에서 확보한 독립 fixture. SQL 비교 계약이므로 원문을 보존합니다.
+	const historicalDescription = "查询记录代理已抓取的目标流量（必须指定 host，可再按 URL 子串或正文关键词过滤）。body_contains 会在已抓取的请求/响应头与正文中做全文搜索，支持任意子串和中文（至少 3 个字符），可用来找响应里的密码、密钥、报错、内网地址等。仅返回极轻量索引(id/method/url/status/resp_len)，不含任何响应内容。默认只返回 3 条、每页最多 10 条；结果多时用 page 翻页（page=0 起）；要看某条的请求/响应原文用 traffic_get(id)。回看已访问资源、找端点先用它，避免重复 curl 同一 URL。"
+	const customDescription = "USER CUSTOM traffic_search DESCRIPTION\n사용자가 편집한 호스트·응답 본문 안내"
+	customSchema := json.RawMessage(`{"type":"object","properties":{"host":{"type":"string","description":"USER HOST DESCRIPTION"}},"required":["host"]}`)
+	customBindings := json.RawMessage(`["custom-agent"]`)
+
+	// 두 사례는 순차 실행하며 각 사례가 변경한 행과 플래그를 다음 사례 전에 복원합니다.
+	for _, tc := range []struct {
+		name        string
+		description string
+		want        string
+	}{
+		{"역사 기본 설명 교체", historicalDescription, traffic.TrafficSearchDescription},
+		{"사용자 편집 설명 보존", customDescription, customDescription},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			old, err := pg.GetTool("traffic_search")
+			if err != nil || old == nil || !old.System {
+				t.Fatalf("system traffic_search 행이 없습니다: %v", err)
+			}
+			t.Cleanup(func() {
+				bindings, err := json.Marshal(old.Agents)
+				if err != nil {
+					t.Errorf("기존 바인딩 직렬화: %v", err)
+					return
+				}
+				if err := pg.UpdateTool(old.Key, old.Description, old.Schema, bindings, old.Enabled); err != nil {
+					t.Errorf("기존 traffic_search 행 복원: %v", err)
+				}
+			})
+			for _, flag := range []string{hostSearchDescriptionFlag, reporterFlag} {
+				value, exists, err := pg.GetSetting(flag)
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Cleanup(func() {
+					if exists {
+						if err := pg.SetSetting(flag, value); err != nil {
+							t.Errorf("기존 플래그 %s 복원: %v", flag, err)
+						}
+					} else if _, err := pg.Exec(`DELETE FROM settings WHERE key=$1`, flag); err != nil {
+						t.Errorf("추가한 플래그 %s 삭제: %v", flag, err)
+					}
+				})
+			}
+			if err := pg.UpdateTool("traffic_search", tc.description, customSchema, customBindings, false); err != nil {
+				t.Fatal(err)
+			}
+			prepared, err := pg.GetTool("traffic_search")
+			if err != nil || prepared == nil || !prepared.System || prepared.Description != tc.description || prepared.Enabled || len(prepared.Agents) != 1 || prepared.Agents[0] != "custom-agent" {
+				t.Fatalf("traffic_search fixture 준비 실패: row=%+v error=%v", prepared, err)
+			}
+			// v3 설명 교체만 검사하며, 별도의 v2 스키마/바인딩 마이그레이션은 격리합니다.
+			if err := pg.SetSetting(reporterFlag, "true"); err != nil {
+				t.Fatal(err)
+			}
+			if err := pg.SetSetting(hostSearchDescriptionFlag, "false"); err != nil {
+				t.Fatal(err)
+			}
+			if value, exists, err := pg.GetSetting(hostSearchDescriptionFlag); err != nil || !exists || value != "false" {
+				t.Fatalf("설명 마이그레이션 미완료 조건 준비 실패: value=%q exists=%v error=%v", value, exists, err)
+			}
+
+			s.seedFindingWorkflowTools()
+
+			after, err := pg.GetTool("traffic_search")
+			if err != nil || after == nil {
+				t.Fatal("seed 이후 traffic_search 조회 실패", err)
+			}
+			if after.Description != tc.want {
+				t.Fatalf("설명 불일치: got=%q want=%q", after.Description, tc.want)
+			}
+			if !after.System || string(after.Schema) != string(prepared.Schema) || after.Enabled != prepared.Enabled || len(after.Agents) != 1 || after.Agents[0] != "custom-agent" {
+				t.Fatalf("설명 마이그레이션이 사용자 스키마/바인딩/활성 설정을 변경했습니다: %+v", after)
+			}
+			// 사용자 설명이 매칭되지 않아도 SQL 자체가 성공하면 현재 구현은 완료로 기록합니다.
+			if value, exists, err := pg.GetSetting(hostSearchDescriptionFlag); err != nil || !exists || value != "true" {
+				t.Fatalf("설명 마이그레이션 완료 플래그 불일치: value=%q exists=%v error=%v", value, exists, err)
+			}
+			if value, exists, err := pg.GetSetting(reporterFlag); err != nil || !exists || value != "true" {
+				t.Fatalf("격리한 reporter 플래그가 변경됐습니다: value=%q exists=%v error=%v", value, exists, err)
+			}
+		})
 	}
 }
 
