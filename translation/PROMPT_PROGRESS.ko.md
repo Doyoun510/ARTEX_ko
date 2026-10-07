@@ -819,3 +819,42 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **연결·정적 검토**: 설정은 heartbeatMin→heartbeatSec→api.createTask(planHeartbeatSeconds)→plan_heartbeat_seconds 경로이며 UI 표시/개발자 주석만 수정했다. overview 제목은 엔진 상태/실행 중 Worker/최근 활동을 보여 주는 CardTitle이며 저장·파싱 키가 아니다. 지정 표현의 비교/파싱·테스트 직접 의존은 검색에서 발견하지 못했고 테스트 기대값 변경은 필요하지 않은 것으로 확인했다. web/ 내 같은 한글 용어 검색에서 지정 여섯 곳 외 추가 후보는 발견하지 못했다.
 - **보존·후속**: 두 파일의 줄 수·LF·JSX 구조·들여쓰기·개행과 지정 표현 밖 바이트·코드·키/값·조건·숫자·포맷을 보존했다. 기존 TRANSLATION_PROMPT 변경·미추적 파일·Git index와 감사 이력을 보존한다. M016 실제 DB의 한국어 legacy/완료 플래그 상태 및 역사 설명/사용자 편집 설명 회귀 테스트 후보, 기존 정책·기능·호환성 후속은 그대로 유지한다. 과거 프런트 미수정 기록은 이력이며 이번 승인 범위만 해소했다.
 - **산출물·실행**: /tmp/artex-frontend-heartbeat-approved.diff는 프런트 소스 두 파일과 PROMPT_PROGRESS만 포함한다. 로컬 감사 frontend-heartbeat-review.md·frontend-heartbeat-findings.tsv는 Git 제외 translation/audit/에만 작성한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### traffic/ 모델 안내 의미 감사 [확정 본문 전체 정적 대조 완료 / M022 용어 후보·M023 예시 추가 확인 / 실행 미검증]
+- **기준·소유·범위**: HEAD 989d1f060cb1eb60d9cc252a96894c8f1ddf9fbc에서 직전 프런트 용어 승인 보완 989d1f0 반영 확인. staged·MERGE_HEAD·대상 기존 변경 없음. 최신 기준 문서와 로컬 감사 이력을 적용했다. 사용자 지정 traffic/은 GUIDE상 U13이며 U9는 sidequestion/으로 구분해 기록한다. 추적10개(운영3/테스트7)를 목록화하고 traffic_search/traffic_get/traffic_blob 세 도구의 설명/schema·결과 조립/자체 오류 및 evidence 오류를 포함한 모델용 자연어31개(traffic.go27/evidence.go4)를 끝까지 대조했다.
+- **원문·결과**: 번역 a314c95 직접 부모 a255c7672bc3ba0c6cb23f3adafc4e246915c0e1에서 대응 중국어 원문을 확보했다. 해당 번역 이후 별도 파일 기능 변경은 발견하지 못했다. 모델 안내의 필수/금지·조회 범위·3/10/page0·요청/응답 확인 뒤 증거 ID 바인딩·8192/offset/hex512 조건을 대조했다. M022는 TrafficSearchDescription의 기록 프록시→레코딩 프록시 확정 용어 후보다. M023은 body_contains schema의 内网测试 예시를 내부망 테스트로 바꾼 부분으로, 원문 예시 복원 후보와 보존 기준 추가 확인을 기록하며 실제 계약 불일치로 단정하지 않는다. 소스·용어집·테스트는 미수정이다.
+- **연결·보존·테스트**: HostTools→wireAgentAugment/ToolResolve/Options.Tools, SeedToolMetas→SeedTool/DB 재정의, ReadEvidence→evidence.prepare/Bind/Record 경로를 확인했다. 기검토 U5/U11 본문은 재감사하지 않았다. 요청/응답·blob 포인터/구간·host normalization·중국어 검색/UTF-8 fixture 관련 테스트를 읽고 직접 문자열 의존을 검색했으며 이번 후보의 기대값 변경 필요는 발견하지 못했다. 세 운영 파일의 원문/현재 줄 수 및 주석/리터럴 밖 텍스트가 동일하고 포맷/인수·키·enum·숫자·이스케이프를 대조했다. 실제 HTTP/외부 오류·중국어 검증 fixture·영어 형식 표식은 보존 대상이다.
+- **잔여·한계**: 확정31개 원문 미확보/미독 없음. 일반 로그/API 전용 오류·전체 개발자 주석·테스트 전체 의미·사용자 DB 본문·SDK/모델 동작과 전체 저장소 의미 전수 검증은 미대조/미확인이다. A/S96개·M001–M021 승인/발견 이력·M016 실제 DB/회귀 테스트 후보·M012/M013·A046–A049 및 다른 정책/기능/호환성 후속은 유지한다. 과거 팀원 PASS 기록을 이번 실행 결과로 사용하지 않는다.
+- **산출물·실행**: traffic-model-semantic-review.md·traffic-model-semantic-findings.tsv는 Git 제외 translation/audit/에 로컬로만 보관한다. 커밋용 /tmp/artex-traffic-model-semantic-progress.diff는 이번 PROGRESS 기록만 포함한다. 기존 로컬 변경·미추적 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### traffic/ 모델 안내 승인 보완 · M022·M023 [승인 수정·정적 대응 완료 / 실행 미검증]
+- **승인 범위**: traffic.go:134 TrafficSearchDescription의 “기록 프록시가 캡처한”→“레코딩 프록시가 캡처한”은 확정 용어 통일로, :2014 traffic_search body_contains schema의 마지막 예시 “내부망 테스트”→“内网测试”는 원문 검색 예시 복원으로 적용했다. M023을 고정 계약 불일치나 테스트 실패로 분류하지 않는다. server/finding_workflow.go의 역사 중국어 legacy 비교값과 SQL/플래그/마이그레이션 동작은 그대로다.
+- **정적 보존·테스트**: 현재 상수/Tools schema·문장 경계로 확인했고 정확히 두 표현만 변경했다. traffic.go는 2130/2130줄이며 LF·끝 개행·들여쓰기·지정 표현 밖 바이트·설명/다른 예시·조건·키·숫자·포맷을 보존했다. 관련 traffic/server/agent 테스트에서 두 표현·TrafficSearchDescription 의존을 재검색했다. traffic_store_test.go:122·140의 중국어 원문 본문/검색 fixture는 schema 설명에서 추출하는 값이 아니며 그대로 보존한다. finding_workflow_test.go:249의 호스트/포트 안내 부분 검사는 이번 변경과 무관하다. 직접 기대값 수정 필요는 발견하지 못했으며 입력·fixture·기대값·테스트는 미수정이다.
+- **기록·후속**: 로컬 traffic-model-semantic-review.md·traffic-model-semantic-findings.tsv는 수정 전 원문/번역/발견 근거를 이력으로 유지하고 승인 후 표현·분류·정적 대응 완료 상태를 별도 기록한다. A/S 96개·기존 M 이력·M016 실제 DB 상태/회귀 테스트 후보와 정책·기능·호환성 후속은 유지한다. 실제 DB/모델 동작·전체 저장소 의미 전수 대조는 미확인이다.
+- **산출물·실행**: /tmp/artex-traffic-model-approved.diff에는 traffic/traffic.go와 누적 PROMPT_PROGRESS 변경만 포함한다. 감사 MD/TSV는 Git 제외 translation/audit/에 로컬로만 보관한다. 기존 미커밋 PROGRESS·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### U15 스킬 본문 의미 감사 [확정 세 문서 전체 정적 대조 완료 / M024 용어 후보 / 실행 미검증]
+- **기준·범위**: HEAD 96439f9319f497d81cfd2cc3e4d33e60d5e275b5에서 M022·M023 승인 보완 커밋을 확인했다. staged·MERGE_HEAD·대상 기존 변경 없음. 최신 네 기준 문서와 로컬 감사 이력을 적용하고 api-recon/SKILL.md·reference.md와 scopesentry/SKILL.md의 번역 본문을 첫 줄부터 끝까지 원문과 대조했다. 현재 문서 전체는 425·500·367줄이다. Skill 등록/전달 및 reference 연결 경로를 읽기 전용으로 확인했다.
+- **원문·승인 변경**: 70d6125·19c3ceb·41efa3c·729e4f8의 직접 부모에서 각 번역 묶음의 원문을 확보했다. 앞 묶음 fragment·후속 확정 용어, cd23b6d의 절 참조/config 설명 정정, f412bf1의 frontmatter 종료선/name=scopesentry 정정은 승인 이력으로 구분했다. 확정 본문의 원문 미확보/미독 범위는 없다.
+- **결과·테스트**: M024는 scopesentry/SKILL.md:168 Mermaid의 子域名入库→서브도메인 저장을 자산 등록 문맥의 확정 표기 서브도메인 등록으로 맞추는 후보다. 원문 전체·현재 번역·근거·후보를 로컬 MD/TSV에 기록했고 소스는 미수정이다. 직접 테스트 기대값 의존은 검색/관련 테스트 읽기에서 발견하지 못했다. 나머지 대조 본문에서 새 의미·조건/지시 강도 오류를 발견하지 못했다. 명령·JSON/DSL·검색값·정규식·placeholder를 산문과 구분했고 fenced 블록/제목-fragment를 정적으로 대조했다. 실제 테스트/렌더 결과는 미확인이다.
+- **한계·후속·보존**: A048 로그인/세션 정책 충돌과 A049.2 depth/coverage stub/forward/L2 차이는 원문 문제로 유지하며 A049.1 NEGATIVE_RE DNT와 분리한다. 기존 A/S96개·M001–M023·M012/M013·M016 DB/회귀 테스트 후보·U7/U15 및 다른 후속 보류를 보존한다. 스크립트는 필요한 동작 근거만 읽었고 영어 playwright-cli는 재감사하지 않았다. 실제 SDK/DB/모델/외부 동작 및 전체 저장소 의미 전수 대조는 미확인이다.
+- **산출물·실행**: skills-semantic-review.md·skills-semantic-findings.tsv는 Git 제외 translation/audit/에 로컬로만 작성한다. 커밋용 /tmp/artex-skills-semantic-progress.diff에는 이번 PROGRESS 추가만 포함한다. 기존 TRANSLATION_PROMPT 변경·미추적 담당표/기타 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push·다음 묶음 진행 없음.
+
+
+### U15 ScopeSentry 확정 용어 승인 보완 · M024 [승인 수정·정적 대응 완료 / 실행 미검증]
+- **승인 범위**: scopesentry/SKILL.md:168의 Mermaid 라벨 서브도메인 저장→서브도메인 등록 한 곳만 수정했다. 자산 등록 문맥의 기존 확정 용어를 적용하며 용어집·코드·테스트는 수정하지 않았다.
+- **정적 보존**: 현재 3.3 흐름도의 C 노드로 위치를 확인했다. 367줄·LF·끝 개행·들여쓰기와 지정 표현 밖 바이트가 동일하다. 노드 ID C·화살표·배치·task==阶段1任务名 검색값·다른 라벨·frontmatter/name=scopesentry는 보존했다. 기존 감사에서 직접 테스트 기대값 의존은 발견하지 못했으며 테스트는 미수정·미실행이다.
+- **기록·후속**: 로컬 skills-semantic-review.md·skills-semantic-findings.tsv에는 원문·수정 전 번역·발견 근거를 유지하고 승인 후 표현과 정적 대응 완료 상태를 별도로 기록했다. 기존 A/S96개·M 이력 및 A046–A049·M012/M013·M016 등 정책·기능·호환성 후속은 유지한다. 실제 SDK/모델 동작·전체 저장소 의미 전수 검증은 미확인이다.
+- **산출물·실행**: 커밋용 /tmp/artex-skills-semantic-approved.diff에는 ScopeSentry SKILL.md와 누적 PROMPT_PROGRESS 변경만 포함한다. 감사 MD/TSV는 Git 제외 translation/audit/에만 로컬 보관한다. 기존 미커밋 PROGRESS·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존한다. 실행 검증은 사용자 요청으로 미실행이며 fetch·병합·stage·commit·push 없음.
+
+
+### 번역 작업 최종 종합 상태 [기록상 승인 번역 잔여 없음 / 원문·호환성 후속 유지 / 실행 미검증]
+- **기준·상태**: HEAD 1ef79f0870c738c341703157d67bc10ef22b2d2d의 M024 승인 보완 커밋 1ef79f0 반영과 ScopeSentry C 노드의 서브도메인 등록을 확인했다. 브랜치 work/ko-translation, staged·MERGE_HEAD 없음. fetch·병합하지 않았으며 원격 최신성/push 성공을 별도로 주장하지 않는다.
+- **단위·파일 근거**: 최신 기준 문서와 PROGRESS/로컬 감사 기록을 대조했다. 현재 GUIDE 명시/디렉터리 범위는 U1~U15 총 337개 파일이며 로컬 파일별 장부에 번역/정적 검토 보고·대상 없음·개별 근거 부족·의미 대조 범위를 구분했다. U11 테스트 및 U13 미명시 테스트의 전체 검토를 추정하지 않았다. U1 작업 라벨과 U2→U3 artifactSpec 기대값의 과거 이월은 후속 해소 기록을 따르되 다른 검토/실행까지 확대하지 않는다.
+- **A/S·M 현재 분류**: A001–A090/S001–S006 96개는 수정·정적 대응 77, DNT/원문 예시 보존 15, 원문 정책·기능·호환성 문제 4(A046–A049)로 유지한다. M001–M024는 승인 수정·정적 대응 22, 원문 설명 문제 2(M012/M013)다. 두 집계는 섞지 않는다. 승인 커밋의 HEAD 포함을 확인했으며 이 ID 범위의 기록상 확인된 미해결 번역·표기 수정 잔여는 0이다. 미발견 오류가 없다는 전수 보증은 아니다.
+- **의미 대조 범위·한계**: U1/U2 기본·연결 마무리/U7 세 상수, U3/U4 핵심·보조 안내, U5 231개 자연어/카탈로그 경로, U11 확정166개, U13 traffic31개, U15 번역 세 문서 본문 전체는 각 직접 부모 원문과 대조한 로컬 기록이 있다. 나머지 한국어 문장·전체 주석·테스트·DB 사용자 편집 본문·SDK 안내 및 전체 저장소 의미 전수 대조는 미완료/미확인으로 유지한다. 번역/검색/정적 검토를 본문 의미 전수 대조와 혼동하지 않는다.
+- **잔여 분리**: A048 로그인/세션 원문 정책·A049.2 depth/coverage 차이와 A049.1 정규식 DNT, A046 live 중국어 동사·A047 옛 블록/기존 커스텀 정책, M012/M013 설명 문제, M016 실제 DB legacy/flag 및 회귀 테스트 후보, A050.3 mock 범위와 기타 원문 설명 후속을 유지한다. A050 승인13곳/기록 fixture 보존·A052 고유명·A090 설명 수정과 기존 해소 항목은 과거 보류를 현재 잔여로 재집계하지 않는다. 이미 해소한 문서 참조/routes 설명·frontmatter/name·공유 기대값·프런트 용어는 이력으로 보존한다. 원문 문제 해결을 번역 완료의 임의 전제조건으로 지정하지 않는다.
+- **산출물·보존·실행**: final-translation-status.md·final-translation-file-status.tsv·final-translation-item-status.tsv는 Git 제외 translation/audit/에 로컬로만 작성한다. /tmp/artex-final-translation-status-progress.diff는 이번 PROGRESS 추가만 포함한다. 소스·용어집·테스트·기능 및 기존 로컬 변경·미추적 파일·Git index를 보존한다. 과거 팀원 PASS는 당시 이력이며 현재 보완의 실행 결과로 인용하지 않는다. 실행 검증은 사용자 요청으로 미실행이다. stage·commit·push·추가 감사 묶음 없음.

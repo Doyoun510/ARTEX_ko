@@ -165,7 +165,7 @@ Web 화면의 '서브도메인' 자산 페이지에서도 작업명으로 필터
 ```mermaid
 flowchart LR
   A[루트 도메인 목록] --> B[단계1: general + SubdomainScan]
-  B --> C[서브도메인 저장]
+  B --> C[서브도메인 등록]
   C --> D[단계2: subdomain + task==阶段1任务名]
   D --> E[포트/자산/취약점 등 모듈]
 ```
