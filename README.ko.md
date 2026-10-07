@@ -36,7 +36,10 @@ ARTEX의 비공식 한국어 번역·구조 분석 프로젝트입니다.
 
 아래는 [Autumn-27/ARTEX](https://github.com/Autumn-27/ARTEX)의 README를 한국어로 옮긴 내용입니다. 원본 코드의 로직·구조는 변경하지 않고 언어만 번역하며, 번역 대상에는 문서뿐 아니라 코드 파일 내 언어 표현도 포함됩니다. **상세 분석과 설계 검토는 별도 문서에서 확인할 수 있습니다.**
 
-> 📄 **[ARTEX 상세 분석 읽기](translation/ARTEX_ANALYSIS.ko.md)** — ARTEX 구조 스터디 가이드 (norma 라이브러리 분석은 [별도 문서](translation/NORMA_ANALYSIS.ko.md))
+> [!TIP]
+> ### 📄 [ARTEX 상세 분석 읽기 →](translation/ARTEX_ANALYSIS.ko.md)
+>
+> ARTEX의 구조와 핵심 아이디어(이중 그래프·planner/worker 루프·안전장치 등)를 처음부터 뜯어본 **스터디 가이드**입니다. 엔진 `norma` 분석은 [별도 문서](translation/NORMA_ANALYSIS.ko.md)에서 볼 수 있습니다.
 
 <!-- ═════════ 한국어판 추가 섹션 끝 / 이하 원문 ARTEX README의 한국어 번역 ═════════ -->
 
