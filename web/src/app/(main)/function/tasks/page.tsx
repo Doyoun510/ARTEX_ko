@@ -3084,7 +3084,7 @@ function CreateTaskSheet({
   const [llmProfileIDs, setLLMProfileIDs] = React.useState<string[]>([]);
   const [creating, setCreating] = React.useState(false);
   const [timeoutMin, setTimeoutMin] = React.useState(""); // 작업 수준 타임아웃(분); 빈 값/0 = 무제한
-  const [heartbeatMin, setHeartbeatMin] = React.useState("10"); // planner 하트비트(분); 기본 10, 하한 10(백엔드와 일치)
+  const [heartbeatMin, setHeartbeatMin] = React.useState("10"); // planner heartbeat(분); 기본 10, 하한 10(백엔드와 일치)
   const [seedFirstIntent, setSeedFirstIntent] = React.useState(false); // 생성 시 시드 의도 발행, worker가 첫 planner를 기다리지 않고 바로 실행; 기본 꺼짐, 표준의 선계획 후 실행
   const [coverageEnabled, setCoverageEnabled] = React.useState(true); // 자산 커버리지 기능; 기본 켜짐. 끔=커버리지 계산/표시 안 함·범위 누적 안 함·범위 관련 도구 숨김(company 연결은 영향 없음)
   const [interceptRules, setInterceptRules] = React.useState<AssetInterceptRuleInput[]>([]); // 작업 수준 자산 인터셉트 규칙(이 작업에만 적용, 전역 테이블에 들어가지 않음)
@@ -3330,12 +3330,12 @@ function CreateTaskSheet({
               <FieldDescription>목록 순서로 장애 조치; 첫 번째 항목이 현재 설정이며, 할당량 부족이 명확할 때만 다음 항목으로 전환합니다.</FieldDescription>
             </Field>
 
-            {/* 고급 파라미터는 기본 접힘: 타임아웃/하트비트/첫 의도, 펼칠 때만 공간 차지, 일반 경로는 깔끔하게 유지. */}
+            {/* 고급 파라미터는 기본 접힘: 타임아웃/heartbeat/첫 의도, 펼칠 때만 공간 차지, 일반 경로는 깔끔하게 유지. */}
             <Collapsible>
               <CollapsibleTrigger className="group flex w-full items-center gap-2 border-t pt-4 text-sm font-medium">
                 <ChevronRightIcon className="text-muted-foreground size-4 transition-transform group-data-[state=open]:rotate-90" />
                 고급 설정
-                <span className="text-muted-foreground ml-auto text-xs font-normal">타임아웃 · 하트비트 · 첫 의도</span>
+                <span className="text-muted-foreground ml-auto text-xs font-normal">타임아웃 · heartbeat · 첫 의도</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="grid gap-5 pt-5">
                 <div className="grid gap-2">
@@ -3350,11 +3350,11 @@ function CreateTaskSheet({
                     onChange={(e) => setTimeoutMin(e.target.value)}
                   />
                   <p className="text-muted-foreground text-xs">
-                    시간 도달 시 우아한 마무리를 트리거하고(각 agent 되쓰기 + planner 최종 판정), 작업이 timeout 종료 상태로 들어갑니다.
+                    시간 도달 시 정상적인 마무리를 트리거하고(각 agent 되쓰기 + planner 최종 판정), 작업이 timeout 종료 상태로 들어갑니다.
                   </p>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="heartbeat-min">planner 하트비트(분)</Label>
+                  <Label htmlFor="heartbeat-min">planner heartbeat(분)</Label>
                   <Input
                     id="heartbeat-min"
                     type="number"
