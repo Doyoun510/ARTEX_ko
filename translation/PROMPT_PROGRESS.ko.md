@@ -730,3 +730,20 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **A052**: docker-compose.bench.yml:1의 腾讯 TSec Benchmark는 원문 고유명 보존으로 분류한다. 공식 영문 표기는 미확인이며 임의 영문 이름을 만들지 않는다. 주석은 Compose 설정/계약에 쓰이지 않고 공식 영문 확인은 현재 기능·계약 유지의 필수 조건이 아니다. 원문 고유명 자체를 번역 누락으로 집계하지 않는다.
 - **감사 잔여·한계**: A090 설명 정정은 직전 커밋에 포함됐다. 전달 감사 원본 4개를 내용 변경 없이 translation/audit/에 보관하고 A001–A090·S001–S006의 ID·과거 위치·발견 근거를 복구했다. 원본으로 A048은 U15 로그인·실제 세션 정책 충돌임을 확인했다. A049는 depth/coverage 기능 차이를 주 미해결 상태로, NEGATIVE_RE 원문 보존을 별도 하위 DNT로 구분한다. U7(A046 live 중국어 동사, A047 공통 블록 중복/커스텀 본문)과 mock api-recon/실제 SKILL 범위 차이는 유지한다. 승인 A050 13곳 수정과 지정 기록의 원문 기록 예시 보존, A052 고유명 보존, A090 설명 수정 완료를 유지한다. 원본 근거 복구와 현재 소스 인용 재대조 범위는 별도로 기록하며 새 의미 전수 감사나 실행 검증으로 단정하지 않는다. 전체 한국어 문장 의미 전수 대조는 미완료다.
 - **보존·산출물·실행**: 저장소에서는 이번 미커밋 기록의 원본 확보·근거 연결 설명만 정정하고 translation/audit/에 원본 4개와 current-status.md·.tsv, remaining-issues.md를 보관했다. 소스·용어집·테스트·fixture·과거 커밋 기록·기존 TRANSLATION_PROMPT 변경·미추적 담당표/전달 파일·Git index는 보존했다. 이전 임시 산출물은 과거 이력으로 유지하며 지속 보관 결과는 translation/audit/를 기준으로 한다. 이번 전체 diff /tmp/artex-audit-recovery.diff. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 핵심 프롬프트 의미 감사 · U1/U2/U7 [지정 본문 전체 정적 대조 완료 / 의미 후보·용어 보완 잔여 / 실행 미검증]
+- **기준·상태**: HEAD `b5468a7839ada1f322b4f1e4ff7d219481f15135`의 직전 감사 문서 복구 커밋을 확인했다. work/ko-translation, staged·MERGE_HEAD 없음. 기준 문서 4종과 translation/audit 현재 기록을 적용했으며 fetch하지 않아 origin 최신성은 주장하지 않는다.
+- **실제 대상**: U1 autoDefaultTmpl·pentestDefaultTmpl·DefaultAssistantPrompt·ReporterDefaultPrompt·chatWorkDirSpec, U2 goalsDefaultTmpl·goalsScopeTail·plannerDefaultTmpl·constraintBlock, U7 JudgeContextBoundary·JudgeOutputContract·DefaultJudgePrompt 전체를 대조했다. 실제 소비 경로에 연결된 U3 정의의 artifactSpec·genericWrapUpDefault·plannerWrapUpDefault·plannerTaskTimeoutDefault도 읽기 전용으로 포함해 총 16개 본문/조립 단위다. U3/U4 worker/mainagent 전체 본문·동적 user 지시·도구 설명 전체·DB 사용자 정책은 포함하지 않았다.
+- **원문 기준**: U1은 7303d46, U2는 aa0edc0, 연결 마무리/산출물은 1b5e613, U7 세 상수는 cfef293·dac067a·141d36f 각각의 직접 부모에서 번역 직전 중국어 원문을 확보했다. 대상별 전체 SHA와 원문/현재 범위·전문을 보고서에 보관했다. 16개 모두 원문 확보·본문 끝까지 의미 대조를 했으며 대상 내부의 문자열/주석 밖 정적 구조·리터럴 개수·템플릿 변수 순서도 보조 대조했다. 실제 렌더/SDK 실행은 하지 않았다.
+- **새 발견**: M001–M007 7개를 별도 기록했다. 확정 용어 불일치 4개는 힌트 추가, 인젝션 포인트, 공격의 인젝션/권한 우회, 목표 달성 검증·정량적 확인 문맥이다. 의미 추가 확인 후보 3개는 Auto의 少空转 정도 표현, Reporter 接管의 대상 한정, planner 定论의 확정 한정 표현이다. 실제 모델 행동 변화나 정책 오류를 관측했다고 단정하지 않으며 소스는 수정하지 않았다.
+- **보존·기존 보류**: 승인된 中文→한국어 출력 지시, Reporter 작업 라벨 정정, 120자 지시와 별도 파서 2400바이트, U7 앵커/키/enum/예시·명령·원문 정책을 구분했다. A046–A049와 remaining-issues의 U7/U15 정책·호환성·기능 문제, 다른 단위의 기존 상태는 유지한다. 지정 본문 대조가 U1/U2 기존 테스트 보류나 U7 후속 보류 전체 해소를 뜻하지 않는다.
+- **한계·산출물·실행**: translation/audit/prompt-semantic-review.md 및 prompt-semantic-findings.tsv. 지정 본문 중 원문 미확보·미독 범위는 없지만 전체 저장소 한국어 의미 전수 대조는 미완료다. 실제 DB/모델 출력·테스트는 미확인이고 실행 검증은 **사용자 요청으로 미실행**이다. 소스·용어집·테스트·정책·DB·기존 감사 문서·TRANSLATION_PROMPT 변경·미추적 파일·Git index를 보존했다. fetch·병합·stage·commit·push·다음 작업 없음.
+
+
+### 핵심 프롬프트 의미 감사 승인 보완 · M001–M007 [승인 수정·정적 대응 완료 / 기존 정책·호환성 후속 유지 / 실행 미검증]
+- **대상·수정**: agent/promptcatalog.go의 autoDefaultTmpl 18·22행, pentestDefaultTmpl 38행, ReporterDefaultPrompt 95행과 agent/planner.go의 plannerDefaultTmpl 312·316·320·330행에서 사용자가 지정한 8개 표현만 수정했다. 少空转는 진행 없는 동작 줄이기, 힌트는 추가, 注入点은 인젝션 포인트, 接管 예시는 장악, 定论는 확정된 결론, 공격은 인젝션/권한 우회, 목표 달성은 정량적 확인/달성 검증 항목으로 적용했다.
+- **용어집**: 독립 接管 중복·충돌을 확인하고 Reporter 피해 예시처럼 대상을 특정하지 않은 문맥의 장악 1개만 [확정] 등록했다. 기존 계정·서브도메인·서버/도메인 장악 문맥과 다른 확정 항목은 유지했다.
+- **정적 검토·테스트**: 지정 문장/상수 경계로 적용했다. 소스 2개는 각각 4줄 변경이며 원본/현재 줄 수·LF·끝 개행·코드·영어·도구명·키·enum·숫자·템플릿 변수·포맷·인수·금지/조건과 지정 표현 밖 내용은 동일하다. 관련 테스트의 직접 전체/부분 문자열 및 상수명 의존을 확인했으며 기대값 변경 필요는 발견하지 못해 테스트를 수정하지 않았다. 테스트 통과나 실제 모델 동작을 확인한 것은 아니다.
+- **감사 이력·상태**: prompt-semantic-review.md와 prompt-semantic-findings.tsv에 원문·승인 전 번역·발견 근거를 이력으로 보존하고 승인 수정 후 번역/정적 대응 상태를 별도로 기록했다. current-status.md의 새 M 7개는 A/S 기존 96개 집계와 분리했다. A046–A049와 다른 정책·기능·호환성 문제 및 전체 저장소 의미 전수 대조 미완료는 유지한다.
+- **보존·산출물·실행**: 기존 미커밋 감사 내용·TRANSLATION_PROMPT 변경·미추적 담당표/전달 파일·기타 로컬 변경·Git index를 보존했다. 누적 전체 diff `/tmp/artex-prompt-semantic-approved.diff`. 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 작업 없음.

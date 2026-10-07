@@ -153,3 +153,20 @@ A049는 과거 status의 DNT 주 분류에서 원문 기능 문제 주 분류로
 기존 TRANSLATION_PROMPT 변경·미추적 담당표·기타 미추적 파일·전달 원본·Git index를 보존한다. 변경 허용은 translation/audit의 감사 문서와 PROGRESS 보완 11의 근거 복구 설명 정정뿐이다. 소스·용어집·테스트·fixture·DB·설정은 수정하지 않았다. staged 및 진행 중 병합은 없다. 과거 커밋된 PROGRESS 기록은 보존한다. 상세 잔여는 [remaining-issues.md](remaining-issues.md) 참조.
 
 최종 보존 확인: 작업 시작 해시 스냅샷의 기존 613개 파일/index 항목(PROGRESS 제외)은 모두 동일했다. audit-input의 4개 원본과 첨부 메타데이터도 동일하다. PROGRESS는 시작 상태 대비 731·732행의 설명 2줄만 정정했으며 HEAD에 커밋된 전체 바이트 접두부와 줄 수 732를 유지했다. 새 파일은 translation/audit의 7개 감사 문서뿐이다. staged diff는 비어 있고 MERGE_HEAD는 없다.
+
+
+## M001–M007 핵심 프롬프트 승인 보완 (A/S 집계와 별도)
+
+HEAD `b5468a7839ada1f322b4f1e4ff7d219481f15135` 이후의 현재 미커밋 작업이다. 최초 발견의 원문·수정 전 번역과 판단은 [prompt-semantic-review.md](prompt-semantic-review.md) 및 [prompt-semantic-findings.tsv](prompt-semantic-findings.tsv)에 이력으로 보존한다. 승인 표현의 소스 대응을 확인했다.
+
+| 별도 ID | 처리 | 현재 위치 |
+|---|---|---|
+| M001 | 승인 수정 완료 / 정적 대응 확인 | `agent/promptcatalog.go:22` |
+| M002 | 승인 수정 완료 / 정적 대응 확인 | `agent/promptcatalog.go:18` |
+| M003 | 승인 수정 완료 / 정적 대응 확인 | `agent/promptcatalog.go:38` |
+| M004 | 승인 수정 완료 / 정적 대응 확인 | `agent/promptcatalog.go:95` |
+| M005 | 승인 수정 완료 / 정적 대응 확인 | `agent/planner.go:312` |
+| M006 | 승인 수정 완료 / 정적 대응 확인 | `agent/planner.go:320` |
+| M007 | 승인 수정 완료 / 정적 대응 확인 | `agent/planner.go:316,330` |
+
+M은 7개 모두 승인 수정·정적 대응 완료이며 실행 미검증이다. M007은 316·330행 두 위치다. 기존 A/S 96개 집계(정적 대응 확인 77, 원문 보존 15, 정책·기능·호환성 문제 4)는 변경하지 않고 M과 합산하지 않는다. current-status.tsv의 기존 96개 행도 변경하지 않았다. A046–A049와 remaining-issues의 다른 후속 보류는 유지한다. 테스트 기대값 수정 필요는 확인한 범위에서 발견하지 못했다. 실제 DB/모델 동작·전체 저장소 의미 전수 대조는 미확인/미완료이고 실행 검증은 **사용자 요청으로 미실행**이다.
