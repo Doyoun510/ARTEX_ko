@@ -753,7 +753,7 @@ export default function FindingsPage() {
 
   const statCards = [
     { label: "발견 총수", value: stats.total, icon: BugIcon },
-    { label: "대기 중", value: stats.pending, tone: "text-amber-500", icon: ClockIcon },
+    { label: "처리 대기", value: stats.pending, tone: "text-amber-500", icon: ClockIcon },
     { label: "심각", value: stats.critical, tone: "text-rose-600", icon: ShieldAlertIcon },
     { label: "높음", value: stats.high, tone: "text-red-500", icon: TriangleAlertIcon },
     { label: "중간", value: stats.medium, tone: "text-amber-500", icon: TriangleAlertIcon },

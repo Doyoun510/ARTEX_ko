@@ -469,7 +469,7 @@ export interface TaskConstraint {
 // ---- Findings ----
 export type Severity = "critical" | "high" | "medium" | "low";
 
-// 취약점 처리 상태: 대기 중 / 처리 중 / 확인됨 / 처리됨 / 수정 완료 / 오탐 / 무시 / 중복 / 위험 수용.
+// 취약점 처리 상태: 처리 대기 / 처리 중 / 확인됨 / 처리됨 / 수정 완료 / 오탐 / 무시 / 중복 / 위험 수용.
 export type FindingStatus =
   | "pending"
   | "in_progress"

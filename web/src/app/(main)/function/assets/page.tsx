@@ -461,7 +461,7 @@ export default function AssetsPage() {
         <TabsContent value="ip" className="mt-0 flex min-h-0 flex-1 flex-col gap-2">
           {searchBox}
           <AssetCard
-            cols={["", "IP", "C 대역", "바인딩 도메인", "오픈 포트", ""]}
+            cols={["", "IP", "C 대역", "바인딩 도메인", "열린 포트", ""]}
             loaded={loaded}
             total={total}
             page={page}
@@ -590,7 +590,7 @@ export default function AssetsPage() {
         <TabsContent value="service" className="mt-0 flex min-h-0 flex-1 flex-col gap-2">
           {searchBox}
           <AssetCard
-            cols={["", "서비스", "도메인", "IP", "포트", "상태 코드", "제목", "지문", "인증", ""]}
+            cols={["", "서비스", "도메인", "IP", "포트", "상태 코드", "제목", "핑거프린트", "인증", ""]}
             loaded={loaded}
             total={total}
             page={page}
