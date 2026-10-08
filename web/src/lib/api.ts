@@ -849,7 +849,7 @@ export const api = {
     },
   ) => patch<{ id: number }>(`/notify/channels/${id}`, payload),
   notifyDeleteChannel: (id: number) => del<{ ok: boolean }>(`/notify/channels/${id}`),
-  // 테스트 메시지를 한 번 함께 발송한다; 실패 시 백엔드가 채널의 원본 오류를 돌려주어 설정을 점검할 수 있다.
+  // 테스트 메시지 한 건을 동기적으로 전송한다; 실패 시 백엔드가 채널의 원본 오류를 돌려주어 설정을 점검할 수 있다.
   notifyTestChannel: (id: number) => post<{ ok: boolean; latency_ms: number }>(`/notify/channels/${id}/test`),
   notifyDeliveries: (q: { channelId?: number; state?: string; page?: number; pageSize?: number } = {}) => {
     const p = new URLSearchParams();
@@ -968,7 +968,7 @@ export const api = {
     context_window_k?: number;
     thinking_type?: string; // ""(전송 안 함)|"disabled"|"enabled"
     reasoning_effort?: string; // ""(전송 안 함)|"low"|"medium"|"high"|"xhigh"|"max"
-    priority?: number; // 순환 순위, 클수록 먼저 사용
+    priority?: number; // 순환 전환 순위, 클수록 먼저 사용
     pool_exclude?: boolean; // true=장애 조치 대상으로 쓰지 않음
     streaming?: boolean; // true(기본)=스트리밍 | false=비스트리밍
     max_tokens?: number; // 단일 응답 출력 상한; 0=전송 안 함, 서버 기본값으로 결정
@@ -978,7 +978,7 @@ export const api = {
   }) => post<{ id: number }>("/llm/profiles", p),
   deleteLLMProfile: (id: string) => del<{ deleted: number }>(`/llm/profiles/${id}`),
   activateLLMProfile: (id: string) => post<{ ok: boolean }>("/llm/profiles/active", { id: Number(id) }),
-  // 순환 체인의 실제 순서 + 각 설정의 회로 차단 상태.
+  // 순환 전환 체인의 실제 순서 + 각 설정의 회로 차단 상태.
   llmPool: () => get<LLMPoolStatus>("/llm/pool"),
   // 회로 차단 해제, 다음 호출에서 즉시 해당 설정 재시도; id 미전달 = 전체 해제.
   resetLLMPool: (id?: string) => post<LLMPoolStatus>("/llm/pool/reset", { id: id ? Number(id) : 0 }),
@@ -1262,7 +1262,7 @@ export const api = {
     if (!r.ok) throw new Error(await r.text());
   },
 
-  // ---- intercept LLM judge (모델 대체 승인, 전역 설정) ----
+  // ---- intercept LLM judge (모델 보완 판정, 전역 설정) ----
   interceptGetJudgeConfig: () => get<JudgeConfig>("/intercept/judge"),
   interceptSetJudgeConfig: (cfg: JudgeConfig) => put<{ ok: boolean }>("/intercept/judge", cfg),
 

@@ -625,7 +625,7 @@ function mockBuildAssetTree(list: (typeof mockFindings)[number][]): MockAssetTre
     }
   }
 
-  // 회사 계층: 소속이 확인된 최상위 자산(루트 도메인 / IP / 앱)에만 보완하며, 소속이 없으면 자산 자체가 최상위입니다.
+  // 회사 계층: 귀속이 확인된 최상위 자산(루트 도메인 / IP / 앱)에만 보완하며, 귀속이 없으면 자산 자체가 최상위입니다.
   for (const node of [...nodes.values()]) {
     if (node.parent || !node.company_id) continue;
     if (!["root_domain", "ip", "app"].includes(node.kind)) continue;

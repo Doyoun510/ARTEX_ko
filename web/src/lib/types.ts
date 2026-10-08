@@ -931,10 +931,10 @@ export interface Settings {
   // 작업 동시 실행 상한: 동시 '실행 중' 작업 수 상한. 꺼짐=무제한; 켜면 새 작업이 상한 초과 시 대기, 빈자리 생기면 자동 시작.
   task_concurrency_enabled?: boolean; // 기본 false
   task_concurrency_limit?: number; // 켜면 기본 5
-  // LLM 순환(장애 조치). 기본 꺼짐; 켜면 '모델 미지정' agent가 현재 설정 사용 불가일 때
-  // (잔액 부족/key 만료/요청 제한/서비스 이상) 자동으로 다음 설정으로 전환.
+  // LLM 순환 전환(장애 조치). 기본 꺼짐; 켜면 '모델 미지정' agent가 현재 설정 사용 불가일 때
+  // (잔액 부족/key 무효/요청 제한/서비스 이상) 자동으로 다음 설정으로 전환.
   llm_pool_enabled?: boolean; // 기본 false
-  // 지정 설정을 바인딩한 agent/작업이 실패할 때 순환 체인으로도 폴백할지. 기본 false = 바인딩하면 독점.
+  // 지정 설정을 바인딩한 agent/작업이 실패할 때 순환 전환 체인을 사용해 대체 처리할지. 기본 false = 바인딩하면 독점.
   llm_pool_bind_fallback?: boolean;
   // 동작 제약 주입 범위(기본 모두 켜짐): 작업의 allow/deny 제약을 해당 agent의 시스템 프롬프트에 결합.
   constraints_inject_planner?: boolean;
@@ -1039,7 +1039,7 @@ export interface LLMProfile {
   // 사고 강도: ""=전송 안 함(기본) | "low"/"medium"/"high"/"xhigh"/"max"
   reasoning_effort?: string;
   is_default: boolean;
-  // 순환 순위: 클수록 먼저 선택됨. 활성 설정은 항상 체인 맨 앞이며 이 값과 무관.
+  // 순환 전환 순위: 클수록 먼저 선택됨. 활성 설정은 항상 체인 맨 앞이며 이 값과 무관.
   priority?: number;
   // true = 장애 조치 대상으로 쓰지 않음(여전히 agent/작업이 명시적으로 바인딩해 사용 가능).
   pool_exclude?: boolean;
@@ -1075,15 +1075,15 @@ export interface LLMRetryOverride {
 }
 
 // 전역 정책 = 위 3개 계층의 기본값 + 전역에만 있는 2개 계층:
-//   breaker 순환 회로 차단(attempts=연속 몇 회 순간 실패 시 차단, interval_ms=고정 재시도 대기 시간)
+//   breaker 순환 전환 회로 차단(attempts=연속 몇 회 순간 실패 시 차단, interval_ms=고정 재시도 대기 시간)
 //   intent  의도 재실행(worker가 model_error로 끝난 뒤 의도 전체 재실행)
 export interface LLMRetryPolicy extends LLMRetryOverride {
   breaker: LLMRetryRule;
   intent: LLMRetryRule;
 }
 
-// ---- LLM 순환(장애 조치) ----
-// 한 설정의 순환 체인 내 위치와 상태(health). state:
+// ---- LLM 순환 전환(장애 조치) ----
+// 한 설정의 순환 전환 체인 내 위치와 상태(health). state:
 //   ok       정상
 //   degraded 연속 실패 있으나 회로 차단 임계값 미달
 //   tripped  회로 차단됨, 재시도 대기 기간 동안 건너뜀(cooldown_secs는 남은 초)
@@ -1094,7 +1094,7 @@ export interface LLMPoolMember {
   format: string;
   priority: number;
   active: boolean; // 현재 활성 설정 여부(항상 체인 맨 앞)
-  excluded: boolean; // pool_exclude: 순환에 참여하지 않음
+  excluded: boolean; // pool_exclude: 순환 전환에 참여하지 않음
   state: "ok" | "degraded" | "tripped";
   fails: number;
   trips: number;
@@ -1321,13 +1321,13 @@ export interface InterceptPending {
   created_at: string;
 }
 
-// JudgeConfig: 모델 대체 승인(인터셉트 규칙이 하나도 매칭되지 않을 때만 모델이 판단)의 전역 설정.
+// JudgeConfig: 모델 보완 판정(인터셉트 규칙이 하나도 매칭되지 않을 때만 모델이 판단)의 전역 설정.
 export interface JudgeConfig {
   enabled: boolean;
   profile_id: number; // 0 = 활성/기본 설정 따름
   prompt: string; // 판정 프롬프트; GET 시 미설정이면 백엔드가 내장 템플릿 전문을 채워 넣음
   timeout_seconds: number; // 모델 호출 타임아웃
-  fail_action: "allow" | "ask" | "deny"; // 모델 오류/타임아웃/파싱 불가 시의 폴백
+  fail_action: "allow" | "ask" | "deny"; // 모델 오류/타임아웃/파싱 불가 시의 대체 처리
   ask_timeout_seconds: number; // 모델이 ask 판정해 수동 전환된 뒤의 승인 대기 타임아웃
   ask_timeout_action: "allow" | "deny"; // 승인 타임아웃 후의 기본 동작
 }
