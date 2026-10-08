@@ -24,7 +24,7 @@ func TestDeleteEndpointPathPattern(t *testing.T) {
 	}
 	for _, s := range hit {
 		if !re.MatchString(s) {
-			t.Errorf("적중해야 하는데 허용됨: %s", s)
+			t.Errorf("매칭되어야 하는데 허용됨: %s", s)
 		}
 	}
 

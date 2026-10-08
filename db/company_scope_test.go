@@ -60,7 +60,7 @@ func TestParseAutoScopeLine(t *testing.T) {
 		{name: "icp chinese", input: "沪网备案 9988", kind: "icp", normalized: "沪网备案9988"},
 		{name: "icp domain", input: "icp.example.com", kind: "domain", normalized: "icp.example.com"},
 		{name: "icp url query", input: "https://example.com/path?icp=1", kind: "domain", normalized: "example.com"},
-		// 备案 번호는 점을 포함하지 않음: 도메인/버전 번호가 섞인 설명 문구는 키워드로 분류, 안 그러면
+		// ICP 등록(备案) 번호는 점을 포함하지 않음: 도메인/버전 번호가 섞인 설명 문구는 키워드로 분류, 안 그러면
 		// 영원히 매칭되지 않는 죽은 ICP 규칙으로 저장된다.
 		{name: "icp with domain text", input: "备案 www.example.com", kind: "keyword", normalized: "备案 www.example.com"},
 		{name: "icp with version text", input: "某公司 ICP v1.0", kind: "keyword", normalized: "某公司 icp v1.0"},
