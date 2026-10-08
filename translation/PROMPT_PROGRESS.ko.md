@@ -893,3 +893,9 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **산출물·보존·실행**: 커밋용 `/tmp/artex-notification-semantic-approved.diff`에는 소스 네 파일과 이번 PROGRESS 추가만 포함한다. 상세 보고서는 로컬 `translation/audit/notification-semantic-approved-review.md`에 보관하며 감사 문서는 커밋 대상에 포함하지 않는다. 기존 TRANSLATION_PROMPT 변경·미추적 파일·다른 변경·Git index·제외 설정을 보존했다. 실행 검증은 **사용자 요청으로 미실행**이며 fetch·병합·stage·commit·push 없음.
 
 - **M027 표현 보완**: renderBatch 주석 한 줄을 사용자 승인 표현 `// 그 한 건 때문에 모아 보내기 메시지 전체가 누락되지 않게 한다.`로 정리했다. 이전 승인 변경과 코드·포맷·555줄·LF·Git index를 보존했다. 주석 변경이며 테스트/실행 검증은 사용자 요청으로 미실행이다. 커밋용 diff는 기존 소스 네 파일과 PROGRESS만 포함하고 로컬 감사 보고서는 제외한다.
+
+
+### M029·M030 · 설정 안내 의미 감사 승인 보완 [정적 대응 완료 / 실행 미검증]
+- **기준·수정**: HEAD 1220165의 직전 알림 용어 보완 커밋, work/ko-translation 및 staged·MERGE_HEAD 부재를 확인했다. server/intercept.go의 지정 주석은 전역 모델 보완 판정으로, server/server_mgmt.go의 지정 로그는 메모리 상태를 사용해 배리어 복원으로 정리했다. 두 표현만 수정했으며 551/2232줄·LF·지정 표현 밖 바이트·%s/%v·taskID/getErr·조건과 코드를 보존했다.
+- **직접 의존**: 지정 표현의 직접 테스트 기대값 의존은 검색에서 발견하지 못했다. TestAbortTaskDeleteUsesPersistedPauseAndQueueState는 일시중지/대기 상태 복원을 검사하며 로그 문자열은 검사하지 않는다. 테스트는 수정하거나 실행하지 않았다.
+- **이력·한계·보존**: 로컬 감사 MD/TSV의 원문·수정 전 근거를 유지하고 승인 후 상태를 별도로 기록했으며 커버리지 장부는 해당 두 범위만 갱신했다. M031은 원문 설명 문제로 유지하고 UI·검증 코드·용어집은 변경하지 않았다. 기존 A/S 집계·M 이력·정책/기능/호환성 후속, 기존 로컬 변경·미추적 파일·Git index·제외 설정을 보존했다. 감사 문서는 Git 제외 translation/audit/에만 보관한다. 커밋용 /tmp/artex-settings-semantic-approved.diff에는 소스 두 파일과 이번 기록만 포함한다. 실행 검증은 **사용자 요청으로 미실행**이며 fetch·병합·stage·commit·push 없음.

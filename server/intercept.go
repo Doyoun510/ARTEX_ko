@@ -403,7 +403,7 @@ func (s *Server) interceptSetToolConfig(w http.ResponseWriter, r *http.Request) 
 	writeJSON(w, 200, map[string]any{"ok": true})
 }
 
-// --- LLM fallback judge config (전역 모델 폴백) ---
+// --- LLM fallback judge config (전역 모델 보완 판정) ---
 
 // interceptGetJudgeConfig returns the resolved judge configuration. Prompt is the
 // effective prompt (built-in template when unset), so the UI can prefill it.

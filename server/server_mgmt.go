@@ -119,7 +119,7 @@ func (s *Server) abortTaskDelete(taskID string) {
 			state := task.lifecycleSnapshot()
 			keepPaused = state.Paused || state.Queued
 			if getErr != nil {
-				log.Printf("[task-delete] task %s 영속 상태 읽기 실패, 메모리 상태로 복구 배리어 사용: %v", taskID, getErr)
+				log.Printf("[task-delete] task %s 영속 상태 읽기 실패, 메모리 상태를 사용해 배리어 복원: %v", taskID, getErr)
 			}
 		} else if getErr == nil {
 			// The request targeted a task that does not exist. Do not retain a
