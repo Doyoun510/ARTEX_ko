@@ -25,7 +25,7 @@ func jsonResult(v any) (actool.Result, error) {
 }
 
 // 이 파일은 P2 '크로스 작업 오케스트레이션 도구 집합'(docs/跑分编排 §2 P2)을 구현한다. 이들은 host 도구다 —— Manager
-// (임의 작업의 Store)·Engine(일시정지)·작업 생성 흐름에 접근해야 하므로, server 레이어에 둔다.
+// (임의 작업의 Store)·Engine(일시 중지)·작업 생성 흐름에 접근해야 하므로, server 레이어에 둔다.
 // 읽기류 도구는 '기존 per-task 도구'를 대상 작업의 store 위에서 돌도록 리다이렉트한다(임시 ToolSet를
 // 만들어 해당 도구를 Call), 이로써 완전히 동일한 로직을 재사용한다; 제어류(spawn/pause)는 Manager/Engine을 직접 호출.
 // 이들은 트래픽 도구처럼 tools 테이블에 seed되고, agent별로 바인딩된다(오케스트레이션 agent에만 바인딩해 보임).
@@ -497,7 +497,7 @@ func (s *Server) seedOrchestrationTools() {
 	s.unbindGoalMetDefault()
 	s.reseedGoalsPrompt()             // goals 프롬프트에 '동작 제약 추출' 단계 추가 → 구 DB에 새 기본값 한 버전 추가(일회성)
 	s.reseedMainAgentPrompt()         // mainagent 프롬프트에 '목표 달성 후 add_intent 시 목표 등록 여부 되물음' 추가(일회성)
-	s.reseedPlannerPrompt()           // planner 프롬프트: '0 의도' 정당 사유 재작성 + 정량 검수 점검 추가(일회성)
+	s.reseedPlannerPrompt()           // planner 프롬프트: '0 의도' 정당 사유 재작성 + 목표 달성의 정량적 확인 추가(일회성)
 	s.reseedWorkerPrompt()            // worker 프롬프트: 부정 결론 증거 기준 추가(일회성)
 	s.seedReporterAgent()             // '보고서 작성' agent + 도구 바인딩 + finding 트리거 사전 배치(일회성)
 	s.upgradeReporterTriggerMessage() // 구 DB 보강 마이그레이션: reporter가 evidence_version을 되돌려 전달하게 함(일회성)
@@ -890,7 +890,7 @@ func (s *Server) seedWorkerReadbackRebind() {
 	if err := s.m.pg.AddAgentToToolBinding("worker", []string{
 		"search_all_worker_traces", "get_worker_trace", "node_detail",
 	}); err != nil {
-		log.Printf("[worker] 회람/상세 도구 보강 바인딩 실패: %v", err)
+		log.Printf("[worker] 이전 기록 조회/상세 도구 보강 바인딩 실패: %v", err)
 		return // 오류면 flag를 기록하지 않음, 다음 시작 때 재시도
 	}
 	_ = s.m.pg.SetSetting(flag, "true")

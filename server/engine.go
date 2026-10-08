@@ -67,7 +67,7 @@ func preview(s string, n int) string {
 // model_error(provider/API 장애: LLM 레이어 일시 재시도 소진, 또는 스트림 시작 후 도중 끊김)
 // 이렇게 마무리된 work는 '시도했으나 못 끝냄'도 진짜 실패도 아닌, 외부 지터다. 기본적으로 영구
 // blocked으로 두면 의도 하나를 헛되이 잃으므로, 여기서 그 종료 상태에 대해 몇 번 더 재실행하고, 매번 사이에 백오프를 두어
-// provider가 회복할 시간을 준다; 재시도 중 일시정지/종료/취소되면 즉시 해당 분기 처리에 양보한다.
+// provider가 회복할 시간을 준다; 재시도 중 일시 중지/종료/취소되면 즉시 해당 분기 처리에 양보한다.
 const (
 	modelErrorRetries      = 2               // model_error 마무리 후 추가 재시도 횟수
 	modelErrorRetryBackoff = 3 * time.Second // 매 재시도 전 백오프
@@ -439,7 +439,7 @@ func (e *Engine) ControlWork(ctx context.Context, intentID int64, action string)
 	}
 	if run.action != "" {
 		e.workMu.Unlock()
-		return fmt.Errorf("%w: 의도 %d가 %s 작업을 실행 중입니다", errWorkControlConflict, intentID, run.action)
+		return fmt.Errorf("%w: 의도 %d: %s 동작을 실행 중입니다", errWorkControlConflict, intentID, run.action)
 	}
 	run.action = action
 	done := run.done
@@ -527,37 +527,37 @@ func (e *Engine) drainSteer(intentID int64) (string, bool) {
 // before each tool call it drains a queued course-correction (if any) and blocks the
 // call, handing the message back to the model — which re-plans its next step instead
 // of running the tool. No queued message → the guard behaves exactly as before.
-// 동시에 '공회전 라운드'의 이어 실행도 담당한다, Stop 참고.
+// 동시에 '무진행 턴'의 이어 실행도 담당한다, Stop 참고.
 type steerHooks struct {
 	inner harness.HookRunner
 	drain func() (string, bool)
-	// nudges는 이 의도에 이미 주입한 공회전 이어 실행 횟수, 상한 limit. 포인터: harness가 가진 것은
+	// nudges는 이 의도에 이미 주입한 진행 없음 시 이어 실행 횟수, 상한 limit. 포인터: harness가 가진 것은
 	// steerHooks의 값 복사본이라, 카운트는 반드시 같은 것을 공유해야 한다.
 	nudges *atomic.Int64
-	// limit은 공회전 이어 실행 횟수 상한으로, Engine.emptyTurnNudgeLimit()가 '빈 응답 재시도
+	// limit은 진행 없음 시 이어 실행 횟수 상한으로, Engine.emptyTurnNudgeLimit()가 '빈 응답 재시도
 	// 횟수'에서 해석한다. <=0 = 개입 안 함(사용자가 이 겹을 명시적으로 끔).
 	limit int
 	// label은 "worker-1 · #42" 형태로, 로그에만 쓴다.
 	label string
 }
 
-// 공회전 라운드(사고만, 본문도 도구 호출도 없음) 이어 실행 횟수의 기본값으로, SDK 빈 응답 재시도의
+// 무진행 턴(사고만, 본문도 도구 호출도 없음) 이어 실행 횟수의 기본값으로, SDK 빈 응답 재시도의
 // 내장 기본값(norma/llm/openai.go의 emptyResponseRetries)과 일치한다 —— 두 겹이 같은
 // 노브를 공유하므로, 미설정 시 동작도 맞춰야 한다. 해석은 Engine.emptyTurnNudgeLimit 참고.
 //
 // 주의: 이 수는 '한 의도의 총량'이지 '연속 몇 번'이 아니다: harness 자체의 stopHookActive가
-// 연속 공회전을 한 번만 밀도록 이미 제한했다 —— 민 그 라운드가 또 공회전이면 Stop 훅은 다시 호출되지 않고 run이 바로
+// 연속으로 진행이 없는 경우를 한 번만 밀도록 이미 제한했다 —— 민 그 라운드가 또 진행이 없으면 Stop 훅은 다시 호출되지 않고 run이 바로
 // 마무리된다; 실제로 도구 라운드가 한 번 일어나야만 쿼터가 갱신된다(norma/harness/query.go:534). 그래서 이
-// 게이트가 막는 것은 '도구 → 공회전 → 밀기 → 도구 → 공회전' 같은 병리적 루프이며, 의도 예산을 소진시키지 않게 한다.
+// 게이트가 막는 것은 '도구 → 진행 없음 → 밀기 → 도구 → 진행 없음' 같은 병리적 루프이며, 의도 예산을 소진시키지 않게 한다.
 const defaultEmptyTurnNudges = 2
 
-// emptyTurnNudge는 공회전 라운드에 주입하는 이어 실행 지시다.
+// emptyTurnNudge는 무진행 턴에 주입하는 이어 실행 지시다.
 //
 // 이런 라운드는 harness 입장에서 자연스러운 종료(stop_reason=end_turn이고 tool_use 없음)라, 다섯 겹
 // LLM 재시도가 하나도 적용되지 않는다 —— 오류가 아니라 모델이 '다 생각했지만 손대지 않은' 것이다. SDK의 빈 응답 재시도도
 // 닿지 못한다: '이벤트를 yield한 적 있는지'로 빈 것을 판단하는데, 사고 증분 자체가 이벤트다(norma/llm/openai.go
 // 의 SEThinkingDelta), 그래서 thinking-only는 빈 것으로 치지 않는다. 게다가 그 겹은 prompt 전체를 그대로 재전송하는데,
-// 이렇게 컨텍스트 형태로 결정되는 공회전에는 재전송이 모델에게 한 번 더 생각하게 할 뿐이다. 여기서는 지시 하나를 덧붙이는 것으로 바꿔, 모델이
+// 이렇게 컨텍스트 형태로 결정되는 진행이 없는 상황에는 재전송이 모델에게 한 번 더 생각하게 할 뿐이다. 여기서는 지시 하나를 덧붙이는 것으로 바꿔, 모델이
 // 이미 만들어 둔 사고를 가지고 이어가게 한다, 입력이 바뀌어야 다른 행동을 낼 이유가 생긴다.
 const emptyTurnNudge = "[진행 없음 알림] 당신은 지난 라운드에 사고 과정만 출력했고, 본문 답변도 내놓지 않았으며, 어떤 도구도 호출하지 않았다, " +
 	"이번 라운드는 산출이 없는 것과 같다. 방금 생각해 둔 다음 단계를 바로 실행하라: 도구를 호출하거나, 결론 텍스트를 내놓아라. 사고를 반복하지 마라."
@@ -592,7 +592,7 @@ func (h steerHooks) PostToolUse(ctx context.Context, name string, input, result 
 	}
 }
 
-// Stop은 guard의 기존 의미 위에 '공회전 라운드' 이어 실행을 한 겹 덧댄다: 모델이 사고만 출력하고 본문도
+// Stop은 guard의 기존 의미 위에 '무진행 턴' 이어 실행을 한 겹 덧댄다: 모델이 사고만 출력하고 본문도
 // 도구도 호출하지 않으면, harness가 자연 종료로 보고 빈 summary로 마무리한다(query.go의
 // ReasonCompleted + asst.Text()), 아직 끝나지 않은 의도 하나가 그렇게 도중에 끊긴다. 이때
 // 이어 실행 지시 하나를 주입해, 모델이 기존 사고를 가지고 계속 가게 한다.
@@ -612,10 +612,10 @@ func (h steerHooks) Stop(ctx context.Context, messages []llm.Message) (bool, []s
 	}
 	n := h.nudges.Add(1)
 	if n > int64(h.limit) {
-		log.Printf("[work %s] 공회전 라운드(사고만, 본문·도구 없음)가 이어 실행 상한 %d 도달, 마무리 허용", h.label, h.limit)
+		log.Printf("[work %s] 무진행 턴(사고만, 본문·도구 없음)이 이어 실행 상한 %d 도달, 마무리 허용", h.label, h.limit)
 		return prevent, blocking, msg
 	}
-	log.Printf("[work %s] 공회전 라운드(사고만, 본문·도구 없음), 이어 실행 지시 주입 (%d/%d)", h.label, n, h.limit)
+	log.Printf("[work %s] 무진행 턴(사고만, 본문·도구 없음), 이어 실행 지시 주입 (%d/%d)", h.label, n, h.limit)
 	return false, []string{emptyTurnNudge}, ""
 }
 
@@ -768,7 +768,7 @@ func (e *Engine) Run(ctx context.Context, t *Task) {
 	e.startDeadlineCoordinator(ctx, t) // 작업 레벨 타임아웃 타이머(timeout>0만; 중복 제거)
 	// '활동 의도가 전혀 없음(open+running)'일 때만 첫 라운드 계획을 kick한다. 시드 의도가 있는 작업: 시드가 이미
 	// open이거나, 위에서 막 시작한 worker가 먼저 claim해 running이 됨 —— 둘 다 '할 일 있음'으로 치고, 일률적으로
-	// 첫 라운드 planner를 건너뛴다, worker가 바로 시드 의도를 받아 시작하고, 끝나면 NotifyDone/하트비트가 planner를 깨운다.
+	// 첫 라운드 planner를 건너뛴다, worker가 바로 시드 의도를 받아 시작하고, 끝나면 NotifyDone/heartbeat가 planner를 깨운다.
 	// ⚠️ Frontier(open만 셈)는 쓸 수 없다: worker 수령(open→running)과 이 검사 사이에 경쟁이 있어 잘못 kick할 수 있다.
 	// 재시작 자동 복구 시에도 running 의도만 남을 수 있어, 마찬가지로 건너뛴다.
 	if has, _ := t.Store.HasActiveIntent(); !has {
@@ -776,7 +776,7 @@ func (e *Engine) Run(ctx context.Context, t *Task) {
 	}
 }
 
-// plannerHeartbeatInterval은 작업의 planner 하트비트 간격을 해석한다. db.CreateTask가 이미 정규화
+// plannerHeartbeatInterval은 작업의 planner heartbeat 간격을 해석한다. db.CreateTask가 이미 정규화
 // (600 미만은 일률적으로 600으로 올림); 여기서 한 번 더 폴백을 두어 메모리 상태 이상값을 방지한다.
 func plannerHeartbeatInterval(t *Task) time.Duration {
 	sec := t.PlanHeartbeatSeconds
@@ -799,9 +799,9 @@ func resetPlannerTimer(timer *time.Timer, d time.Duration) {
 
 func (e *Engine) plannerLoop(ctx context.Context, t *Task) {
 	interval := plannerHeartbeatInterval(t)
-	// 하트비트 타이머를 loop 입구에서 무장 = 작업 start부터 계시: 첫 라운드 planner를 건너뛴 seed 작업이라도
-	// (Run에서 frontier가 비어 있지 않으면 첫 라운드를 kick하지 않음), 여기서 계속 블록되어도 하트비트는 '작업 start + interval'에
-	// 첫 라운드 계획을 트리거한다. 이후 매 깨움(에지/하트비트)마다 재무장 = 지난 임의 계획 트리거로부터의 시간.
+	// heartbeat 타이머를 loop 입구에서 무장 = 작업 start부터 계시: 첫 라운드 planner를 건너뛴 seed 작업이라도
+	// (Run에서 frontier가 비어 있지 않으면 첫 라운드를 kick하지 않음), 여기서 계속 블록되어도 heartbeat는 '작업 start + interval'에
+	// 첫 라운드 계획을 트리거한다. 이후 매 깨움(에지/heartbeat)마다 재무장 = 지난 임의 계획 트리거로부터의 시간.
 	heartbeat := time.NewTimer(interval)
 	defer heartbeat.Stop()
 
@@ -908,7 +908,7 @@ func (e *Engine) plannerLoop(ctx context.Context, t *Task) {
 			// 주기 폴백: 데드락 폴백 + 진행 중 worker 감독을 위한 깨움(steer/kill) + 주기 재점검.
 			runRound("heartbeat")
 		}
-		// 매 깨움(에지 또는 하트비트) 후 하트비트 재무장: 임의 계획 트리거가 이 유휴 계시를 다시 계산한다.
+		// 매 깨움(에지 또는 heartbeat) 후 heartbeat 재무장: 임의 계획 트리거가 이 유휴 계시를 다시 계산한다.
 		resetPlannerTimer(heartbeat, interval)
 	}
 }
@@ -1004,7 +1004,7 @@ func (e *Engine) runIntent(ctx context.Context, t *Task, name string, worker *ag
 	}
 	label := fmt.Sprintf("%s · #%d", name, iid)
 	workCtx = intercept.WithTaskContext(workCtx, t.ID, label, taskEmit)
-	// nudges는 의도적으로 model_error 재실행 루프 바깥에 둔다: 공회전 이어 실행의 상한은 '이 의도'의 총량이고,
+	// nudges는 의도적으로 model_error 재실행 루프 바깥에 둔다: 진행 없음 시 이어 실행의 상한은 '이 의도'의 총량이고,
 	// 한 라운드 재실행이 쿼터를 0으로 리셋해 다시 시작해서는 안 된다.
 	hooks := steerHooks{
 		inner:  t.Guard.Hooks(),
@@ -1025,8 +1025,8 @@ func (e *Engine) runIntent(ctx context.Context, t *Task, name string, worker *ag
 	}
 	e.EndLLMCall(t.ID)
 	// model_error 마무리 → 몇 번 더 재실행(백오프 후 재시도). 의도가 여전히 이 work에 속하고, 작업이
-	// 일시정지/종료/취소되지 않음[그리고 마무리에 진입하지 않음]일 때만 재시도한다; 아니면 해당 분기 처리에 양보한다(마무리 기간엔
-	// 재시도하지 않아, 백오프가 다른 worker의 우아한 마무리 윈도우를 잠식하지 않게 한다).
+	// 일시 중지/종료/취소되지 않음[그리고 마무리에 진입하지 않음]일 때만 재시도한다; 아니면 해당 분기 처리에 양보한다(마무리 기간엔
+	// 재시도하지 않아, 백오프가 다른 worker의 정상적인 마무리 윈도우를 잠식하지 않게 한다).
 	maxRetries, retryBackoff := e.modelErrorRetryPolicy()
 	for attempt := 1; attempt <= maxRetries &&
 		retryableWorkerModelError(reason, err) &&
@@ -1034,7 +1034,7 @@ func (e *Engine) runIntent(ctx context.Context, t *Task, name string, worker *ag
 		log.Printf("[worker %s] task %s 의도 #%d model_error 마무리, %v 후 재시도 (%d/%d)",
 			name, t.ID, intent.ID, retryBackoff, attempt, maxRetries)
 		if sleepCtx(workCtx, retryBackoff) {
-			break // 백오프 중 취소됨(종료/일시정지) → 아래 분기 처리에 맡김
+			break // 백오프 중 취소됨(종료/일시 중지) → 아래 분기 처리에 맡김
 		}
 		e.BeginLLMCall(t.ID)
 		if hasChatMessage {
@@ -1068,10 +1068,10 @@ func (e *Engine) runIntent(ctx context.Context, t *Task, name string, worker *ag
 	if action == "pause" {
 		controlErr = transitionIntentState(t.Store, intent.ID, "running", "paused")
 		if controlErr != nil {
-			log.Printf("[worker %s] task %s 의도 #%d 일시정지 상태 DB 기록 실패: %v", name, t.ID, intent.ID, controlErr)
+			log.Printf("[worker %s] task %s 의도 #%d 일시 중지 상태 DB 기록 실패: %v", name, t.ID, intent.ID, controlErr)
 			return true
 		}
-		log.Printf("[worker %s] task %s 의도 #%d 일시정지됨", name, t.ID, intent.ID)
+		log.Printf("[worker %s] task %s 의도 #%d 일시 중지됨", name, t.ID, intent.ID)
 		e.touch(t.ID)
 		return true
 	}
@@ -1093,7 +1093,7 @@ func (e *Engine) runIntent(ctx context.Context, t *Task, name string, worker *ag
 	// conversation from its transcript instead of restarting from scratch.
 	if ectx.Err() != nil && taskExecutionPaused(context.Cause(ectx)) {
 		if err := transitionIntentState(t.Store, intent.ID, "running", "open"); err != nil {
-			log.Printf("[worker %s] task %s 의도 #%d 작업 일시정지 롤백 실패: %v", name, t.ID, intent.ID, err)
+			log.Printf("[worker %s] task %s 의도 #%d 작업 일시 중지 롤백 실패: %v", name, t.ID, intent.ID, err)
 		}
 		return true
 	}

@@ -186,7 +186,7 @@ type TaskNodeDTO struct {
 	TS           string `json:"ts"`
 	SourceTaskID string `json:"source_task_id,omitempty"`
 	Inherited    bool   `json:"inherited,omitempty"`
-	DeleteReason string `json:"delete_reason,omitempty"` // 의도 가짜 삭제(state='deleted') 시의 삭제 사유
+	DeleteReason string `json:"delete_reason,omitempty"` // 의도 논리 삭제(state='deleted') 시의 삭제 사유
 }
 
 func taskNodeDTO(n *db.Node) TaskNodeDTO {
@@ -599,7 +599,7 @@ type LLMProfileDTO struct {
 	ThinkingType    string  `json:"thinking_type"`
 	ReasoningEffort string  `json:"reasoning_effort"`
 	IsDefault       bool    `json:"is_default"`
-	// 폴링(failover) 파라미터: priority가 클수록 먼저 선택됨(활성 설정은 항상 체인 맨 앞);
+	// 순환 전환(failover) 파라미터: priority가 클수록 먼저 선택됨(활성 설정은 항상 체인 맨 앞);
 	// pool_exclude=true면 failover 대상이 되지 않지만, 여전히 agent/작업이 명시적으로 바인딩할 수 있다.
 	Priority    int  `json:"priority"`
 	PoolExclude bool `json:"pool_exclude"`
@@ -611,7 +611,7 @@ type LLMProfileDTO struct {
 	MaxTokens      int    `json:"max_tokens"`
 	MaxTokensField string `json:"max_tokens_field"`
 	// 커스텀 세션 헤더 이름: 비어 있지 않으면 매 요청에 이 HTTP 헤더를 실으며, 헤더 값=현재 세션/의도의 session id.
-	// ''=보내지 않음. session-id 헤더로 프롬프트 캐시/스티키 라우팅을 하는 게이트웨이용.
+	// ''=보내지 않음. session-id 헤더로 프롬프트 캐시/고정 라우팅을 하는 게이트웨이용.
 	SessionHeaderKey string `json:"session_header_key"`
 	// 이 설정의 재시도 재정의(연결 수립/빈 응답/같은 provider 안전 구간). 각 항목 attempts:
 	// 0=전역 정책 상속 | -1=이 겹 재시도 끔 | >0=횟수; interval_ms: 0=기본 지수 백오프 사용 |

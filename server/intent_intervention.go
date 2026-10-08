@@ -85,7 +85,7 @@ func (s *Server) sendWorkerMessage(w http.ResponseWriter, r *http.Request) {
 	lifecycle := t.lifecycleSnapshot()
 	switch {
 	case lifecycle.Paused || s.engine.IsPaused(t.ID):
-		writeErr(w, http.StatusConflict, "작업이 일시정지되었습니다. 먼저 작업을 재개한 뒤 Worker에 메시지를 보내세요")
+		writeErr(w, http.StatusConflict, "작업이 일시 중지되었습니다. 먼저 작업을 재개한 뒤 Worker에 메시지를 보내세요")
 		return
 	case lifecycle.Queued:
 		writeErr(w, http.StatusConflict, "대기열의 작업은 Worker에 메시지를 보낼 수 없습니다")
@@ -116,7 +116,7 @@ func (s *Server) sendWorkerMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if node.State != "paused" {
-		writeErr(w, http.StatusConflict, "일시정지된 Worker에만 메시지를 보낼 수 있습니다. 먼저 일시정지하세요")
+		writeErr(w, http.StatusConflict, "일시 중지된 Worker에만 메시지를 보낼 수 있습니다. 먼저 일시 중지하세요")
 		return
 	}
 	agentMessage, ok := s.prepareChatMentionMessage(w, message)

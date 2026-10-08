@@ -56,7 +56,7 @@ type Task struct {
 	Status             string  `json:"status"` // persisted lifecycle status (done/failed/timeout은 종료 상태; 비거나 그 외는 운행 상태에서 추론)
 	// 작업 레벨 타임아웃(docs/任务级超时与收尾设计.md 참고). DeadlineAt/FirstRunAt은 unix 초, 0=미설정/미실행.
 	TimeoutSeconds       int                    `json:"timeout_seconds"`
-	PlanHeartbeatSeconds int                    `json:"plan_heartbeat_seconds"` // planner 하트비트 트리거 간격(초)
+	PlanHeartbeatSeconds int                    `json:"plan_heartbeat_seconds"` // planner heartbeat 트리거 간격(초)
 	CoverageEnabled      bool                   `json:"coverage_enabled"`       // 자산 커버리지 기능 스위치(생성 시 결정, 기본 켜짐)
 	FirstRunAt           int64                  `json:"first_run_at,omitempty"`
 	DeadlineAt           int64                  `json:"deadline_at,omitempty"`
@@ -262,10 +262,10 @@ const (
 	settingGlobalProxy = "global_proxy"
 	settingWorkers     = "workers"
 	settingLLMRecord   = "llm_record"
-	// LLM 폴링(failover). 기본 꺼짐 —— 켜면 '전역 활성 설정'을 타는 agent가 현재 설정이
+	// LLM 순환 전환(failover). 기본 꺼짐 —— 켜면 '전역 활성 설정'을 타는 agent가 현재 설정이
 	// 불가(잔액 부족/key 실효/레이트 리밋/서비스 이상)할 때 자동으로 다음 설정으로 전환.
-	// settingLLMPoolBindFallback은 폴링이 켜졌을 때만 의미 있음: 기본 꺼짐, 즉 agent/작업이 명시적으로
-	// 어떤 설정을 바인딩하면 그것만 쓰고 실패 즉 실패; 켜면 바인딩한 설정이 실패해도 폴링 체인으로 폴백.
+	// settingLLMPoolBindFallback은 순환 전환이 켜졌을 때만 의미 있음: 기본 꺼짐, 즉 agent/작업이 명시적으로
+	// 어떤 설정을 바인딩하면 그것만 쓰고 실패 즉 실패; 켜면 바인딩한 설정이 실패해도 순환 전환 체인으로 폴백.
 	settingLLMPoolOn           = "llm_pool_enabled"
 	settingLLMPoolBindFallback = "llm_pool_bind_fallback"
 	// 작업 동시 실행 상한: 스위치 + 상한 수. 기본 꺼짐; 켜면 기본 상한 5(defaultConcurrencyLimit 참고).
@@ -505,7 +505,7 @@ func (m *Manager) SetNoaCompaction(on bool) error {
 	return m.pg.SetBool(settingNoaCompaction, on)
 }
 
-// LLMPoolEnabled reports whether LLM failover ("폴링") is on (기본 꺼짐;
+// LLMPoolEnabled reports whether LLM failover ("순환 전환") is on (기본 꺼짐;
 // settings.llm_pool_enabled). Read when the provider chain is built (applyLLM),
 // so a change requires a rebuild — putSettings does that.
 func (m *Manager) LLMPoolEnabled() bool {

@@ -11,7 +11,7 @@ import (
 
 // 개요의 '목표 관리' 수동 CRUD 인터페이스. agent 측 set_goals 도구와 같은 goal 노드 묶음에 쓰지만,
 // 입구는 사람이 UI에서 직접 추가·삭제·수정하는 것이다; 추가/수정 후에는 '작업 되살리기' 로직을 재사용한다(admitTask resume:
-// 종료 상태→running·일시정지 해제·필요 시 큐 대기), 삭제는 되살리지 않는다(제품 결정에 따라). 각 변경 handler는
+// 종료 상태→running·일시 중지 해제·필요 시 큐 대기), 삭제는 되살리지 않는다(제품 결정에 따라). 각 변경 handler는
 // beginTaskOperation/decInflight를 거쳐, 작업 삭제와의 경쟁 상태를 피한다(의도 CRUD와 동일).
 
 // listGoals는 본 작업의 모든 목표를 반환한다(text/vulnclass/state로 분해), 목표 관리 카드 렌더링용.
@@ -69,7 +69,7 @@ func (s *Server) addGoal(w http.ResponseWriter, r *http.Request) {
 		_ = t.Store.Link(of, db.RelSpawns, id) // goal descends from the task root (origin fact)
 	}
 	t.NotifyGoal([]string{text}) // '사람이 목표를 추가함: …' 트리거를 기록하고 planner를 깨움
-	s.reviveTask(t)              // 완료/일시정지된 작업을 실행 상태로 되돌려 계속 실행
+	s.reviveTask(t)              // 완료/일시 중지된 작업을 실행 상태로 되돌려 계속 실행
 	node, _ := t.Store.GetNode(id)
 	if node == nil {
 		writeErr(w, 500, "목표 저장 후 읽기 실패")

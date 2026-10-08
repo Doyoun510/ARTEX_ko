@@ -133,7 +133,7 @@ func (s *Server) admitTaskWhen(t *Task, mode string, requirePaused bool) (queued
 			return false, fmt.Errorf("종료 상태 작업은 재개할 수 없습니다")
 		}
 		if !lifecycle.Paused {
-			return false, fmt.Errorf("일시정지된 작업만 재개할 수 있습니다")
+			return false, fmt.Errorf("일시 중지된 작업만 재개할 수 있습니다")
 		}
 		mode = s.resumeAdmissionMode(t)
 	}
@@ -347,7 +347,7 @@ func (s *Server) reconcileConcurrency() {
 }
 
 // reviveTask는 멈춰 있던 작업을 다시 돌린다: 종료 상태(done/failed/timeout)를 running으로 되돌리고,
-// 일시정지를 해제하며, 엔진 루프를 (재)시작 + 깨운다. 이미 running이고 일시정지가 아닌 작업: Run 안의 한 번의
+// 일시 중지를 해제하며, 엔진 루프를 (재)시작 + 깨운다. 이미 running이고 일시 중지가 아닌 작업: Run 안의 한 번의
 // Notify만 남아 거의 부작용이 없다. '메인 agent set_goals 목표 추가'와 'blocked 의도 재실행' 두 곳에 쓴다.
 //
 // 왜 명시적 되살리기가 필요한가: planner/worker 루프의 종료 상태 게이트(engine.go)가 일반 notify를 삼켜버린다 —— 그래프만

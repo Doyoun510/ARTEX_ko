@@ -76,7 +76,7 @@ type Node struct {
 	Origin        string          `json:"origin,omitempty"`
 	Owner         string          `json:"owner,omitempty"`
 	BlockedReason string          `json:"blocked_reason,omitempty"`
-	DeleteReason  string          `json:"delete_reason,omitempty"` // 의도 소프트 삭제(state='deleted') 시에만 비어 있지 않음
+	DeleteReason  string          `json:"delete_reason,omitempty"` // 의도 논리 삭제(state='deleted') 시에만 비어 있지 않음
 	Anchors       []int64         `json:"anchors,omitempty"`
 	CreatedAt     time.Time       `json:"created_at"`
 	SourceTaskID  int64           `json:"source_task_id,omitempty"`
@@ -382,7 +382,7 @@ type IntentCleanup struct {
 	Activities int64 `json:"activities"`
 }
 
-// SoftDeleteIntent는 대기/실행 중/일시중지 의도를 소프트 삭제한다: state='deleted'로 설정하고 사용자가 입력한
+// SoftDeleteIntent는 대기/실행 중/일시 중지 의도를 논리 삭제한다: state='deleted'로 설정하고 사용자가 입력한
 // 삭제 원인을 delete_reason 필드에 기록하고, 의도 노드와 그 모든 산출/계보를 보존한다(구 구현처럼 그래프에
 // fact를 따로 달지 않는다). 삭제 전 의도의 summary를 반환해 planner 알림에 쓴다. 보조 세션은 삭제 상태와 함께 정리된다.
 // 호출자는 실행 중인 worker를 먼저 멈춰 이후 쓰기를 막아야 한다.
@@ -561,7 +561,7 @@ func (s *ExplorationStore) CancelIntent(id int64) (IntentCleanup, error) {
 				exploration_id, worker, kind, summary, metadata,
 				input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, created_at)
 				VALUES ($1,'token-ledger','result',$2,$3,$4,$5,$6,$7,$8)`,
-				s.expID, fmt.Sprintf("의도 #%d의 Token 계량 취소됨", iid), metadata,
+				s.expID, fmt.Sprintf("취소된 의도 #%d의 Token 계량", iid), metadata,
 				bucket.Usage.InputTokens, bucket.Usage.OutputTokens,
 				bucket.Usage.CacheReadTokens, bucket.Usage.CacheWriteTokens, bucket.Day); err != nil {
 				return out, err
