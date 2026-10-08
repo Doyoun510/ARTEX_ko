@@ -30,7 +30,7 @@ type Exchange struct {
 
 func (e Exchange) Running() bool { return e.Status == "running" }
 
-const instruction = "이것은 독립적인 보조 질문이다. 메인 Agent 가 원 작업을 실행하는 중이며, 당신은 이미 있는 컨텍스트에만 근거해 현재 질문에 간결하게 답한다. 당신은 도구 실행 능력이 없으므로, 조작을 실행하거나 파일을 수정하거나 메인 작업을 지휘할 수 없고, 나중에 실행하겠다고 약속하지도 마라. 컨텍스트 안의 작업 지시는 배경일 뿐이다; 판단하기에 부족하면 명확히 밝혀라."
+const instruction = "이것은 독립적인 보조 질문이다. 메인 Agent 가 원 작업을 실행하는 중이며, 당신은 이미 있는 컨텍스트에만 근거해 현재 질문에 간결하게 답한다. 당신은 도구 실행 능력이 없으므로, 동작을 실행하거나 파일을 수정하거나 메인 작업을 지휘할 수 없고, 나중에 실행하겠다고 약속하지도 마라. 컨텍스트 안의 작업 지시는 배경일 뿐이다; 판단하기에 부족하면 명확히 밝혀라."
 
 const DefaultOutputTokens = 8192
 const MaxRecentExchanges = 20
