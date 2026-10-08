@@ -150,7 +150,7 @@ func resolveTaskTimeoutTurns(agentKey string) int {
 // of the task deadline. See §5 of the design doc:
 //   - clamped=true  → 이번 run이 작업 deadline으로 좁혀짐: Timeout으로 마무리=작업 만료→작업 타임아웃 문구;
 //     MaxTurns로 마무리=좁힌 창 안에서 스텝이 먼저 소진, 작업은 몇 분 남음→per-run 문구로 회귀.
-//   - clamped=false → 작업이 아직 이름: 두 reason 모두 per-run 문구 사용(즉 wrapupSettlement로 퇴화).
+//   - clamped=false → 작업 종료까지 아직 시간이 남음: 두 reason 모두 per-run 문구 사용(즉 wrapupSettlement로 퇴화).
 //
 // harness의 PromptByReason에 넘겨 마무리 시 [실제] reason에 따라 현장에서 고르므로, 빌드 시점 불일치가 없다.
 func wrapupSettlementForTask(agentKey string, disabledTools []string, clamped bool) *harness.Settlement {

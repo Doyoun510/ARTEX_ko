@@ -2039,7 +2039,7 @@ func (t *ToolSet) PlannerTools() []actool.CoreTool {
 		t.killWorkTool(), t.steerWorkTool(),
 		// report_finding: 계획 수립 중 현황 분석·판단 시 자신이 이미 취약점을 확증했다면 직접 등록할 수 있다(worker와 같은 도구).
 		t.addFinding(),
-		// list_companies: 회사 목록 + scope + 자산 수 조회(company_id 확보 / 소속 범위 파악).
+		// list_companies: 회사 목록 + scope + 자산 수 조회(company_id 확보 / 귀속 범위 파악).
 		t.listCompanies(),
 		// list_assets: 계획 수립 시 DSL로 전체 자산 저장소를 검색한다(list_untested_assets의 "범위 내 미테스트" 관점과 함께,
 		// "도메인/핑거프린트/포트/상태 코드 등 조건으로 전체 저장소에서 조회"하는 능력을 보완한다).

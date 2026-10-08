@@ -118,7 +118,7 @@ func (m *MainAgent) Chat(ctx context.Context, taskID int64, mainSeg int, as *db.
 	tsx.SetTaskID(taskID)
 	tsx.SetCoverageEnabled(as == nil || as.CoverageEnabled(taskID))
 	tsx.SetNotify(notify)         // 범용 깨우기(전용 콜백이 없는 쓰기 작업은 이것을 사용, debounced)
-	tsx.SetResumeTask(resume)     // set_goals 목표 추가 → 완료/일시정지된 작업을 running 으로 되돌린다
+	tsx.SetResumeTask(resume)     // set_goals 목표 추가 → 완료/일시 중지된 작업을 running 으로 되돌린다
 	tsx.SetNotifyGoal(notifyGoal) // set_goals 목표 추가 → planner 에 '사람이 목표를 추가함: …' 트리거 하나를 기록
 	tsx.SetNotifyHint(notifyHint) // add_hint 힌트 추가 → planner 에 '사람이 전략 힌트 N개를 추가함: …' 트리거 하나를 기록
 	tsx.steerWork = m.steerWork   // enable steer_work tool (nil = unavailable)
@@ -140,7 +140,7 @@ func (m *MainAgent) Chat(ctx context.Context, taskID int64, mainSeg int, as *db.
 		DeferredTools:   def.Deferred,
 		UnlockSet:       def.Unlock,
 		PermissionMode:  permission.ModeBypass,
-		EnableWebFetch:  true, // 기록 프록시를 거쳐 흔적을 남긴다; 프록시 CA를 로드해 MITM이 재서명한 HTTPS 인증서를 검증
+		EnableWebFetch:  true, // 레코딩 프록시를 거쳐 흔적을 남긴다; 프록시 CA를 로드해 MITM이 재서명한 HTTPS 인증서를 검증
 		WebFetchProxy:   m.proxyAddr,
 		WebFetchCACert:  m.proxyCACert,
 		// 인터넷 검색(선택). ddgs 는 key 불필요; brave-free 는 BraveKey 필요; tavily 는 TavilyKey 필요.
