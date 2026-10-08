@@ -183,7 +183,7 @@ func TestPrepareConfigUpdateBlocksDestinationSwap(t *testing.T) {
 			}
 			var target *ErrDestinationChangedWithoutCredentials
 			if !errors.As(err, &target) {
-				t.Fatalf("API가 동작 가능한 안내를 제공하도록 전용 오류 타입을 반환해야 합니다. 실제: %T: %v", err, err)
+				t.Fatalf("API가 사용자가 필요한 조치를 취할 수 있도록 안내하기 위해 전용 오류 타입을 반환해야 합니다. 실제: %T: %v", err, err)
 			}
 			found := false
 			for _, m := range target.Missing {

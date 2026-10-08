@@ -200,7 +200,7 @@ func TestFanOutRoutesEventsByFilter(t *testing.T) {
 	}
 }
 
-// TestFanOutMarksEventsWithNoMatchingChannel은 '이벤트가 어떤 채널에도 적중하지 않은' 경우를 다룬다.
+// TestFanOutMarksEventsWithNoMatchingChannel은 '이벤트가 어떤 채널에도 매칭되지 않은' 경우를 다룬다.
 // 이런 이벤트도 똑같이 분배 완료로 표시되어야 한다, 안 그러면 영원히 분배 대기 집합에 남아 매 tick 재스캔된다.
 func TestFanOutMarksEventsWithNoMatchingChannel(t *testing.T) {
 	d := notifyTestDB(t)
@@ -221,7 +221,7 @@ func TestFanOutMarksEventsWithNoMatchingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !fanned {
-		t.Fatal("채널에 적중하지 않은 이벤트도 분배 완료로 표시되어야 함, 안 그러면 무한 재스캔됨")
+		t.Fatal("채널에 매칭되지 않은 이벤트도 분배 완료로 표시되어야 함, 안 그러면 무한 재스캔됨")
 	}
 }
 
@@ -368,13 +368,13 @@ func TestDigestBatchDueAndStableBatchID(t *testing.T) {
 
 	batch, err := d.ClaimDigestBatch(ctx, ch.ID, MaxDigestBatchSize, time.Minute)
 	if err != nil {
-		t.Fatalf("요약 배치 획득 실패: %v", err)
+		t.Fatalf("모아 보내기 배치 획득 실패: %v", err)
 	}
 	if len(batch) != 3 {
-		t.Fatalf("요약은 한 번에 3건 전부 가져가야 함, 얻음 %d건", len(batch))
+		t.Fatalf("모아 보내기는 한 번에 3건 전부 가져가야 함, 얻음 %d건", len(batch))
 	}
 	if batch[0].BatchID == nil {
-		t.Fatal("요약 배치는 batch_id를 써야 함, 안 그러면 이력에서 함께 보낸 것을 알 수 없음")
+		t.Fatal("모아 보내기 배치는 batch_id를 써야 함, 안 그러면 이력에서 함께 보낸 것을 알 수 없음")
 	}
 	firstBatchID := *batch[0].BatchID
 	for _, dl := range batch {
@@ -386,7 +386,7 @@ func TestDigestBatchDueAndStableBatchID(t *testing.T) {
 	// 이 배치를 **전체** 실패 재배치 후 다시 획득해도 batch_id는 원래 값을 유지해야 한다(COALESCE의 역할):
 	// 안 그러면 한 번의 재시도로 '이 배치는 함께 보냈다'는 사실이 지워진다.
 	//
-	// 한 건만이 아니라 배치 전체를 재배치해야 한다 —— 전송 엔진이 요약 메시지를 보낼 때 그렇게 처리한다
+	// 한 건만이 아니라 배치 전체를 재배치해야 한다 —— 전송 엔진이 모아 보내기 메시지를 보낼 때 그렇게 처리한다
 	// (메시지 하나가 배치 전체를 대표하므로 성패를 함께한다). 한 건만 재배치하면 나머지는 아직 lease 기간 내라,
 	// 재획득이 당연히 그 한 건만 가져온다.
 	allIDs := make([]int64, 0, len(batch))
@@ -775,7 +775,7 @@ func TestDeleteChannelCascadesDeliveries(t *testing.T) {
 }
 
 // TestClaimDigestBatchHonorsCallerLimit은 감사에서 지적한 구멍을 다룬다:
-// 요약 채널은 이전에 토큰 버킷을 완전히 우회했다 —— allow가 takeTokens로 차감됐지만 아무도 안 썼고,
+// 모아 보내기 채널은 이전에 토큰 버킷을 완전히 우회했다 —— allow가 takeTokens로 차감됐지만 아무도 안 썼고,
 // rate_per_min이 digest 모드에 전혀 작용하지 않았다. 이제 limit도 제약에 참여한다.
 func TestClaimDigestBatchHonorsCallerLimit(t *testing.T) {
 	d := notifyTestDB(t)

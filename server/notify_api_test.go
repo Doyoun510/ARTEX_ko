@@ -493,7 +493,7 @@ func TestNotifyStatusChangeDelivery(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Fatalf("'状态变更 → 已修复'가 포함된 메시지를 받지 못했습니다(총 %d개)", hook.count())
+		t.Fatalf("'상태 변경 → 수정 완료'가 포함된 메시지를 받지 못했습니다(총 %d개)", hook.count())
 	}
 }
 
@@ -872,7 +872,7 @@ func TestNotifyRateLimitDoesNotConsumeRetryBudget(t *testing.T) {
 	if got := n.takeTokens(2, 0, notifyUnlimitedBurstPerTick+10, now); got != notifyUnlimitedBurstPerTick {
 		t.Fatalf("전송 속도 제한이 없으면 회차별 상한 %d를 반환해야 합니다, got %d", notifyUnlimitedBurstPerTick, got)
 	}
-	// 채널별 토큰 저장량은 서로 독립적입니다.
+	// 채널별 토큰 버킷은 서로 독립적입니다.
 	if got := n.takeTokens(1, 1, notifyMaxSendsPerChannelPerTick, now.Add(time.Millisecond)); got != 0 {
 		t.Fatalf("채널 1의 토큰 저장량은 여전히 비어 있어야 합니다, got %d", got)
 	}
