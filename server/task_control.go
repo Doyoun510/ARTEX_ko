@@ -112,10 +112,10 @@ func (s *Server) applyTaskControlWithCause(t *Task, action string, pauseCause er
 		defer s.engine.decInflight(t.ID)
 		lifecycle := t.lifecycleSnapshot()
 		if isTerminalStatus(lifecycle.Status) {
-			return out, fmt.Errorf("종료 상태 작업은 일시정지할 수 없습니다")
+			return out, fmt.Errorf("종료 상태 작업은 일시 중지할 수 없습니다")
 		}
 		if lifecycle.Paused {
-			return out, fmt.Errorf("작업이 이미 일시정지되어 있습니다")
+			return out, fmt.Errorf("작업이 이미 일시 중지되어 있습니다")
 		}
 		wasQueued := lifecycle.Queued
 		wasEnginePaused := s.engine.IsPaused(t.ID)
@@ -145,7 +145,7 @@ func (s *Server) applyTaskControlWithCause(t *Task, action string, pauseCause er
 	default:
 		return out, fmt.Errorf("action must be pause|resume")
 	}
-	log.Printf("[task] #%s %s", t.ID, map[string]string{"pause": "일시정지됨", "resume": "재개됨"}[action])
+	log.Printf("[task] #%s %s", t.ID, map[string]string{"pause": "일시 중지됨", "resume": "재개됨"}[action])
 	return out, nil
 }
 
@@ -181,7 +181,7 @@ func (s *Server) applyIntentControl(ctx context.Context, t *Task, iid int64, act
 	switch action {
 	case "pause":
 		if node.State != "running" {
-			return out, fmt.Errorf("실행 중인 의도만 일시정지할 수 있습니다")
+			return out, fmt.Errorf("실행 중인 의도만 일시 중지할 수 있습니다")
 		}
 		if err := s.engine.ControlWork(ctx, iid, "pause"); err != nil {
 			return out, err
@@ -189,7 +189,7 @@ func (s *Server) applyIntentControl(ctx context.Context, t *Task, iid int64, act
 		out.State = "paused"
 	case "resume":
 		if node.State != "paused" {
-			return out, fmt.Errorf("일시정지된 의도만 재개할 수 있습니다")
+			return out, fmt.Errorf("일시 중지된 의도만 재개할 수 있습니다")
 		}
 		changed, err := t.Store.CompareAndSetIntentState(iid, "paused", "open")
 		if err != nil {
@@ -202,13 +202,13 @@ func (s *Server) applyIntentControl(ctx context.Context, t *Task, iid int64, act
 		out.State = "open"
 	case "cancel":
 		// 삭제는 두 가지 모드를 지원한다:
-		//   soft(기본, 가짜 삭제): 의도를 state='deleted'로 멈추고, 삭제 사유를 delete_reason 필드에 기록하며,
+		//   soft(기본, 논리 삭제): 의도를 state='deleted'로 멈추고, 삭제 사유를 delete_reason 필드에 기록하며,
 		//     의도 노드와 모든 산출물/계보를 보존하고, 그래프에 fact를 따로 달지 않는다.
 		//   hard(진짜 삭제): 해당 의도와 "그것만이 지탱하는" 전용 자손 노드를 물리 삭제(리프까지 캐스케이드)해, 남는
 		//     고립 데이터를 피한다; 공유 노드·goal·작업 루트 사실은 보존한다.
 		// 두 모드 모두 cancelled 트리거로 planner에 알린다(의도 내용 + 삭제 사유), 이를 근거로 다시 계획하게 한다.
 		if node.State != "running" && node.State != "paused" && node.State != "open" {
-			return out, fmt.Errorf("미수령·실행 중·일시정지된 의도만 삭제할 수 있습니다")
+			return out, fmt.Errorf("미수령·실행 중·일시 중지된 의도만 삭제할 수 있습니다")
 		}
 		reason = strings.TrimSpace(reason)
 		if reason == "" {

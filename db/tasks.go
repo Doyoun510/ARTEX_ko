@@ -42,7 +42,7 @@ type Task struct {
 	TimeoutSeconds int        `json:"timeout_seconds"`        // 0=시간 제한 없음
 	FirstRunAt     *time.Time `json:"first_run_at,omitempty"` // 처음 실제로 실행을 시작한 시각(created_at 아님); nil=아직 실행 안 함
 	DeadlineAt     *time.Time `json:"deadline_at,omitempty"`  // = first_run_at + timeout_seconds; nil=무제한 또는 미실행
-	// planner 하트비트 트리거 간격(초): 지난 plan 종료/작업 시작부터 이 값만큼 지나고 그동안 트리거가 없으면 → 한 라운드 트리거.
+	// planner heartbeat 트리거 간격(초): 지난 plan 종료/작업 시작부터 이 값만큼 지나고 그동안 트리거가 없으면 → 한 라운드 트리거.
 	// 하한=기본=300(5min), 미만이면 전부 300으로 올림(CreateTask에서 정규화). docs/planner-trigger-impl-plan.md 참조
 	PlanHeartbeatSeconds int `json:"plan_heartbeat_seconds"`
 	// CoverageEnabled는 '자산 커버리지 기능' 전체 스위치(기본 true). false면: 테스트 커버리지를 계산/표시하지 않고,
@@ -78,7 +78,7 @@ func IsTerminal(status string) bool {
 // CreateTask creates an exploration + task in one transaction and returns the task.
 // timeoutSeconds is the task-level wall-clock budget (0 = 시간 제한 없음); deadline_at is
 // stamped later at first real run (see engine), not here.
-// MinPlanHeartbeatSeconds는 planner 하트비트 간격의 하한 = 기본 = 10min.
+// MinPlanHeartbeatSeconds는 planner heartbeat 간격의 하한 = 기본 = 10min.
 // 이보다 작으면(기본 0 / 음수 / 잘못 설정된 작은 값 포함) 전부 10min으로 올려, planner를 터뜨리는 것을 방지한다.
 const MinPlanHeartbeatSeconds = 600
 

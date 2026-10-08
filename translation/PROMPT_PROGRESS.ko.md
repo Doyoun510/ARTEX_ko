@@ -920,3 +920,10 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **직접 의존·보존**: 표시 헤더·statCards와 DB pending 집계/기존 status 라벨 연결을 대조했다. 해당 네 표현의 직접 테스트 기대값 의존은 재검색에서 발견하지 못해 테스트를 수정하지 않았다. 세 소스의 1216/1263/1596줄·LF·끝 개행·JSX·코드·계약값 및 지정 표현 밖 바이트를 역치환 비교로 확인했다. 기존 TRANSLATION_PROMPT 변경·미추적 파일·Git index·제외 설정을 보존했다.
 - **기록·한계**: 로컬 감사 MD/TSV에는 원문·수정 전 번역·발견 근거를 유지하고 승인 후 상태를 별도로 추가했다. 커버리지는 지정 세 파일/네 위치만 갱신하며 기존 A/S96개·M 승인 이력·원문 문제·정책/기능/호환성 후속을 유지한다. 전체 저장소 의미 전수 검증 완료를 뜻하지 않는다. 감사 산출물은 Git 제외 translation/audit/에만 보관한다. 커밋용 /tmp/artex-m037-m039-approved.diff에는 소스 세 파일과 이번 PROGRESS 기록만 포함한다.
 - **실행**: 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 묶음 없음.
+
+
+### M040–M042 · 작업 제어 확정 용어 승인 보완 [지정 수정·정적 대응 완료 / 실행 미검증]
+- **기준·범위**: ko-translation, HEAD 4620fe2의 M037–M039 승인 커밋 반영과 staged·MERGE_HEAD·대상 기존 변경 부재를 확인했다. 지정 10곳(db/tasks.go 2, server/task_control.go 7, server/task_archives.go 1) 및 조건부 승인 프런트 주석 2곳을 수정했다.
+- **수정·추가 근거**: planner 하트비트→heartbeat 2곳, 일시정지→일시 중지 7곳(기존 활용형 유지), 가짜 삭제→논리 삭제 1곳. 추가 api.ts:344/types.ts:424 원문은 각각 번역 직접 부모 31e401b/b45957e의 假删除이며 deleted/delete_reason 문맥이다. applyIntentControl의 soft 경로와 db/exploration.go:389 SoftDeleteIntent는 의도 노드·계보를 보존하는 논리 삭제로 연결된다. 따라서 추가 2곳도 논리 삭제로 정리했으며 stopped/软删除 문맥은 변경하지 않았다.
+- **직접 의존·보존**: 지정 표시 오류/로그를 직접 비교하는 테스트 기대값 의존은 재검색에서 발견하지 못했다. task_control_routes_test·task_archives_test·intent_delete_test의 상태/노드 보존 검사는 유지하며 테스트는 변경하지 않았다. 소스 654/288/728/1314/1596줄·LF·끝 개행 및 지정 표현 밖 바이트는 역치환 비교로 동일함을 확인했다. soft·paused·deleted·delete_reason·코드·조건·포맷·인수를 유지하고 M043의 300/600·5min/10min은 원문 설명 후속으로 그대로 보존한다. 용어집 수정 없음.
+- **기록·한계**: 로컬 감사에는 수정 전 원문·번역·근거를 유지하고 승인 후 상태를 별도로 추가했다. 커버리지는 지정 5개 파일의 12곳만 갱신하며 기존 A/S 96개·M 이력·정책/기능/호환성 보류는 유지한다. 기존 로컬 변경·미추적 파일·Git index·제외 설정을 보존했다. 감사 MD/TSV는 Git 제외 translation/audit/에만 보관한다. 커밋용 /tmp/artex-m040-m042-approved.diff는 소스 5개와 이번 PROGRESS 기록만 포함한다. 실행 검증은 **사용자 요청으로 미실행**이며 fetch·병합·stage·commit·push·다음 묶음 없음.

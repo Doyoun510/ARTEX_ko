@@ -341,7 +341,7 @@ export const api = {
     intentId: string,
     action: "pause" | "resume" | "cancel",
     reason?: string,
-    // cancel 전용: soft(기본, 가짜 삭제, 의도를 deleted로 두고 삭제 사유 기록) | hard(실제 삭제, 독점 자손을 연쇄 제거).
+    // cancel 전용: soft(기본, 논리 삭제, 의도를 deleted로 두고 삭제 사유 기록) | hard(실제 삭제, 독점 자손을 연쇄 제거).
     mode?: "soft" | "hard",
   ) =>
     post<{

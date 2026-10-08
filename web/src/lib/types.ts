@@ -421,7 +421,7 @@ export interface TaskNode {
   ts: string;
   source_task_id?: string;
   inherited?: boolean;
-  delete_reason?: string; // 의도 가짜 삭제(state='deleted') 시의 삭제 사유
+  delete_reason?: string; // 의도 논리 삭제(state='deleted') 시의 삭제 사유
 }
 
 // 브로드캐스트 보드 한 페이지: 생성 순서로 페이지네이션한 노드 + 이 페이지가 관련된 엣지 + 엣지 반대편 노드(refs, id로 인덱싱),
