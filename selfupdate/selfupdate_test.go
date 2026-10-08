@@ -112,7 +112,7 @@ func TestResolvePathsNaming(t *testing.T) {
 	// (작업 디렉터리가 /일 수 있음)할 때 교체가 완전히 무효화된다.
 	for name, path := range map[string]string{"New": p.New, "Sum": p.Sum, "Old": p.Old, "Marker": p.Marker} {
 		if filepath.Dir(path) != p.Dir {
-			t.Errorf("%s가 실행 파일 디렉터리 아래에 없음: %s (기대 %s)", name, path, p.Dir)
+			t.Errorf("%s 경로가 실행 파일 디렉터리 아래에 없음: %s (기대 %s)", name, path, p.Dir)
 		}
 	}
 	// Windows에서 .new/.old는 반드시 .exe를 유지해야 하며, 그렇지 않으면 스모크 테스트와 교체 후 실행이 모두 실패한다.

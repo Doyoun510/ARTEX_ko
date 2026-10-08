@@ -37,7 +37,7 @@ func gone(t *testing.T, es *ExplorationStore, id int64) bool {
 	return n == nil
 }
 
-// TestSoftDeleteIntent은 소프트 삭제로 deleted + delete_reason을 설정하고 노드를 보존한다.
+// TestSoftDeleteIntent은 논리 삭제로 deleted + delete_reason을 설정하고 노드를 보존한다.
 func TestSoftDeleteIntent(t *testing.T) {
 	d, err := Open(testDSN(t))
 	if err != nil {
@@ -69,7 +69,7 @@ func TestSoftDeleteIntent(t *testing.T) {
 	if n.State != StateIntentDeleted || n.DeleteReason != "方向判断错误" {
 		t.Fatalf("state=%q delete_reason=%q, want deleted/方向判断错误", n.State, n.DeleteReason)
 	}
-	// 대기(open) 의도도 소프트 삭제를 허용한다.
+	// 대기(open) 의도도 논리 삭제를 허용한다.
 	openIntent := mustIntent(t, es, "待领意图")
 	if _, err := es.SoftDeleteIntent(openIntent, "方向不需要了"); err != nil {
 		t.Fatalf("soft delete open intent: %v", err)
@@ -78,7 +78,7 @@ func TestSoftDeleteIntent(t *testing.T) {
 		t.Fatalf("open intent not soft-deleted: n=%+v err=%v", n, err)
 	}
 
-	// 이미 삭제됨(deleted) 등 다른 상태는 다시 소프트 삭제할 수 없다.
+	// 이미 삭제됨(deleted) 등 다른 상태는 다시 논리 삭제할 수 없다.
 	if _, err := es.SoftDeleteIntent(intent, "再删"); err == nil {
 		t.Fatal("soft-deleting an already-deleted intent unexpectedly succeeded")
 	}

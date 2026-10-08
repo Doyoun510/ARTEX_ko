@@ -131,17 +131,17 @@ func TestFullTextSearchMatchesBodies(t *testing.T) {
 		return len(rows)
 	}
 	if n := hits("password"); n != 1 {
-		t.Fatalf("password 검색 %d건 적중, 1이어야 함", n)
+		t.Fatalf("password 검색 %d건 매칭, 1이어야 함", n)
 	}
 	// Substring inside a token — the default unicode61 tokenizer cannot do this.
 	if n := hits("ssw0r"); n != 1 {
-		t.Fatalf("부분 문자열 ssw0r 검색 %d건 적중, 1이어야 함", n)
+		t.Fatalf("부분 문자열 ssw0r 검색 %d건 매칭, 1이어야 함", n)
 	}
 	if n := hits("内网测试"); n != 1 {
-		t.Fatalf("중국어 검색 %d건 적중, 1이어야 함", n)
+		t.Fatalf("중국어 검색 %d건 매칭, 1이어야 함", n)
 	}
 	if n := hits("nonexistent-marker"); n != 0 {
-		t.Fatalf("무관한 키워드 %d건 적중, 0이어야 함", n)
+		t.Fatalf("무관한 키워드 %d건 매칭, 0이어야 함", n)
 	}
 
 	// Too-short terms are reported, not silently treated as "no match".
@@ -217,7 +217,7 @@ func TestLargeBodySpillsButStaysSearchable(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(rows) != 1 {
-		t.Fatalf("초대형 본문의 키워드 %d건 적중, 1이어야 함", len(rows))
+		t.Fatalf("초대형 본문의 키워드 %d건 매칭, 1이어야 함", len(rows))
 	}
 
 	// And retrievable in pages.
@@ -229,7 +229,7 @@ func TestLargeBodySpillsButStaysSearchable(t *testing.T) {
 		t.Fatalf("BlobRange total=%d, %d이어야 함", total, len(big))
 	}
 	if string(data) != marker {
-		t.Fatalf("BlobRange가 %q를 읽음, %q이어야 함", data, marker)
+		t.Fatalf("BlobRange 읽기 결과: %q, 기대값: %q", data, marker)
 	}
 	if _, _, err := tr.BlobRange("../../etc/passwd", 0, 10); err == nil {
 		t.Fatal("잘못된 hash는 거부되어야 함")
@@ -254,7 +254,7 @@ func TestBinaryBodyStaysOutOfIndex(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(rows) != 0 {
-		t.Fatalf("바이너리 본문은 전문 인덱스에 들어가면 안 되는데 %d건 적중", len(rows))
+		t.Fatalf("바이너리 본문은 전문 인덱스에 들어가면 안 되는데 %d건 매칭", len(rows))
 	}
 	_, resp, err := tr.Get(onlyExchangeID(t, tr))
 	if err != nil {
@@ -365,7 +365,7 @@ func TestPageSearchesBodies(t *testing.T) {
 		t.Fatal(err)
 	}
 	if total != 1 || len(rows) != 1 {
-		t.Fatalf("본문 키워드 적중 total=%d rows=%d, 1/1이어야 함", total, len(rows))
+		t.Fatalf("본문 키워드 매칭 total=%d rows=%d, 1/1이어야 함", total, len(rows))
 	}
 	// Metadata matching still works alongside it.
 	if _, total, err := tr.Page(PageQuery{Query: "health", RespMin: -1, RespMax: -1}, 0, 100); err != nil || total != 1 {
@@ -386,19 +386,19 @@ func TestPageFiltersAndSort(t *testing.T) {
 
 	// Status class band.
 	if rows, _, err := tr.Page(PageQuery{Status: "4xx", RespMin: -1, RespMax: -1}, 0, 100); err != nil || len(rows) != 1 || rows[0].Status != 404 {
-		t.Fatalf("status=4xx는 404 1건 적중해야 함, %d건 얻음 err=%v", len(rows), err)
+		t.Fatalf("status=4xx는 404 1건 매칭되어야 함, %d건 얻음 err=%v", len(rows), err)
 	}
 	// Exact status.
 	if rows, _, err := tr.Page(PageQuery{Status: "500", RespMin: -1, RespMax: -1}, 0, 100); err != nil || len(rows) != 1 || rows[0].Status != 500 {
-		t.Fatalf("status=500은 1건 적중해야 함, %d건 얻음 err=%v", len(rows), err)
+		t.Fatalf("status=500은 1건 매칭되어야 함, %d건 얻음 err=%v", len(rows), err)
 	}
 	// Response-size lower bound (>=60 keeps only the 100-byte row).
 	if rows, _, err := tr.Page(PageQuery{RespMin: 60, RespMax: -1}, 0, 100); err != nil || len(rows) != 1 || rows[0].RespLen != 100 {
-		t.Fatalf("resp_min=60은 100B 1건 적중해야 함, %d건 얻음 err=%v", len(rows), err)
+		t.Fatalf("resp_min=60은 100B 1건 매칭되어야 함, %d건 얻음 err=%v", len(rows), err)
 	}
 	// Path (url_template) filter narrows to the /api/admin exchange.
 	if rows, _, err := tr.Page(PageQuery{Path: "/api/admin", RespMin: -1, RespMax: -1}, 0, 100); err != nil || len(rows) != 1 || rows[0].Status != 404 {
-		t.Fatalf("path=/api/admin은 1건 적중해야 함, %d건 얻음 err=%v", len(rows), err)
+		t.Fatalf("path=/api/admin은 1건 매칭되어야 함, %d건 얻음 err=%v", len(rows), err)
 	}
 	// Sort by response length, ascending then descending.
 	asc, _, err := tr.Page(PageQuery{RespMin: -1, RespMax: -1, Sort: "resp_len", Order: "asc"}, 0, 100)
@@ -467,7 +467,7 @@ func TestTruncateUTF8(t *testing.T) {
 	for n := 0; n <= len(s); n++ {
 		got := truncateUTF8([]byte(s), n)
 		if !strings.HasPrefix(s, got) {
-			t.Fatalf("n=%d 잘린 결과 %q가 원본 문자열의 접두가 아님", n, got)
+			t.Fatalf("n=%d 잘린 결과 %q: 원본 문자열의 접두가 아님", n, got)
 		}
 		if len(got) > n {
 			t.Fatalf("n=%d 잘린 후 %d 바이트, 상한 초과", n, len(got))

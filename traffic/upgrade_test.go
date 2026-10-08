@@ -98,7 +98,7 @@ VALUES(?,'GET /x','','HTTP 200','老数据正文')`, row[0]); err != nil {
 			t.Fatalf("과거 전문 검색 실패: %v", err)
 		}
 		if len(rows) != 2 {
-			t.Fatalf("과거 전문 검색 %d건 적중, 2여야 함", len(rows))
+			t.Fatalf("과거 전문 검색 %d건 매칭, 2여야 함", len(rows))
 		}
 	}
 	// 4. 과거 본문 여전히 읽힘
