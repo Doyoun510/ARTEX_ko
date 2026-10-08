@@ -958,3 +958,10 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **직접 의존·정적 보존**: 오류 안내 3428/3439 두 곳과 지정 표시 표현의 전체/부분 문자열 비교 의존을 추적 파일에서 재검색했다. TestNotifyMetaAndSettingsRoundTrip의 설정값·끝 슬래시 정규화·HTTP400 검사와 직접 생성부를 읽기 전용으로 대조했으며, 수정 문구의 직접 테스트 기대값 변경 필요는 발견하지 못하여 테스트를 수정하지 않았다. 3907줄·LF·끝 개행·들여쓰기·코드·조건·enum/키/계약값·숫자·포맷 지정자 종류/순서/개수·인수·이스케이프 및 지정 표현 밖 바이트를 보존했다.
 - **기록·후속**: Git 제외 translation/audit/의 기존 원문·수정 전 번역·발견 근거를 이력으로 보존하며 승인 후 상태를 별도 기록하고 커버리지는 해당 파일/22행만 갱신했다. 기존 A/S96개·M 승인 이력, M012/M013/M043 및 원문 설명 문제, A047 중복 부착 제한·A048/A049·M016 실제 DB 상태 미확인과 다른 정책/기능/호환성·실행 후속은 유지한다. 전체 저장소 의미 전수 검증 완료를 뜻하지 않는다.
 - **산출물·보존·실행**: 커밋용 /tmp/artex-m065-m073-approved.diff에는 server/server.go와 이번 PROGRESS 추가만 포함하며 감사 MD/TSV는 제외한다. 로컬 상세 보고서는 translation/audit/remaining-candidates-semantic-approved-review.md에 보관한다. 기존 TRANSLATION_PROMPT 변경·미추적 파일·Git index·제외 설정은 보존한다. 실행 검증은 **사용자 요청으로 미실행**이며 fetch·병합·stage·commit·push·다음 감사 없음.
+
+
+### M074·M075 · 설치·업데이트 안내 의미 감사 승인 보완 [지정 수정·정적 대응 완료 / 실행 미검증]
+- **기준·수정 범위**: ko-translation, HEAD d571c9a92df9d9c72aeeb39cb78f4b5483c7b242에서 staged·MERGE_HEAD 및 대상 파일 기존 변경 부재를 확인했다. selfupdate/selfupdate.go:140에 원문의 “0.3.7로 취급해서는 안 된다” 부정 절을 복원(M074)하고, selfupdate/stage.go:46의 종료 절차를 “정상 종료 절차를 수행하고 ExitRestart로 나간다”로 정리(M075)했다. 사용자 지정 주석 두 행만 수정했으며 원문 자체의 반환=완료 설명은 유지했다.
+- **정적 보존·직접 의존**: 두 파일의 175/339줄·LF·끝 개행·들여쓰기·앞뒤 주석·코드·버전 숫자·ExitRestart 및 지정 표현 밖 바이트를 역치환 비교로 확인했다. TestCompareVersions의 개발 버전 비교 불가 사례 및 server/update.go의 Stage 성공 후 requestRestart 경로를 기존 감사 근거와 재대조했다. 지정 주석을 직접 검사하는 테스트 기대값 의존은 재검색에서 발견하지 못했으며 테스트·용어집은 수정하지 않았다.
+- **기록·후속·보존**: 로컬 감사 MD/TSV의 중국어 원문·수정 전 번역·발견 근거를 유지하고 승인 후 상태를 별도 필드/기록으로 추가했다. 커버리지는 해당 두 주석만 갱신하고 A/S 집계·M 승인 이력·원문 설명 문제·정책/기능/DB/커스텀 프롬프트/live 후속을 유지한다. 기존 로컬 변경·미추적 파일·Git index·제외 설정을 보존했다. 커밋용 /tmp/artex-m074-m075-approved.diff에는 소스 두 파일과 이번 PROGRESS 기록만 포함하고 감사 MD/TSV는 Git 제외 translation/audit/에 로컬로만 보관한다.
+- **실행**: 실행 검증은 **사용자 요청으로 미실행**이다. fetch·병합·stage·commit·push·다음 묶음 없음.

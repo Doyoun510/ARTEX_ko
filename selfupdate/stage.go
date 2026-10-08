@@ -43,7 +43,7 @@ type Progress func(ph Phase, pct int, msg string)
 // zip만 포함하므로, zip을 쓰면 CI를 바꿀 필요가 없고 이미 배포된 과거 버전과도 호환된다; zip에는
 // skills/도 들어 있어 향후 내장 skill 동기화를 위한 여지를 남긴다. 대가는 skills 몇백 KB를 더 받는 것뿐이다.
 //
-// 함수가 반환되면 스테이징 완료를 의미하며, 호출자는 이어서 정상 종료하고 ExitRestart로 나간다.
+// 함수가 반환되면 스테이징 완료를 의미하며, 호출자는 이어서 정상 종료 절차를 수행하고 ExitRestart로 나간다.
 func Stage(ctx context.Context, c *http.Client, rel *Release, currentVersion string, prog Progress) error {
 	if prog == nil {
 		prog = func(Phase, int, string) {}

@@ -137,7 +137,7 @@ func CompareVersions(a, b string) (int, bool) {
 //
 // 순수한 3단 형식만 허용한다: build.sh가 비-tag 빌드에서 git describe로 산출하는
 // "0.3.7-2-gabc1234" 같은 접미사 붙은 버전은 반드시 비교 불가로 판정되어야 하고,
-// 0.3.7 —— 그렇지 않으면 개발 빌드가 "이미 최신"으로 오판되거나 정식 버전으로 덮어쓰인다.
+// 0.3.7로 취급해서는 안 된다 —— 그렇지 않으면 개발 빌드가 "이미 최신"으로 오판되거나 정식 버전으로 덮어쓰인다.
 func parseVersion(s string) ([3]int, bool) {
 	s = strings.TrimSpace(s)
 	s = strings.TrimPrefix(s, "v")
