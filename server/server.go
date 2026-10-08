@@ -102,7 +102,7 @@ type Server struct {
 	provByProfile map[int64]*provEntry
 	provCacheGen  uint64
 
-	// llmHealth is the process-wide circuit-breaker state for LLM failover (폴링).
+	// llmHealth is the process-wide circuit-breaker state for LLM failover (순환 전환).
 	// It deliberately lives OUTSIDE the provider caches: rebuilding the chain
 	// (saving an unrelated profile, flipping a setting) must not erase what we
 	// learned about which backends are out of credit / rate-limited.
@@ -228,7 +228,7 @@ func New(ctx context.Context, m *Manager, skillDir string, dataDir string, keyDi
 		go s.evidenceStore().RunGC(s.ctx)
 		s.seedPythonInterpreter()     // 커스텀 스크립트 도구: 기동 시 python 인터프리터 검출해 DB 저장(비어 있을 때만)
 		go newScheduler(s).Run(s.ctx) // P3 트리거 스케줄링(정시/finding/목표 이벤트), 커스텀 agent만
-		// 취약점 IM 푸시 전달 엔진. Scheduler와 병렬이지만 독립: 푸시의 실시간성 요구(3s)
+		// 취약점 IM 푸시 전송 엔진. Scheduler와 병렬이지만 독립: 푸시의 실시간성 요구(3s)
 		// 가 트리거의 업무 리듬과 다르고, 둘의 실패는 서로 영향 없음 —— 푸시가 막혀도 agent 트리거에 영향을 줘선 안 된다.
 		go newNotifier(s).Run(s.ctx)
 		// Fill the tool cache for any enabled MCP that has none yet (notably the
@@ -255,7 +255,7 @@ func New(ctx context.Context, m *Manager, skillDir string, dataDir string, keyDi
 	s.restoreTaskRuntimes()
 	go s.reconcileConcurrency()
 	s.startTaskArchiveWorker()
-	s.wireInterceptReviewer() // LLM 폴백 승인: 인터셉트 규칙에 걸리지 않은 명령을 모델 판정에 맡김
+	s.wireInterceptReviewer() // LLM 보완 판정: 인터셉트 규칙에 걸리지 않은 명령을 모델 판정에 맡김
 	return s
 }
 
@@ -349,7 +349,7 @@ func (s *Server) saveLLMConfig(cfg agent.Config) error {
 	// (anthropic / openai / openai-responses), matching the DB CHECK constraint.
 	format := cfg.Provider()
 	var id int64
-	// 이 legacy 엔드포인트의 요청 본문에는 폴링/송수신/출력 상한 파라미터가 없으므로, DB에 이미 저장된 값을 그대로 가져온다 —
+	// 이 legacy 엔드포인트의 요청 본문에는 순환 전환/송수신/출력 상한 파라미터가 없으므로, DB에 이미 저장된 값을 그대로 가져온다 —
 	// 아니면 저장할 때마다 profile의 priority·pool_exclude·streaming 및 출력 상한을
 	// (max_tokens / max_tokens_field)을 조용히 0값으로 리셋한다.
 	var priority int
@@ -450,7 +450,7 @@ func (s *Server) applyLLM(cfg agent.Config) error {
 	s.cfgMu.Lock()
 	s.llmDirect = prov
 	s.cfgMu.Unlock()
-	// LLM 폴링(기본 꺼짐): 활성 설정을 failover 체인에 포함, 현재 설정이 불가할 때 자동으로 다음으로 전환.
+	// LLM 순환 전환(기본 꺼짐): 활성 설정을 failover 체인에 포함, 현재 설정이 불가할 때 자동으로 다음으로 전환.
 	// '전역 활성 설정을 타는' 이 경로에만 영향 —— agent 바인딩 / 작업 pin은 providerForProfile로 가고,
 	// 기본적으로 여전히 그 설정을 독점(poolForBinding 참고). 꺼졌거나 대안이 없으면 원 provider 반환, 동작 불변.
 	if act, err := s.m.pg.ActiveProfile(); err == nil && act != nil {
@@ -1158,7 +1158,7 @@ func (s *Server) controlIntent(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Action string `json:"action"`
 		Reason string `json:"reason"` // cancel(삭제) 시 필수: 삭제 사유
-		Mode   string `json:"mode"`   // cancel 전용: soft(기본, 가짜 삭제) | hard(진짜 삭제, 전용 자손 캐스케이드 제거)
+		Mode   string `json:"mode"`   // cancel 전용: soft(기본, 논리 삭제) | hard(진짜 삭제, 전용 자손 캐스케이드 제거)
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeErr(w, 400, "bad json: "+err.Error())
@@ -1178,7 +1178,7 @@ func (s *Server) controlIntent(w http.ResponseWriter, r *http.Request) {
 }
 
 // rerunIntent는 성공하지 못한 의도 하나를 재실행한다(blocked/exhausted/stopped): open으로 되돌리면 worker가
-// 다시 claim해 처음부터 재실행한다(그래프에 이미 기록된 fact/finding/asset은 보존); 작업이 종료 상태/일시정지면 함께 되살린다.
+// 다시 claim해 처음부터 재실행한다(그래프에 이미 기록된 fact/finding/asset은 보존); 작업이 종료 상태/일시 중지면 함께 되살린다.
 // '오류 난 work를 클릭해 계속 실행'에 사용 —— 네트워크/LLM 지터로 blocked된 뒤 원클릭 재시도 가능.
 func restoreRerunIntent(t *Task, before *db.Node) error {
 	if t == nil || before == nil {
@@ -1451,7 +1451,7 @@ type createTaskReq struct {
 	SourceTaskIDs        []string `json:"source_task_ids,omitempty"`   // 직접·읽기 전용으로만 상속하는 출처 작업
 	CompanyIDs           []int64  `json:"company_ids,omitempty"`       // 회사 범위를 연관하고 현재 회사 자산을 스냅샷 연관; 자산을 복사하거나 의도를 강제 생성하지 않음
 	TimeoutSeconds       int      `json:"timeout_seconds"`             // 작업 레벨 타임아웃(초); 0/생략=무제한
-	PlanHeartbeatSeconds int      `json:"plan_heartbeat_seconds"`      // planner 하트비트 트리거 간격(초); 0/생략=기본600(10min); 하한=기본=600, 미만은 자동으로 600으로 올림
+	PlanHeartbeatSeconds int      `json:"plan_heartbeat_seconds"`      // planner heartbeat 트리거 간격(초); 0/생략=기본600(10min); 하한=기본=600, 미만은 자동으로 600으로 올림
 	SeedFirstIntent      *bool    `json:"seed_first_intent,omitempty"` // 생성 시 시드 의도 하나를 바로 내려(내용=설명+목표), worker가 첫 라운드 planner를 안 기다리고 바로 시작; 생략/null=기본 꺼짐, 표준인 선계획 후실행. 명시적으로 true를 줘야 켜짐(CTF처럼 흔히 한 work로 해결될 때 시작 전 planner 라운드를 생략 가능).
 	CoverageEnabled      *bool    `json:"coverage_enabled,omitempty"`  // 자산 커버리지 기능; 생략/null=기본 켜짐(true). false=커버리지 계산/표시/자동 누적 범위를 끄고 + add_task_scope/list_untested_assets 숨김. company 연관은 영향받지 않음.
 	// InterceptRules 작업 레벨 자산 인터셉트/허용 규칙(생성 시 입력, task_intercept_rules에 저장, 전역 테이블에 들어가지 않음).
@@ -3302,8 +3302,8 @@ func (s *Server) settingsPayload() map[string]any {
 		"workers":                  s.m.Workers(),               // 동시 작업 agent 수(기본3); 이후 시작하는 작업에 적용
 		"task_concurrency_enabled": concOn,                      // 작업 동시 실행 상한 스위치(기본 꺼짐)
 		"task_concurrency_limit":   concLimit,                   // 동시 실행 작업 상한(켜면 기본5)
-		// LLM 폴링(failover). 기본 꺼짐; 켜면 전역 활성 설정을 타는 agent가 현재 설정이 불가할 때
-		// 자동으로 다음 설정으로 전환. bind_fallback은 폴링이 켜졌을 때만 의미 있음(기본 꺼짐).
+		// LLM 순환 전환(failover). 기본 꺼짐; 켜면 전역 활성 설정을 타는 agent가 현재 설정이 불가할 때
+		// 자동으로 다음 설정으로 전환. bind_fallback은 순환 전환이 켜졌을 때만 의미 있음(기본 꺼짐).
 		"llm_pool_enabled":       s.m.LLMPoolEnabled(),
 		"llm_pool_bind_fallback": s.m.LLMPoolBindFallback(),
 		// 동작 제약 주입 범위(기본 모두 켜짐): 본 작업의 allow/deny 제약을 해당 agent의 시스템 프롬프트에 붙임.
@@ -3320,13 +3320,13 @@ func (s *Server) settingsPayload() map[string]any {
 	}
 }
 
-// notifyPublicBaseURL은 푸시 회신 링크용 외부 주소를 읽는다.
+// notifyPublicBaseURL은 푸시 상세 링크용 외부 주소를 읽는다.
 func notifyPublicBaseURL(pg *db.DB) string {
 	v, _, _ := pg.GetSetting(settingNotifyPublicBaseURL)
 	return v
 }
 
-// notifyDigestIntervalMin은 요약 주기(분)를 읽으며, 잘못됐거나 미설정이면 기본값으로 폴백.
+// notifyDigestIntervalMin은 모아 보내기 주기(분)를 읽으며, 잘못됐거나 미설정이면 기본값으로 폴백.
 // 빈 문자열이 아니라 기본값을 되돌려 표시해야, UI가 현재 적용 값을 입력란에 채울 수 있다.
 func notifyDigestIntervalMin(pg *db.DB) int {
 	v, ok, _ := pg.GetSetting(settingNotifyDigestMinutes)
@@ -3375,7 +3375,7 @@ func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 		// 작업 동시 실행 상한: 동시에 '실행 중'인 작업 수 상한. 꺼짐=무제한; 켜면 새 작업이 상한 초과 시 대기열, 빈자리 생기면 자동 시작.
 		ConcurrencyEnabled *bool `json:"task_concurrency_enabled"`
 		ConcurrencyLimit   *int  `json:"task_concurrency_limit"`
-		// LLM 폴링(failover) 스위치 + '바인딩 설정 실패 시에도 폴링 체인으로 폴백' 스위치. 둘 다
+		// LLM 순환 전환(failover) 스위치 + '바인딩 설정 실패 시에도 순환 전환 체인으로 폴백' 스위치. 둘 다
 		// provider 체인을 재구축해야 적용되며, 아래의 changed → applyLLM 경로를 탄다.
 		LLMPoolEnabled      *bool `json:"llm_pool_enabled"`
 		LLMPoolBindFallback *bool `json:"llm_pool_bind_fallback"`
@@ -3384,7 +3384,7 @@ func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 		ConstraintsInjectWorker  *bool `json:"constraints_inject_worker"`
 		// 실험 기능: noa 컨텍스트 압축 스위치(기본 꺼짐); 매 run 읽고, 이후 시작하는 run에 적용, agent 재구축 불필요.
 		NoaCompaction *bool `json:"noa_compaction"`
-		// 취약점 IM 푸시의 전역 항목. 셋 다 전달 엔진이 매 라운드 한 번 읽어, 변경하면 즉시 적용되고,
+		// 취약점 IM 푸시의 전역 항목. 셋 다 전송 엔진이 매 라운드 한 번 읽어, 변경하면 즉시 적용되고,
 		// agent 재구축이나 재시작이 필요 없다.
 		NotifyEnabled    *bool   `json:"notify_enabled"`
 		NotifyBaseURL    *string `json:"notify_public_base_url"`
@@ -3413,7 +3413,7 @@ func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	// 푸시 전역 항목: 전달 엔진이 매 라운드 다시 읽으므로 즉시 적용, 재시작 불필요.
+	// 푸시 전역 항목: 전송 엔진이 매 라운드 다시 읽으므로 즉시 적용, 재시작 불필요.
 	if req.NotifyEnabled != nil {
 		if err := s.m.pg.SetBool(settingNotifyEnabled, *req.NotifyEnabled); err != nil {
 			writeErr(w, 500, err.Error())
@@ -3421,11 +3421,11 @@ func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if req.NotifyBaseURL != nil {
-		// 끝의 슬래시를 일괄 제거: 회신 링크 조립에 fmt.Sprintf("%s/function/...")를 쓰므로,
+		// 끝의 슬래시를 일괄 제거: 상세 링크 조립에 fmt.Sprintf("%s/function/...")를 쓰므로,
 		// 끝 슬래시를 남기면 "//function/..." 같은 이중 슬래시 경로가 생긴다.
 		base := trimTrailingSlash(strings.TrimSpace(*req.NotifyBaseURL))
 		if base != "" && !strings.HasPrefix(base, "http://") && !strings.HasPrefix(base, "https://") {
-			writeErr(w, 400, "회신 링크 주소는 http:// 또는 https://로 시작해야 합니다")
+			writeErr(w, 400, "상세 링크 주소는 http:// 또는 https://로 시작해야 합니다")
 			return
 		}
 		if err := s.m.pg.SetSetting(settingNotifyPublicBaseURL, base); err != nil {
@@ -3436,7 +3436,7 @@ func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 	if req.NotifyDigestMins != nil {
 		// 하한 1분: 더 짧은 주기는 실시간 푸시와 같으니, 그럴 거면 채널을 realtime 모드로 바꿔야 한다.
 		if *req.NotifyDigestMins < 1 || *req.NotifyDigestMins > 24*60 {
-			writeErr(w, 400, "요약 주기는 1~1440분 사이여야 합니다")
+			writeErr(w, 400, "모아 보내기 주기는 1~1440분 사이여야 합니다")
 			return
 		}
 		if err := s.m.pg.SetSetting(settingNotifyDigestMinutes, strconv.Itoa(*req.NotifyDigestMins)); err != nil {
@@ -3665,8 +3665,8 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 409, "작업을 삭제하는 중이라 새 메시지를 보낼 수 없습니다")
 		return
 	}
-	// 주의: 작업 일시정지(paused)는 메인 Agent 대화를 막지 않는다. 메인 Agent 오케스트레이션 세션은 planner/
-	// worker의 일시정지와 독립적이라, 일시정지 중에도 대화를 계속할 수 있다(일시정지는 진행 중인 그 라운드만 종료, control() 참고).
+	// 주의: 작업 일시 중지(paused)는 메인 Agent 대화를 막지 않는다. 메인 Agent 오케스트레이션 세션은 planner/
+	// worker의 일시 중지와 독립적이라, 일시 중지 중에도 대화를 계속할 수 있다(일시 중지는 진행 중인 그 라운드만 종료, control() 참고).
 	var req struct {
 		Message     string           `json:"message"`
 		Attachments []chatAttachment `json:"attachments,omitempty"` // 방법1 업로드 파일(경로는 작업 작업 디렉터리 기준 상대)
@@ -3820,7 +3820,7 @@ func (s *Server) fallbackChat(t *Task, msg string) string {
 	case strings.HasPrefix(m, "意图") || strings.HasPrefix(lower, "intent"):
 		text := strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(m, "意图"), "intent"))
 		_, _ = t.Store.AddIntent(map[string]any{"summary": text}, 9, nil, "human")
-		return "고우선순위 의도 하나를 주입함: " + text
+		return "고우선순위 의도 하나를 추가함: " + text
 	case strings.HasPrefix(m, "提示") || strings.HasPrefix(lower, "hint"):
 		text := strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(m, "提示"), "hint"))
 		_, _ = t.Store.AddNode(db.KindHint, map[string]any{"text": text}, 0, "active", "human", nil)
@@ -3833,7 +3833,7 @@ func (s *Server) fallbackChat(t *Task, msg string) string {
 		}
 		fnd, _ := t.Store.ListByKind(db.KindFinding, 1000)
 		fr, _ := t.Store.Frontier(1000)
-		return fmt.Sprintf("(규칙 모드, LLM 미설정) 현재 상황: 자산 %d, 수령 대기 의도 %d, 확인된 발견 %d.\n사용 가능한 명령: \"intent ...\"로 의도 주입, \"hint ...\"로 planner에게 힌트.", assets, len(fr), len(fnd))
+		return fmt.Sprintf("(규칙 모드, LLM 미설정) 현재 상황: 자산 %d, 수령 대기 의도 %d, 확인된 발견 %d.\n사용 가능한 명령: \"intent ...\"로 의도 추가, \"hint ...\"로 planner에게 힌트.", assets, len(fr), len(fnd))
 	}
 }
 
