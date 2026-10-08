@@ -307,7 +307,7 @@ server {
 ```
 
 - 백엔드: `go run ./cmd/artex`(`-tags embedui` 없이는 프런트엔드를 임베드하지 않음)
-- 프런트엔드: `cd web && npm run dev`(`/api`를 백엔드로 리버스 프록시, 핫 리로드 포함)
+- 프런트엔드: `cd web && npm run dev`(`/api`를 백엔드로 리버스 프록시, Hot Reload 포함)
 - 테스트: `go test ./...`
 - Mock 미리보기(백엔드 없이): `cd web && NEXT_PUBLIC_MOCK=1 npm run dev`
 
@@ -368,7 +368,7 @@ flowchart TB
 | --- | --- |
 | **프런트엔드** | Next.js 정적 내보내기, `go:embed`로 단일 바이너리에 임베드; 작업/자산/탐색 체인/커버리지 맵 시각화, human-in-the-loop 대화 |
 | **server** | `net/http` 라우팅 + JWT 인증 + SSE; `Manager`가 작업·엔진·DB store의 생명주기를 관리 |
-| **engine** | 작업마다 `plannerLoop` 1개 + worker goroutine N개; 의도 획득(claim)·타임아웃/일시정지/drain |
+| **engine** | 작업마다 `plannerLoop` 1개 + worker goroutine N개; 의도 획득(claim)·타임아웃/일시 중지/drain |
 | **agent** | goals / planner / worker / mainagent, `ToolSet`이 이중 그래프를 LLM 도구로 노출 |
 | **db** | 이중 그래프의 Postgres 영속화(pgx); schema는 `go:embed`로 매 기동 시 멱등적으로 테이블 생성 |
 | **지원** | 레코딩형 MITM 프록시, 승인 게이트, 비동기 보강, MCP/스킬/메모리/보고서 |
@@ -442,7 +442,7 @@ sequenceDiagram
 
 깊이 있는 한 번의 탐색에서는, 가치 있는 많은 관찰(어떤 에러, 어떤 응답 일부, 어떤 숨겨진 파라미터)이 한 worker의 **실행 과정** 중에 나타나지만, 반드시 정식 fact로 기록되는 것은 아닙니다. 중복 작업을 피하고 체인 위의 worker가 서로의 어깨 위에 설 수 있도록, worker는 **work 간 과정 검색** 능력을 갖춥니다:
 
-- `search_all_worker_traces(q)`: **본 작업의 다른 work 실행 과정**에서 키워드로 검색합니다(자기 의도의 단계는 자동 제외), 적중 항목에는 `intent_id`가 포함됩니다;
+- `search_all_worker_traces(q)`: **본 작업의 다른 work 실행 과정**에서 키워드로 검색합니다(자기 의도의 단계는 자동 제외), 검색에 매칭된 항목에는 `intent_id`가 포함됩니다;
 - `list_worker_traces` / `get_worker_trace(intent_id, step_ids=[…])`: 먼저 어떤 work가 실행되었는지 보고, 특정 work의 몇 개 단계 전체 내용을 가져와 디테일을 교환합니다.
 
 이렇게 하면 탐색 그래프에 아직 대응하는 fact가 없더라도, 후속 worker가 타인의 과정 중 관찰을 재사용할 수 있습니다 — **정보가 worker 사이에서 "실행 과정" 단위로 흐르되**, 경계는 변하지 않습니다(각 worker는 여전히 자기가 받은 의도 하나만 수행).
@@ -452,7 +452,7 @@ flowchart LR
   WA["worker A(의도 #12)"] -->|"매 단계 activity"| ACT[("탐색 그래프 · activity 과정 저장소")]
   WB["worker B(의도 #34)"] -->|"매 단계 activity"| ACT
   WC["worker C(의도 #56)"] ==>|"1) search_all_worker_traces(q)"| ACT
-  ACT ==>|"2) A/B의 단계 적중(자기 제외)"| WC
+  ACT ==>|"2) A/B의 매칭된 단계(자기 제외)"| WC
   WC ==>|"3) get_worker_trace(id, step_ids)"| ACT
   ACT ==>|"4) 전체 과정 내용 반환"| WC
 ```
@@ -509,7 +509,7 @@ https://github.com/oritera/Cairn
 
 - **본 도구를 사용하여 어떠한 웹사이트, 온라인 서비스 또는 네트워크 연결 시스템에 대해서도 스캔·탐지·익스플로잇 또는 공격을 수행하는 것을 엄격히 금지합니다**(인가 여부, 자체 자산 여부와 무관);
 - 본 도구를 실제 침투 테스트, 공방 대항 또는 운영 환경에 사용하는 것을 엄격히 금지합니다;
-- 본 도구를 불법 침입, 데이터 절취, 랜섬, 서비스 거부 또는 모든 파괴적·범죄적 활동에 사용하는 것을 엄격히 금지합니다;
+- 본 도구를 불법 침입, 데이터 절취, 갈취, 서비스 거부 또는 모든 파괴적·범죄적 활동에 사용하는 것을 엄격히 금지합니다;
 - 본 도구를 이용해 소재 국가/지역의 법률·법규를 위반하는 행위를 하는 것을 엄격히 금지합니다.
 
 ### 준법 책임 (대한민국 기준)
