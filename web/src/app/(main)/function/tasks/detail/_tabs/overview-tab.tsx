@@ -466,7 +466,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <Input
               className="h-7 min-w-56 flex-1 text-sm"
-              placeholder="목표 추가, 예: '관리자 계정 월권 접근 획득'"
+              placeholder="목표 추가, 예: '관리자 계정 권한 우회 접근 획득'"
               value={goalText}
               onChange={(e) => setGoalText(e.target.value)}
               onKeyDown={(e) => {

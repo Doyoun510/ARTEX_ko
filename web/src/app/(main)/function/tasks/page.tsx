@@ -232,10 +232,10 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
   { value: "created", label: "생성됨" },
   { value: "queued", label: "대기 중" },
   { value: "running", label: "실행 중" },
-  { value: "paused", label: "일시정지됨" },
-  { value: "done", label: "완료됨" },
+  { value: "paused", label: "일시 중지됨" },
+  { value: "done", label: "완료" },
   { value: "failed", label: "실패" },
-  { value: "timeout", label: "시간 초과됨" },
+  { value: "timeout", label: "시간 초과" },
 ];
 
 // Select는 빈 문자열 value를 받지 않으므로, 필터·생성 폼·일괄 이동에서 '분류 없음'은
@@ -1468,7 +1468,7 @@ function archiveBlockReason(task: Task): string {
   if (task.queued) return "대기 중인 작업은 먼저 일시정지해야 합니다";
   if (!ARCHIVABLE_STATUSES.has(task.status)) return "실행 중이거나 아직 끝나지 않은 작업은 먼저 일시정지해야 합니다";
   if (task.archive_blocked_by_task_id) {
-    return `의존 작업(미아카이브 작업 #${task.archive_blocked_by_task_id})을 먼저 아카이브하세요`;
+    return `이 작업을 직접 상속하는 미아카이브 작업: #${task.archive_blocked_by_task_id}. 의존 작업을 먼저 아카이브하세요.`;
   }
   return "";
 }

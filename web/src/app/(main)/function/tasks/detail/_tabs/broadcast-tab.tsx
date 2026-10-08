@@ -39,7 +39,7 @@ const POLL_MS = 8000;
 
 type KindMeta = { label: string; icon: LucideIcon; dot: string; chip: string };
 
-// 브로드캐스트 자체의 표시 메타데이터. 탐색 체인 그래프의 것을 일부러 재사용하지 않는다: 그래프는 토폴로지 관점(노드 카드, 연결선 색상)이고
+// 브로드캐스트 자체의 표시 메타데이터. 탐색 그래프의 것을 일부러 재사용하지 않는다: 그래프는 토폴로지 관점(노드 카드, 연결선 색상)이고
 // 브로드캐스트는 흐름 관점(타임라인 행)이라 정보 밀도와 색상 요구가 달라, 각자 발전시키는 편이 수월하다.
 const KIND_META: Record<string, KindMeta> = {
   begin: {
