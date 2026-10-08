@@ -100,7 +100,7 @@ func (g *Guard) applyIntercept(ctx context.Context, ev hook.Event) hook.Result {
 	}
 	switch dec.Action {
 	case "deny":
-		// 관측: deny 적중은 승인을 막지 않고 denied 한 건을 바로 기록(이력/작업 인터셉트 페이지에서 확인 가능).
+		// 관측: deny 매칭은 승인을 막지 않고 denied 한 건을 바로 기록(이력/작업 인터셉트 페이지에서 확인 가능).
 		g.interceptor.Log(ctx, intercept.ConvIDFromContext(ctx), dec, ev.ToolName, ev.Input, "denied")
 		return g.block(ev.ToolName, systemBlockMessage(dec.Message), "")
 	case "allow":
@@ -137,7 +137,7 @@ func (g *Guard) applyIntercept(ctx context.Context, ev hook.Event) hook.Result {
 // model-facing tool_result carries this framing.
 func systemBlockMessage(reason string) string {
 	return "[ARTEX 플랫폼 관제·비대상 방어] 이 호출은 플랫폼에 의해 차단되었습니다. " +
-		"원인: " + reason + ". 이 작업은 금지됩니다."
+		"원인: " + reason + ". 이 동작은 금지됩니다."
 }
 
 var reBlocked = regexp.MustCompile(`(?i)\b(403|forbidden|waf|blocked|rate.?limit|429|captcha|denied)\b`)
