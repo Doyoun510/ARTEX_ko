@@ -9,7 +9,7 @@ import (
 
 // 자산 인터셉트 규칙의 매칭/실행 레이어. asset_intercept.go는 규칙 저장만 담당하고, 여기서는
 // '대상 자산'의 도메인/IP/URL을 활성 규칙과 매칭한다. agent 도구(add_intent·
-// insert_assets)가 의도 하달 / 자산 삽입 전에 호출하며, 적중하면 거부한다.
+// insert_assets)가 의도 하달 / 자산 삽입 전에 호출하며, 매칭되면 거부한다.
 
 // AssetInterceptKindLabel은 kind의 라벨을 반환하며, agent 설명 메시지에 쓴다.
 func AssetInterceptKindLabel(kind string) string {
@@ -32,16 +32,16 @@ func AssetInterceptKindLabel(kind string) string {
 	return kind
 }
 
-// Reason은 읽을 수 있는 적중 원인을 반환한다. 형식: 자산 인터셉트 규칙 적중 [도메인(퍼지): .gov.cn](비고).
+// Reason은 읽을 수 있는 매칭 원인을 반환한다. 형식: 자산 인터셉트 규칙 매칭 [도메인(퍼지): .gov.cn](비고).
 func (r AssetInterceptRule) Reason() string {
-	s := fmt.Sprintf("자산 인터셉트 규칙 적중 [%s: %s]", AssetInterceptKindLabel(r.Kind), r.Pattern)
+	s := fmt.Sprintf("자산 인터셉트 규칙 매칭 [%s: %s]", AssetInterceptKindLabel(r.Kind), r.Pattern)
 	if note := strings.TrimSpace(r.Note); note != "" {
 		s += "(" + note + ")"
 	}
 	return s
 }
 
-// matchOne은 단일 활성 규칙이 주어진 도메인/IP/URL 후보 문자열에 적중하는지 판정하고, 적중한 구체 값을 반환한다.
+// matchOne은 단일 활성 규칙이 주어진 도메인/IP/URL 후보 문자열에 매칭되는지 판정하고, 매칭된 구체 값을 반환한다.
 func matchOne(r AssetInterceptRule, domains, ips, urls []string) (string, bool) {
 	p := strings.TrimSpace(r.Pattern)
 	if p == "" {
@@ -100,7 +100,7 @@ func matchOne(r AssetInterceptRule, domains, ips, urls []string) (string, bool) 
 	return "", false
 }
 
-// MatchAssetInterceptRules는 주어진 도메인/IP/URL 후보 문자열에 적중하는 첫 번째 활성 규칙과 적중한 구체 값을 반환한다.
+// MatchAssetInterceptRules는 주어진 도메인/IP/URL 후보 문자열에 매칭되는 첫 번째 활성 규칙과 매칭된 구체 값을 반환한다.
 // insert_assets가 원본 입력(아직 저장되지 않은 assetInputItem)으로 매칭할 때 쓴다.
 func MatchAssetInterceptRules(rules []AssetInterceptRule, domains, ips, urls []string) (AssetInterceptRule, string, bool) {
 	for _, r := range rules {
@@ -115,7 +115,7 @@ func MatchAssetInterceptRules(rules []AssetInterceptRule, domains, ips, urls []s
 }
 
 // interceptCandidates는 이미 저장된 자산에서 인터셉트 매칭용 도메인/IP/URL 후보 문자열을 추출한다.
-// URL의 host가 분리·분류되어, 'URL만 있는' 서비스 자산도 도메인/IP 규칙에 적중할 수 있다.
+// URL의 host가 분리·분류되어, 'URL만 있는' 서비스 자산도 도메인/IP 규칙에 매칭될 수 있다.
 func (a *Asset) interceptCandidates() (domains, ips, urls []string) {
 	add := func(dst *[]string, s string) {
 		if s = strings.TrimSpace(s); s != "" {
@@ -176,8 +176,8 @@ type AssetGateDecision struct {
 }
 
 // EvaluateAssetGate는 작업 수준 게이트 판정을 수행한다:
-//  1. 활성 blockRules 중 하나라도 적중 → 거부(인터셉트 원인).
-//  2. 그 외 allowRules에 활성 항목이 있고 모두 적중하지 않으면 → 거부(허용 범위 밖).
+//  1. 활성 blockRules 중 하나라도 매칭 → 거부(인터셉트 원인).
+//  2. 그 외 allowRules에 활성 항목이 있고 모두 매칭되지 않으면 → 거부(허용 범위 밖).
 //  3. 그 외에는 허용.
 //
 // allowRules가 비었거나 활성 항목이 없을 때는 허용 게이트가 작동하지 않는다(즉 화이트리스트 미적용, 전부 허용),
@@ -194,7 +194,7 @@ func EvaluateAssetGate(blockRules, allowRules []AssetInterceptRule, domains, ips
 	return AssetGateDecision{Allowed: true}
 }
 
-// AssetInterceptHit은 게이트에 거부된 자산을 기술한다(인터셉트 적중 또는 허용 범위 밖).
+// AssetInterceptHit은 게이트에 거부된 자산을 기술한다(인터셉트 매칭 또는 허용 범위 밖).
 type AssetInterceptHit struct {
 	Asset  *Asset
 	Reason string // 읽을 수 있는 원인

@@ -8,7 +8,7 @@ import (
 )
 
 // 작업 레벨 자산 인터셉트/허용 규칙의 CRUD. 규칙은 task_id에 귀속되며, 그 작업에만 적용:
-// action=block 인터셉트(테스트 금지), action=allow 허용(화이트리스트). 실행 판정은 db.EvaluateAssetGate 참고.
+// action=block 차단(테스트 금지), action=allow 허용(화이트리스트). 실행 판정은 db.EvaluateAssetGate 참고.
 
 type taskInterceptRuleReq struct {
 	Enabled bool   `json:"enabled"`

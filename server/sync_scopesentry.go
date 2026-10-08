@@ -24,7 +24,7 @@ import (
 
 const (
 	scopeSentryMCPName = "ScopeSentry"
-	syncMaxPerType     = 5000 // 단일 대상·단일 유형의 DB 저장 보호 상한
+	syncMaxPerType     = 5000 // 단일 대상·단일 유형의 자산 등록 보호 상한
 	syncDefaultPage    = 100
 )
 
