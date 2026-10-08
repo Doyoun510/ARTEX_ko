@@ -18,7 +18,7 @@ import (
 //   ④ 실행 중 worker drain 대기(grace 적용) → ⑤ 최종 라운드 planner 판정 → ⑥ 종료 상태 확정(가드 포함)
 
 const (
-	settleDrainGrace     = 90 * time.Second // 실행 중 worker가 우아하게 마무리하는 상한; 초과하면 하드 cancel
+	settleDrainGrace     = 90 * time.Second // 실행 중 worker가 정상적으로 마무리하는 상한; 초과하면 하드 cancel
 	deadlinePollInterval = 2 * time.Second  // deadline 미확정/LLM 미준비 시 폴링 간격
 	deadlineMaxSleep     = 30 * time.Second // 1회 최대 수면(종료 상태를 주기적으로 재확인하기 쉽게)
 )

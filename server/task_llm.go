@@ -582,7 +582,7 @@ func (s *Server) agentsForTask(t *Task) *taskAgentBundle {
 	pl.SetProxy(s.m.ProxyAddr(), s.m.ProxyCACert())
 	pl.SetWebSearch(s.webSearchFor("planner"))
 	pl.SetConstraintInject(s.constraintInjectPlanner) // 동작 제약을 planner에 주입(설정 가능, 기본 켜짐)
-	// cold-digest §7: 콜드 노드 백그라운드 압축. 엔진이 권위 해석기를 거쳐 실제로 구동하는 것이 바로 이 per-task planner
+	// cold-digest §7: cold 상태의 노드 백그라운드 압축. 엔진이 권위 해석기를 거쳐 실제로 구동하는 것이 바로 이 per-task planner
 	// (agentsForTask)이며, Compactor는 반드시 여기에 연결해야 한다. 작업 라우팅을 타는 planner provider(§4: agent와
 	// 같은 모델, 작업 LLM 체인에 따라 해석), 압축은 Complete로 body를 한 번에 생성.
 	pl.SetCompactor(agent.NewCompactor(plannerRuntime, "task-router"))

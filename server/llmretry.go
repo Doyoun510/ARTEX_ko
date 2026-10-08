@@ -83,14 +83,14 @@ func (e *Engine) modelErrorRetryPolicy() (retries int, backoff time.Duration) {
 // inject (see steerHooks.Stop). It deliberately reuses layer ②'s knob —— '빈 응답
 // 재시도 횟수': 둘은 같은 일의 두 수단이다. SDK 그 겹은 '내용 블록이 하나도 없음'을 다루고, 수단은
 // 같은 요청을 그대로 재전송; 여기서는 '사고만 있고 본문도 도구도 없음'을 다루고, 수단은 지시 하나를 덧붙여
-// 모델이 기존 사고를 가지고 이어가게 한다(그대로 재전송은 이렇게 컨텍스트 형태로 결정되는 공회전에 의미 없음). 빈 것 판단 기준이
+// 모델이 기존 사고를 가지고 이어가게 한다(그대로 재전송하는 것은 이렇게 컨텍스트 형태로 결정되는 진행이 없는 상황에서는 의미가 없다). 빈 것 판단 기준이
 // 다른 건 SDK가 '이벤트를 yield한 적 있는지'를 기준으로 삼기 때문이고, 사고 증분 자체가 이벤트다 —— 하지만 사용자가
 // '빈 응답 재시도 몇 번'을 설정할 때 표현하려는 건 '모델이 실질 내용을 산출하지 않으면 한 번 더'이고, 두 겹이 같은 횟수를 공유해야
 // 이 심상에 맞는다.
 //
 // 특정 profile의 재정의가 아니라 전역 정책을 읽음: 한 run이 도중에 failover로 profile을 바꿀 수 있지만, 이것은
 // 의도 전체의 총량 게이트라, 엔드포인트가 바뀐다고 따라 바뀌면 안 된다. 의미는 SDK의 emptyRetries()와 동형:
-// 0 = 기본 defaultEmptyTurnNudges; -1(음수) = 공회전 이어 실행 끔; >0 = 그 값 사용.
+// 0 = 기본 defaultEmptyTurnNudges; -1(음수) = 진행 없음 시 이어 실행 끔; >0 = 그 값 사용.
 func (e *Engine) emptyTurnNudgeLimit() int {
 	if e == nil || e.m == nil || e.m.pg == nil {
 		return defaultEmptyTurnNudges

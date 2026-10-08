@@ -261,7 +261,7 @@ func (s *Server) customTools() ([]actool.CoreTool, error) {
 }
 
 // buildCustomTool turns one custom-tool row into a CoreTool. Empty schema → a thin
-// {args:string} (얇은 셸 도구), so command/http templates can use {args}.
+// {args:string} (얇은 래퍼 도구), so command/http templates can use {args}.
 func (s *Server) buildCustomTool(t *db.Tool) actool.CoreTool {
 	schema := ensureSchema(t.Schema)
 	key, kind, execRaw := t.Key, t.Kind, t.Exec
