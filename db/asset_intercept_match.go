@@ -21,18 +21,18 @@ func AssetInterceptKindLabel(kind string) string {
 	case "exact_url":
 		return "URL(완전 일치)"
 	case "fuzzy_domain":
-		return "도메인(퍼지)"
+		return "도메인(부분 일치)"
 	case "fuzzy_ip":
-		return "IP(퍼지)"
+		return "IP(부분 일치)"
 	case "fuzzy_url":
-		return "URL(퍼지)"
+		return "URL(부분 일치)"
 	case "cidr":
 		return "CIDR 대역"
 	}
 	return kind
 }
 
-// Reason은 읽을 수 있는 매칭 원인을 반환한다. 형식: 자산 인터셉트 규칙 매칭 [도메인(퍼지): .gov.cn](비고).
+// Reason은 읽을 수 있는 매칭 원인을 반환한다. 형식: 자산 인터셉트 규칙 매칭 [도메인(부분 일치): .gov.cn](비고).
 func (r AssetInterceptRule) Reason() string {
 	s := fmt.Sprintf("자산 인터셉트 규칙 매칭 [%s: %s]", AssetInterceptKindLabel(r.Kind), r.Pattern)
 	if note := strings.TrimSpace(r.Note); note != "" {

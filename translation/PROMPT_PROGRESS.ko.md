@@ -1034,3 +1034,11 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **DB 커밋 근거**: evidence/store.go의 WithInstalledSnapshots가 본문 설치 후 복원 callback을 호출하며, server/task_archives.go:287–289/332–340에서 DB 복원으로 연결한다. db/task_archives_restore.go:301의 tx.Commit과 db/finding_traffic.go:27–39의 WithEvidenceTx commit 종료를 확인해 64행을 메타데이터 커밋으로 정리했다. 62행은 트랜잭션을 커밋한 뒤에만 planner에게 알립니다로 적용했다. 실제 DB 실행이나 커밋 성공을 관측한 것이 아니다.
 - **정적 보존·상태**: 문서 99줄·LF·들여쓰기·코드 블록·인라인 코드·URL/경로·숫자·키·enum과 지정 표현 밖 바이트를 역치환 비교로 확인했다. 순서·조건·매시간 실행·최소 24시간 지연·공유 증거 보존 의미는 유지한다. 앞서 server/llmpool_test.go의 순환 전환 순서 인용 수정과 나머지 기존 변경은 그대로다. H01–H07의 과거 보류 근거는 이력으로 보존하고 로컬 감사에 승인 후 상태를 별도로 기록했다. 현재 문서의 번역 보류 0; 코드/예시/placeholder 중국어는 보존한다. M100·운영 퍼지 4곳·M107·기존 원문 정책/기능/호환성 후속은 유지한다.
 - **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 누적 `/tmp/artex-evidence-doc-omissions.diff`에는 문서·테스트·용어집·PROGRESS만 포함하고, 감사 MD/TSV는 Git 제외 translation/audit/에만 보관한다. 기존 로컬 변경·미추적 파일·Git index·제외 설정을 보존했다. fetch·병합·stage·commit·push 없음.
+
+
+### M100 · M044 운영 후속 승인 보완 [지정 수정·정적 대응 완료 / 실행 미검증]
+- **기준·범위**: ko-translation, HEAD `844731aabdb565ff7641db6e5027ea4d72e14fc3`. 대상 기존 변경·staged·MERGE_HEAD 부재를 확인하고 traffic/traffic.go:1541 오류 한 곳과 db/asset_intercept_match.go:24·26·28·35의 네 표현만 수정했다.
+- **승인 결과**: M100 상태 파서→상태 확인 함수는 archiveCommitted의 실제 상태 조회 역할에 맞춘 번역 보완이다. 원문 状态解析器 명칭의 모호성은 감사 근거로 보존하며 원문 기능·콜백 정책을 변경하지 않는다. M044 운영 후속은 도메인/IP/URL 라벨 및 Reason 주석 인용을 부분 일치로 통일했다. 기존 확정 용어를 재사용하며 용어집 수정 없음.
+- **정적 보존·연결**: 소스 두 파일의 줄 수·LF·들여쓰기 및 다섯 지정 행 밖 바이트가 수정 전과 동일함을 역치환 비교로 확인했다. %d/journal.ArchiveID·nil 검사·콜백·복원/정리 분기·fuzzy_* enum·pattern·Contains·출력 구조·기존 매칭 표현을 보존했다. 직접 테스트 기대값 의존은 재검색에서 발견하지 못해 테스트를 수정하지 않았다.
+- **기록·후속**: 로컬 감사 MD/TSV의 원문·수정 전 문구·발견 근거·과거 추가 확인 상태는 이력으로 보존하고 승인 후 상태를 별도로 기록했다. 커버리지는 소스 두 파일의 승인 범위와 해시만 갱신하며 기존 A/S·M 이력 및 원문 정책/기능/호환성·실제 DB 미확인 사항은 유지한다. 기존 로컬 변경·미추적 파일·Git index·제외 설정을 보존한다.
+- **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. `/tmp/artex-m100-m044-operational-approved.diff`에는 소스 두 파일과 이번 PROGRESS만 포함한다. 감사 MD/TSV는 Git 제외 translation/audit/에 로컬로만 보관한다. fetch·병합·stage·commit·push 없음.

@@ -1538,7 +1538,7 @@ func (t *Traffic) RecoverHostDeleteStages(archiveCommitted func(int64, int64) (b
 		committed := false
 		if journal.ArchiveID > 0 {
 			if archiveCommitted == nil {
-				errs = append(errs, fmt.Errorf("트래픽 아카이브 %d에 상태 파서가 없습니다", journal.ArchiveID))
+				errs = append(errs, fmt.Errorf("트래픽 아카이브 %d에 상태 확인 함수가 없습니다", journal.ArchiveID))
 				continue
 			}
 			committed, err = archiveCommitted(journal.ArchiveID, journal.TaskID)
