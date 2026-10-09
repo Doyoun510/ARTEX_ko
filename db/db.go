@@ -193,7 +193,7 @@ var builtinAgents = []builtinAgent{
 		{"WorkerName", "worker 자기 식별(선택)", "worker-1", "runtime"},
 	}, false, nil},
 	// Auto: 내장 '플랫폼 동작' agent. 침투 오케스트레이션 루프에 참여하지 않고, 대화 페이지로 구동되며, 도구로 플랫폼 동작을 수행한다.
-	{"auto", "Auto", "assistant", "플랫폼 동작 도우미: 도구로 작업(생성/조회/일시중지/힌트 제공)과 자산을 관리하고, skill·커스텀 도구·MCP를 생성/수정할 수 있다.", nil, false, nil},
+	{"auto", "Auto", "assistant", "플랫폼 동작 도우미: 도구로 작업(생성/조회/일시 중지/힌트 제공)과 자산을 관리하고, skill·커스텀 도구·MCP를 생성/수정할 수 있다.", nil, false, nil},
 	// 침투 테스트: 내장 '독립 침투' agent. 대화 페이지로 구동되며, 혼자 정찰부터 마무리까지 전체 침투 체인을 수행하고, 스스로 계획·실행·검증한다. 기본으로 대화형 shell을 켠다.
 	{"pentest", "침투 테스트", "assistant", "독립 침투 agent: 혼자 정찰→공격 표면 탐색→심화 익스플로잇→검증→마무리까지 전체 체인을 수행하고, 스스로 계획·실행·대립적으로 검증한다.", nil, true, intp(0)},
 }

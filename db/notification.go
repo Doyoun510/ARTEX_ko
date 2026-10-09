@@ -21,7 +21,7 @@ import (
 //  1. 취약점 쓰기 트랜잭션(RecordFindingTx)은 InsertNotificationEventTx만 호출해 별도 조회 없이 한 번 삽입하고,
 //     알림 관련 테이블을 읽지 않고 필터 매칭도 하지 않는다. 여기에 도입하는 어떤 읽기든
 //     사용자가 잘못 설정한 필터 조건 때문에 취약점 쓰기 트랜잭션을 오염시키거나 중단시킬 수 있다.
-//  2. 필터 매칭은 절대 오류를 내지 않는다: 설정이 기형이면 일괄 '적중'으로 처리(notify.Match 참조). 차라리 더 보낼지언정
+//  2. 필터 매칭은 절대 오류를 내지 않는다: 설정이 기형이면 일괄 '매칭'으로 처리(notify.Match 참조). 차라리 더 보낼지언정
 //     빠뜨려서는 안 된다.
 
 // ErrNotificationChannelNotFound 채널이 존재하지 않음.
@@ -270,7 +270,7 @@ func (d *DB) AddNotificationEvent(ctx context.Context, kind string, findingID in
 // SQL로 여섯 조합의 매칭을 표현하면 쿼리 유지보수가 어렵고, 채널 수는 '사람이 손으로 설정한 몇 개'라
 // 전량 로드 후 메모리에서 하나씩 비교하는 편이 더 빠르고 테스트도 쉽다.
 //
-// 어떤 채널에도 적중하지 않은 이벤트도 fanned_out으로 표시된다 —— 안 그러면 영원히 분배 대기 집합에 남아
+// 어떤 채널에도 매칭되지 않은 이벤트도 fanned_out으로 표시된다 —— 안 그러면 영원히 분배 대기 집합에 남아
 // 매 tick마다 다시 스캔된다.
 func (d *DB) FanOutPendingEvents(ctx context.Context, limit int) (eventCount, deliveryCount int, err error) {
 	if limit <= 0 {
@@ -346,7 +346,7 @@ WHERE NOT fanned_out ORDER BY id FOR UPDATE SKIP LOCKED LIMIT $1`, limit)
 		}
 	}
 
-	// 이번 라운드 이벤트를 분배 완료로 표시한다. 어떤 채널에도 적중하지 않은 이벤트도 함께 표시한다(함수 주석 참조).
+	// 이번 라운드 이벤트를 분배 완료로 표시한다. 어떤 채널에도 매칭되지 않은 이벤트도 함께 표시한다(함수 주석 참조).
 	ids := make([]string, 0, len(events))
 	markArgs := make([]any, 0, len(events))
 	for _, ev := range events {

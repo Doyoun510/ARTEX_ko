@@ -329,8 +329,8 @@ func (s *Server) toolSpawnTask() actool.CoreTool {
 }
 
 func (s *Server) toolPauseTask() actool.CoreTool {
-	return wrTool("pause_task", "지정한 작업을 일시정지한다(그 planner/worker 루프를 멈춤).",
-		objSchema(map[string]any{"task_id": strParam("일시정지할 작업 id")}, "task_id"),
+	return wrTool("pause_task", "지정한 작업을 일시 중지한다(그 planner/worker 루프를 멈춤).",
+		objSchema(map[string]any{"task_id": strParam("일시 중지할 작업 id")}, "task_id"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			var a struct {
 				TaskID string `json:"task_id"`

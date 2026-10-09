@@ -242,7 +242,7 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
 // 이 센티넬 값으로 통일하고, 제출 시 백엔드의 null로 변환한다.
 const UNCATEGORIZED_VALUE = "uncategorized";
 
-// 일시정지 가능 = 비종료 상태이며 일시정지되지 않음, 백엔드 applyTaskControlWithCause의 게이팅과 일치
+// 일시 중지 가능 = 비종료 상태이며 일시 중지되지 않음, 백엔드 applyTaskControlWithCause의 게이팅과 일치
 // (done/failed/timeout은 종료 상태); paused만 재개 가능. 행 내 버튼과 일괄 컨트롤이 이 판단을 공유하며,
 // 양쪽이 하나는 클릭 가능, 다른 하나는 불가능해지는 불일치가 생기지 않는다.
 const PAUSABLE_STATUSES = new Set<TaskStatus>(["created", "queued", "running"]);
@@ -543,7 +543,7 @@ export default function TasksPage() {
     [load],
   );
 
-  // controlTask는 행 내 일시정지/재개: 일괄은 controlTasksBatch, 단일 행은 단일 작업 API를 거쳐
+  // controlTask는 행 내 일시 중지/재개: 일괄은 controlTasksBatch, 단일 행은 단일 작업 API를 거쳐
   // '먼저 체크하고 일괄 클릭'을 생략한다. lastRef를 비워 다음 폴링이 페이로드가 같아도 그대로 받게 한다. 안 그러면 상태
   // 되쓰기가 중복 제거로 막혀 버튼이 반응 없어 보인다.
   const controlTask = React.useCallback(
@@ -551,10 +551,10 @@ export default function TasksPage() {
       try {
         const result = await api.controlTask(id, action);
         toast.success(
-          action === "pause" ? `작업 #${id} 일시정지됨` : `작업 #${id} 재개됨${result.queued ? ", 큐에 추가됨" : ""}`,
+          action === "pause" ? `작업 #${id} 일시 중지됨` : `작업 #${id} 재개됨${result.queued ? ", 큐에 추가됨" : ""}`,
         );
       } catch (e) {
-        toast.error(`${action === "pause" ? "일시정지" : "재개"} 실패: ${(e as Error).message}`);
+        toast.error(`${action === "pause" ? "일시 중지" : "재개"} 실패: ${(e as Error).message}`);
       } finally {
         // 성패와 무관하게 새로고침: 실패는 대개 상태가 이미 바뀐 것이라, 다시 가져와야 버튼이 올바른 형태로 돌아온다.
         lastRef.current = "";
@@ -719,7 +719,7 @@ export default function TasksPage() {
         if (succeeded.length > 0) {
           toast.success(
             action === "pause"
-              ? `작업 ${succeeded.length}개 일시정지됨`
+              ? `작업 ${succeeded.length}개 일시 중지됨`
               : `작업 ${succeeded.length}개 재개됨${succeeded.some((item) => item.queued) ? ", 일부 작업이 큐에 추가됨" : ""}`,
           );
         }
@@ -733,7 +733,7 @@ export default function TasksPage() {
         lastRef.current = "";
         load();
       } catch (error) {
-        toast.error(`${action === "pause" ? "일괄 일시정지" : "일괄 재개"} 실패: ${(error as Error).message}`);
+        toast.error(`${action === "pause" ? "일괄 일시 중지" : "일괄 재개"} 실패: ${(error as Error).message}`);
       } finally {
         setBatchControlling(null);
       }
@@ -858,7 +858,7 @@ export default function TasksPage() {
                       ) : (
                         <PauseIcon data-icon="inline-start" />
                       )}
-                      일시정지 {pausableTaskIDs.length}
+                      일시 중지 {pausableTaskIDs.length}
                     </Button>
                   )}
                   {resumableTaskIDs.length > 0 && (
@@ -1430,7 +1430,7 @@ function taskControlIcon(pending: boolean, action: "pause" | "resume" | null) {
   return <PauseIcon />;
 }
 
-// TaskControlButton은 행 내 일시정지/재개 스위치. 종료 상태 작업은 숨기지 않고 disabled로 렌더링,
+// TaskControlButton은 행 내 일시 중지/재개 스위치. 종료 상태 작업은 숨기지 않고 disabled로 렌더링,
 // 이렇게 각 행 동작 열 너비가 일정해, 버튼 위치가 상태에 따라 튀지 않는다.
 function TaskControlButton({
   task,
@@ -1441,13 +1441,13 @@ function TaskControlButton({
 }) {
   const [pending, setPending] = React.useState(false);
   const action = taskControlAction(task.status);
-  const label = action === "resume" ? "작업 재개" : "작업 일시정지";
+  const label = action === "resume" ? "작업 재개" : "작업 일시 중지";
   return (
     <Button
       size="icon"
       variant="ghost"
       aria-label={label}
-      title={action ? label : "이 상태는 일시정지/재개할 수 없음"}
+      title={action ? label : "이 상태는 일시 중지/재개할 수 없음"}
       disabled={!action || pending}
       onClick={async () => {
         if (!action) return;
@@ -1465,8 +1465,8 @@ function TaskControlButton({
 }
 
 function archiveBlockReason(task: Task): string {
-  if (task.queued) return "대기 중인 작업은 먼저 일시정지해야 합니다";
-  if (!ARCHIVABLE_STATUSES.has(task.status)) return "실행 중이거나 아직 끝나지 않은 작업은 먼저 일시정지해야 합니다";
+  if (task.queued) return "대기 중인 작업은 먼저 일시 중지해야 합니다";
+  if (!ARCHIVABLE_STATUSES.has(task.status)) return "실행 중이거나 아직 끝나지 않은 작업은 먼저 일시 중지해야 합니다";
   if (task.archive_blocked_by_task_id) {
     return `이 작업을 직접 상속하는 미아카이브 작업: #${task.archive_blocked_by_task_id}. 의존 작업을 먼저 아카이브하세요.`;
   }
@@ -1861,7 +1861,7 @@ function TaskArchivesPanel({ onChanged }: { onChanged: () => void }) {
           <Empty className="mx-4 border border-dashed lg:mx-6">
             <EmptyHeader>
               <EmptyTitle>작업 아카이브 없음</EmptyTitle>
-              <EmptyDescription>일시정지 또는 종료 상태 작업은 현재 작업 목록에서 아카이브할 수 있습니다.</EmptyDescription>
+              <EmptyDescription>일시 중지 또는 종료 상태 작업은 현재 작업 목록에서 아카이브할 수 있습니다.</EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (

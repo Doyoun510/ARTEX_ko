@@ -145,8 +145,8 @@ export function assetPathOf(nodes: FindingAssetNode[], key: string | null): (Fin
   return path.map((node, index) => ({ ...node, display: shortLabel(node, path[index - 1]) }));
 }
 
-// filterTree는 키워드로 필터링한다: 적중한 노드는 남기고, 그 조상 체인 전체도 보존한다(조상 자체는 적중하지 않아도 된다).
-// 적중 노드의 자손도 함께 남겨 계속 드릴다운할 수 있게 한다.
+// filterTree는 키워드로 필터링한다: 매칭된 노드는 남기고, 그 조상 체인 전체도 보존한다(조상 자체는 매칭되지 않아도 된다).
+// 매칭된 노드의 자손도 함께 남겨 계속 드릴다운할 수 있게 한다.
 function filterTree(nodes: TreeNode[], keyword: string): TreeNode[] {
   const kw = keyword.trim().toLowerCase();
   if (!kw) return nodes;
@@ -200,7 +200,7 @@ export function AssetTree({
   const roots = React.useMemo(() => buildAssetTree(nodes), [nodes]);
   const visible = React.useMemo(() => filterTree(roots, keyword), [roots, keyword]);
 
-  // 검색 시 일치한 분기를 전부 펼친다. 안 그러면 적중 항목이 접힌 노드 안에 숨어 검색이 무의미해진다.
+  // 검색 시 일치한 분기를 전부 펼친다. 안 그러면 검색에 매칭된 항목이 접힌 노드 안에 숨어 검색이 무의미해진다.
   const searching = keyword.trim() !== "";
   const searchKeys = React.useMemo(() => (searching ? collectKeys(visible) : null), [searching, visible]);
 

@@ -18,7 +18,7 @@ import (
 // ---------------------------------------------------------------------------
 
 // FindingUnassignedAsset은 '미연관 자산' 노드 key이자, 목록 API의 필터 센티넬이다:
-// asset_ids가 비었거나 가리키는 자산이 삭제된 발견에 적중한다.
+// asset_ids가 비었거나 가리키는 자산이 삭제된 발견에 매칭된다.
 const FindingUnassignedAsset = "__none__"
 
 // findingAssetTreeMaxNodes는 프런트에 반환하는 노드 상한이다. 초과 시 바닥에서 위로 한 층씩 통째로 버린다
@@ -244,7 +244,7 @@ func countFinding(n *FindingAssetNode, h findingAssetHit) {
 	}
 }
 
-// loadFindingAssetRows는 적중한 자산 행을 읽고, 라운드마다 조상을 채운다(service의 호스트 도메인/IP,
+// loadFindingAssetRows는 매칭된 자산 행을 읽고, 라운드마다 조상을 채운다(service의 호스트 도메인/IP,
 // 서브도메인의 루트 도메인). 조상 자체는 발견이 없을 수 있지만, 트리가 형태를 갖추려면 필요하다.
 func (d *DB) loadFindingAssetRows(ids map[int64]bool) (map[int64]*assetRow, error) {
 	byID := map[int64]*assetRow{}
