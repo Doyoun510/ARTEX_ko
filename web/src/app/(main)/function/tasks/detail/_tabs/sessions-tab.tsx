@@ -181,7 +181,7 @@ function statusIcon(status: SessionStatus) {
       return <CircleXIcon className="size-3.5 text-red-500" />;
     case "exhausted": // 스텝 소진(max_turns 도달)
       return <ZapOffIcon className="size-3.5 text-violet-500" />;
-    case "deleted": // 사용자 소프트 삭제
+    case "deleted": // 사용자 논리 삭제
       return <CircleSlashIcon className="size-3.5 text-muted-foreground" />;
   }
 }
@@ -311,7 +311,7 @@ function intentStatus(state: string): SessionStatus {
       return "paused";
     case "open": // 대기, 실행 중과 구분
       return "pending";
-    case "deleted": // 사용자 소프트 삭제
+    case "deleted": // 사용자 논리 삭제
       return "deleted";
     default: // running
       return "running";
@@ -425,8 +425,8 @@ function SessionItem({
             size="icon-xs"
             onClick={onCancel}
             disabled={controlling}
-            title="이 의도 삭제(사유 입력 필요, 소프트 삭제/하드 삭제 선택)"
-            aria-label="이 의도 삭제(사유 입력 필요, 소프트 삭제/하드 삭제 선택)"
+            title="이 의도 삭제(사유 입력 필요, 논리 삭제/하드 삭제 선택)"
+            aria-label="이 의도 삭제(사유 입력 필요, 논리 삭제/하드 삭제 선택)"
             className="text-destructive hover:text-destructive"
           >
             <Trash2Icon />
@@ -536,7 +536,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
   const [controllingIntent, setControllingIntent] = React.useState<string | null>(null);
   const [cancelIntent, setCancelIntent] = React.useState<Session | null>(null);
   const [cancelReason, setCancelReason] = React.useState("");
-  // 삭제 모드: soft=소프트 삭제(기본, deleted로 설정 + 사유 기록, 데이터 보존) | hard=하드 삭제(독점 하위 노드를 연쇄 제거).
+  // 삭제 모드: soft=논리 삭제(기본, deleted로 설정 + 사유 기록, 데이터 보존) | hard=하드 삭제(독점 하위 노드를 연쇄 제거).
   const [deleteMode, setDeleteMode] = React.useState<"soft" | "hard">("soft");
   const [workerMessage, setWorkerMessage] = React.useState("");
   const [workerMessageRequestId, setWorkerMessageRequestId] = React.useState("");
@@ -616,7 +616,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
           toast.success(`Worker #${session.intent_id} 및 독점 하위가 완전히 삭제됨${extra}`);
           setCancelReason("");
         } else {
-          // 소프트 삭제: 의도를 deleted로 설정하고 삭제 사유를 기록하며, 노드와 산출물을 보존합니다.
+          // 논리 삭제: 의도를 deleted로 설정하고 삭제 사유를 기록하며, 노드와 산출물을 보존합니다.
           patchIntentState(session.intent_id, "deleted");
           toast.success(`Worker #${session.intent_id} 삭제됨(사유 기록됨, planner가 이를 바탕으로 다시 계획)`);
           setCancelReason("");
@@ -1156,7 +1156,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
     for (const node of allIntents) {
       let title = `Intent ${node.id}`;
       let parsedPayload: unknown = node.payload;
-      // 소프트 삭제: 의도 state='deleted'. 삭제 사유는 별도 필드 delete_reason에 저장됩니다.
+      // 논리 삭제: 의도 state='deleted'. 삭제 사유는 별도 필드 delete_reason에 저장됩니다.
       const deleted = node.state === "deleted";
       const deleteReason = node.delete_reason ?? "";
       if (node.payload) {
@@ -2124,7 +2124,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   </>
                 ) : (
                   <>
-                    <strong>소프트 삭제</strong>는 이 의도를 '삭제됨'으로 설정하고 삭제 사유를 기록하며, 의도 노드, 실행 기록,
+                    <strong>논리 삭제</strong>는 이 의도를 '삭제됨'으로 설정하고 삭제 사유를 기록하며, 의도 노드, 실행 기록,
                     이미 등록된 사실과 취약점은 <strong>모두 보존됩니다</strong>. planner는 '이 의도는 사용자가 삭제 + 사유'를 받고 이를 바탕으로 다시 계획합니다.
                   </>
                 )}
@@ -2140,7 +2140,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                     deleteMode === "soft" ? "border-primary bg-primary/5" : "hover:bg-accent",
                   )}
                 >
-                  <div className="font-medium">소프트 삭제</div>
+                  <div className="font-medium">논리 삭제</div>
                   <div className="text-xs text-muted-foreground">데이터 보존, 추적 가능</div>
                 </button>
                 <button
