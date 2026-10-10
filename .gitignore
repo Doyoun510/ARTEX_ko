@@ -58,5 +58,3 @@ Thumbs.db
 /bench/
 /Dockerfile.bench
 /Dockerfile.bench.v2
-# 패치된 3자 모듈(scripts/apply-norma-patch.sh 로 재생성, 비공개 유지)
-/third_party/norma/

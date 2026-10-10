@@ -60,5 +60,3 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 )
-
-replace github.com/Autumn-27/norma => ./third_party/norma // 패치본(Gemini thought_signature): scripts/apply-norma-patch.sh 로 빌드 전 생성
