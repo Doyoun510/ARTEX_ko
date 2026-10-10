@@ -251,6 +251,13 @@ IFS=','
 read -r -a targets <<< "$ARTEX_TARGETS"
 IFS="$old_ifs"
 [ "${#targets[@]}" -gt 0 ] || die "ARTEX_TARGETS는 비워 둘 수 없습니다"
+
+# norma(github.com/Autumn-27/norma)에 Gemini thought_signature 라운드트립 패치를
+# 입힌 third_party/norma를 준비한다. go.mod의 replace가 이 디렉터리를 가리키며,
+# .gitignore 대상이라 빌드마다 재생성이 필요하다. 스크립트는 멱등하다.
+info "norma 패치 적용(third_party/norma 준비)"
+"$(cd "$(dirname "$0")" && pwd)/scripts/apply-norma-patch.sh"
+
 for target in "${targets[@]}"; do
   target="${target//[[:space:]]/}"
   [ -n "$target" ] || continue

@@ -1,0 +1,79 @@
+--- a/llm/openai.go	2026-10-10 04:57:27.105554735 +0000
++++ b/llm/openai.go	2026-10-10 04:57:27.105554735 +0000
+@@ -28,6 +28,22 @@
+ 		Name      string `json:"name"`
+ 		Arguments string `json:"arguments"`
+ 	} `json:"function"`
++	// ExtraContent carries provider-specific side-channel data on a tool call.
++	// Gemini (2.5+/3.x thinking models) returns a per-call thought_signature here
++	// and requires it echoed back verbatim on the assistant turn in subsequent
++	// requests, or the API 400s with "Function call is missing a thought_signature
++	// in functionCall parts". omitempty keeps non-Gemini requests unchanged.
++	ExtraContent *oaExtraContent `json:"extra_content,omitempty"`
++}
++
++// oaExtraContent is the OpenAI-compat side channel Google uses to attach
++// Gemini-specific fields to a tool call.
++type oaExtraContent struct {
++	Google *oaGoogleExtra `json:"google,omitempty"`
++}
++
++type oaGoogleExtra struct {
++	ThoughtSignature string `json:"thought_signature,omitempty"`
+ }
+ 
+ type oaTool struct {
+@@ -50,14 +66,14 @@
+ 	// MaxTokens and MaxCompletionTokens are mutually exclusive: buildBody fills
+ 	// exactly one of them per Config.MaxTokensField, and omitempty drops the
+ 	// other. Sending both would make OpenAI reject the request.
+-	MaxTokens           int      `json:"max_tokens,omitempty"`
+-	MaxCompletionTokens int      `json:"max_completion_tokens,omitempty"`
+-	Temperature         *float64 `json:"temperature,omitempty"`
+-	Stop            []string      `json:"stop,omitempty"`
+-	Thinking        *oaThinking   `json:"thinking,omitempty"`
+-	ReasoningEffort string        `json:"reasoning_effort,omitempty"`
+-	Stream          bool          `json:"stream"`
+-	StreamOptions   *oaStreamOpts `json:"stream_options,omitempty"`
++	MaxTokens           int           `json:"max_tokens,omitempty"`
++	MaxCompletionTokens int           `json:"max_completion_tokens,omitempty"`
++	Temperature         *float64      `json:"temperature,omitempty"`
++	Stop                []string      `json:"stop,omitempty"`
++	Thinking            *oaThinking   `json:"thinking,omitempty"`
++	ReasoningEffort     string        `json:"reasoning_effort,omitempty"`
++	Stream              bool          `json:"stream"`
++	StreamOptions       *oaStreamOpts `json:"stream_options,omitempty"`
+ }
+ 
+ type oaStreamOpts struct {
+@@ -95,6 +111,14 @@
+ 					if tc.Function.Arguments == "" {
+ 						tc.Function.Arguments = "{}"
+ 					}
++					// Echo Gemini's per-call thought_signature back verbatim.
++					// Gemini thinking models (2.5+/3.x) stamp each function call
++					// with a signature captured into b.Signature on parse, and
++					// reject a follow-up request that omits it. omitempty keeps
++					// this absent for every other provider.
++					if b.Signature != "" {
++						tc.ExtraContent = &oaExtraContent{Google: &oaGoogleExtra{ThoughtSignature: b.Signature}}
++					}
+ 					om.ToolCalls = append(om.ToolCalls, tc)
+ 				}
+ 			}
+@@ -477,7 +501,14 @@
+ 		if strings.TrimSpace(in) == "" {
+ 			in = "{}"
+ 		}
+-		blocks = append(blocks, ContentBlock{Type: BlockToolUse, ID: tc.ID, Name: tc.Function.Name, Input: []byte(in)})
++		b := ContentBlock{Type: BlockToolUse, ID: tc.ID, Name: tc.Function.Name, Input: []byte(in)}
++		// Gemini attaches a per-call thought_signature that must be replayed on
++		// the next request (see oaToolCall.ExtraContent). Stash it on the block's
++		// Signature field so toOpenAIMessages can echo it back.
++		if tc.ExtraContent != nil && tc.ExtraContent.Google != nil && tc.ExtraContent.Google.ThoughtSignature != "" {
++			b.Signature = tc.ExtraContent.Google.ThoughtSignature
++		}
++		blocks = append(blocks, b)
+ 	}
+ 	return Message{Role: RoleAssistant, Content: blocks}, mapOpenAIFinish(ch.FinishReason), usage, nil
+ }
