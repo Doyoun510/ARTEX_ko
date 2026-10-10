@@ -1059,3 +1059,20 @@ U15 완료 후 사용자가 U12 재개. wip/u12-db(소/중형 18파일) work에 
 - **정적 검토·보존**: 소스 8개 지정 26행과 용어집 한 행의 줄 수·LF·들여쓰기·지정 밖 바이트를 수정 전/후 및 승인 행 역치환으로 확인했다. 도구명·enum·상태·ID·SQL·요청·JSX·변수·조건·포맷/인수는 그대로다. 직접 문자열 비교·파싱·테스트 기대값 의존은 재검색에서 발견하지 못해 테스트를 수정하지 않았다.
 - **기록·후속**: 로컬 감사 원문·수정 전 근거·과거 문맥 확인 상태를 이력으로 보존하고 승인 후 상태를 별도로 추가했다. 커버리지는 소스 8개의 승인 scope·해시만 갱신한다. 기존 A/S 집계·M 승인 이력·원문 정책/기능/호환성·실제 DB 미확인 후속과 기존 로컬 변경·미추적 파일·Git index·제외 설정은 보존한다.
 - **실행·산출물**: 실행 검증은 **사용자 요청으로 미실행**이다. 감사 MD/TSV는 Git 제외 translation/audit/에만 보관하고 `/tmp/artex-m112-m115-approved.diff`에는 소스 8개·용어집·이번 PROGRESS만 포함한다. fetch·병합·stage·commit·push 없음.
+
+
+### M012·M013·M031·M043·M084·M094·M107 · 원문 설명 정정 [원문 설명을 현재 구현에 맞춰 정정 / 실행 미검증]
+- **기준·범위**: ko-translation, HEAD `934d3dcad0cb2a2e792f7ca8561648119963fbe2`. staged·MERGE_HEAD·대상 기존 변경 부재와 최신 기준/감사 근거를 확인하고 지정 설명만 정정했다. 원문의 기능·검증 규칙을 변경한 작업이 아니다.
+- **M012·M013**: 커버리지 비활성 시 list_untested_assets만 제거하고 add_task_scope·insertAssets의 task_scope 누적은 유지함을 설명했다. graphOverviewData는 지표를 생략하되 host_count는 남을 수 있다. Worker의 의도 asset_ids 초기 자동 편입은 현재 if coverageEnabled로 제한되므로 별도 경로로 명시했다. PlannerTools list_assets는 현재 작업·직접 관련 작업 범위, taskID<=0은 전역 조회임을 구분했다.
+- **M031·M043**: Skill 생성 도움말 및 생성/업로드 오류는 문자 시작·1–64자·ASCII 영문 소문자·비ASCII 글자/숫자·하이픈 허용·끝/연속 하이픈 금지를 현재 validSkillName에 맞췄다. 오류 문구의 직접 비교/파싱·프런트 매칭·테스트 기대값 의존은 발견하지 못했다. heartbeat 주석은 기본/하한 600초(10분)로 정정했으며 상수·정규화는 그대로다.
+- **M084·M094·M107**: NotificationFilter는 저장 시 min_severity 검증과 읽기 ParseFilter/Match를 구분하고 JSON 오류의 영값 초기화나 항상 전부 매칭을 단정하지 않게 했다. 심각도 실패 안내는 실제 low 검사로 한정했다. 취소 오류 캐시 설명은 정상 TTL 30분·일반 오류 TTL 2분·취소 오류 비캐시로 정정했다. 입력·기대값·검사 조건·로직은 보존했다.
+- **정적 검토·보존**: 소스 10개 파일의 설명 수정 밖 바이트·줄 수·LF·들여쓰기·포맷/인수를 승인 구절 역치환으로 대조했다. SQL·키·enum·도구명·상수·조건·반환 구조·검증 규칙 미변경. PROGRESS 기존 이력, 용어집·다른 소스/테스트·로컬 변경·미추적 파일·Git index·제외 설정을 보존했다.
+- **후속·산출물**: 허용 범위 설명 정정 완료와 원문 문제 이력을 로컬 감사에 분리했다. db/tasks.go CoverageEnabled 주석과 notify/filter.go ParseFilter의 영값/전부 매칭 설명은 범위 밖 연결 후보로만 보고하며 미수정이다. 기존 A046–A049·M016 실제 DB/정책/기능/호환성 및 실행 후속은 유지한다. 감사 MD/TSV는 Git 제외 translation/audit/에만 작성하고 `/tmp/artex-source-description-fixes.diff`에는 소스 10개와 이번 PROGRESS만 포함한다.
+- **실행**: 실행 검증은 **사용자 요청으로 미실행**이다. 빌드·테스트·lint·gofmt·앱·DB·모델·Git 훅 실행 및 fetch·병합·stage·commit·push 없음.
+
+
+### 원문 설명 정정 추가 승인 — M012·M084 연결 주석
+
+- **정정**: db/tasks.go CoverageEnabled는 커버리지 지표 생략·list_untested_assets 제거와 add_task_scope/insertAssets의 task_scope 누적 유지를 구분했다. Worker의 초기 의도 asset_ids 편입은 coverageEnabled 조건을 따른다. notify/filter.go는 JSON 오류 미반환·일부 필드 유지 가능성과 이후 Match의 이벤트/심각도/범위/키워드 판정을 설명하며 항상 영값/전체 매칭이라는 단정을 제거했다. 원문 설명을 현재 구현에 맞춰 정정 / 실행 미검증.
+- **근거·보존**: coverageOnlyTools·graphOverviewData·insertAssets·Worker 초기 편입 및 ParseFilter/Match를 읽기 전용으로 재확인했다. 로컬 보고서의 mainagent 근거는 실제 DropCoverageTools(tsx.MainAgentTools()) 호출로 정정했다. 기존 승인 변경·원문 문제 이력·다른 정책/호환성 후속을 유지하고 함수·조건·상수·SQL·검증 규칙·입력·기대값은 변경하지 않았다. 두 소스의 줄 수·LF와 지정 주석 밖 바이트, 기존 로컬 변경·Git index·제외 설정을 보존했다. 감사 보고서는 로컬 제외 경로에만 보관한다.
+- **실행**: 사용자 요청으로 실행 미검증. fetch·병합·stage·commit·push 없음.

@@ -123,7 +123,7 @@ func (m *MainAgent) Chat(ctx context.Context, taskID int64, mainSeg int, as *db.
 	tsx.SetNotifyHint(notifyHint) // add_hint 힌트 추가 → planner 에 '사람이 전략 힌트 N개를 추가함: …' 트리거 하나를 기록
 	tsx.steerWork = m.steerWork   // enable steer_work tool (nil = unavailable)
 	// 도메인 도구 + 기본 디폴트 도구 집합(Read/Write/Edit/MultiEdit/LS/Glob/Grep/Bash)
-	// 자산 커버리지 기능이 꺼지면 add_task_scope/list_untested_assets 를 제거한다(prompt에 들어가지 않음).
+	// 자산 커버리지 기능이 꺼지면 list_untested_assets만 제거하며, add_task_scope와 insertAssets의 task_scope 누적은 유지한다.
 	base := append(tsx.DropCoverageTools(tsx.MainAgentTools()), actool.DefaultTools()...)
 	ctx = WithRunInfo(ctx, RunInfo{TaskID: taskID, ExplorationID: explorationID(ts)})
 	tools, def, cleanup := AugmentTools(ctx, "mainagent", base)

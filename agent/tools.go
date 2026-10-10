@@ -59,9 +59,9 @@ type ToolSet struct {
 	taskID          int64 // PG tasks.id; 0 when unknown (tests / orchestrator cross-task reads)
 	// coverageDisabled mirrors tasks.coverage_enabled=false. Stored inverted so the
 	// zero value (all existing ToolSet constructions) means ENABLED — matching the
-	// DB default (true). When true: graphOverviewData drops the coverage block, the
-	// auto-scope hook (insertAssets) is skipped, and add_task_scope/list_untested_assets
-	// are filtered out of the agent's tool list. The scope field stays regardless.
+	// DB default (true). When true: graphOverviewData omits coverage metrics but may
+	// keep host_count; only list_untested_assets is removed from the tool list.
+	// insertAssets still accumulates task_scope; add_task_scope and scope remain.
 	coverageDisabled bool
 	// ownerNode is the exploration node that writes attach to: assets this run
 	// touches get anchored to it as lineage/provenance (NOT visibility — the asset
@@ -169,11 +169,11 @@ func NewToolSet(ts *db.ExplorationStore, worker string) *ToolSet {
 func (t *ToolSet) SetTaskID(id int64) { t.taskID = id }
 
 // SetCoverageEnabled records whether this task has the asset-coverage feature on
-// (default enabled). Passing false makes graphOverviewData omit the coverage block
-// and DropCoverageTools filter the two coverage-only tools out of the agent's tool
-// list. It does NOT stop scope accumulation: insertAssets' auto-scope hook runs
-// either way, because task_scope is the task's range boundary (the filter basis for
-// asset queries), not merely a coverage denominator.
+// (default enabled). Passing false omits coverage metrics (host_count may remain)
+// and removes only list_untested_assets from the agent's tool list.
+// It does NOT stop insertAssets' auto-scope accumulation or remove add_task_scope:
+// task_scope is the task's range boundary (the filter basis for asset queries),
+// not merely a coverage denominator.
 func (t *ToolSet) SetCoverageEnabled(enabled bool) { t.coverageDisabled = !enabled }
 
 // CoverageDisabled reports whether the coverage feature is off for this task.
@@ -520,7 +520,7 @@ func (t *ToolSet) graphOverviewData() map[string]any {
 	// 비율 + by_type(유형별 총수/테스트된 수). 테스트하지 않은 구체적인 자산을 보려면 agent가 필요에 따라 list_untested_assets를 호출해 스스로 판단한다. 작업 컨텍스트에만 있다.
 	// 자산 커버리지 기능이 꺼져 있으면(coverageDisabled) host_count(대상 호스트 수를 파악하는 정보)만 유지하고,
 	// denominator/tested/pct/by_type/note 등 커버리지 지표를 버려 컨텍스트 오염을 방지하고
-	// 숨겨진 add_task_scope/list_untested_assets 호출도 유도하지 않는다.
+	// list_untested_assets 호출은 유도하지 않으며, add_task_scope와 insertAssets의 task_scope 누적은 유지한다.
 	if t.as != nil && t.ts != nil && t.taskID > 0 {
 		{
 			m := map[string]any{}
@@ -2041,8 +2041,8 @@ func (t *ToolSet) PlannerTools() []actool.CoreTool {
 		t.addFinding(),
 		// list_companies: 회사 목록 + scope + 자산 수 조회(company_id 확보 / 귀속 범위 파악).
 		t.listCompanies(),
-		// list_assets: 계획 수립 시 DSL로 전체 자산 저장소를 검색한다(list_untested_assets의 "범위 내 미테스트" 관점과 함께,
-		// "도메인/핑거프린트/포트/상태 코드 등 조건으로 전체 저장소에서 조회"하는 능력을 보완한다).
+		// list_assets: 작업 컨텍스트에서는 현재 작업·직접 관련 작업의 범위 내 자산을 DSL로 검색한다(list_untested_assets의 "범위 내 미테스트" 관점과 함께,
+		// 도메인/핑거프린트/포트/상태 코드 등으로 조회하며, 작업 컨텍스트가 없는 taskID<=0 경로에서는 전역 조회한다).
 		t.listAssets(),
 		// add_company_scope: 계획 수립 시 도메인/IP/CIDR/ICP/키워드를 특정 회사의 자산 범위에 포함할 수 있다(매칭된 자산을 자동으로 편입).
 		t.addCompanyScope(),

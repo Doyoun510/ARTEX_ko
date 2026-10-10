@@ -408,7 +408,7 @@ func (w *Worker) execute(ctx context.Context, name string, taskID int64, as *db.
 				// 의도가 명확히 겨냥한 이 자산들 → 작업 테스트 범위에 자동 편입(insertAssets와 동일한
 				// 보수적 입도). upsertTaskScope의 ON CONFLICT DO NOTHING + uq_task_scope
 				// 유니크 인덱스가 중복 추가되지 않음을 보장; 재실행/재시도도 멱등 no-op.
-				// 자산 커버리지 기능이 꺼지면 테스트 범위(분모)를 더는 누적하지 않는다.
+				// 이 의도의 asset_ids 자동 편입은 커버리지가 켜졌을 때만 수행하며, insertAssets의 범위 누적은 스위치와 무관하다.
 				if coverageEnabled {
 					for _, a := range assets {
 						_ = as.AddAutoScope(taskID, a.Type, a.Domain, a.URL, a.IP)

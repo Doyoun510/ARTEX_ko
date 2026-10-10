@@ -371,7 +371,7 @@ func (p *Planner) Plan(ctx context.Context, taskID int64, as *db.AssetStore, ts 
 		tsx.SetOwnerNode(origin) // planner-side anchors default to the task root (origin fact)
 	}
 	// 도메인 도구 + 기본 디폴트 도구 집합(Read/Write/Edit/MultiEdit/LS/Glob/Grep/Bash)
-	// 자산 커버리지 기능이 꺼지면 add_task_scope/list_untested_assets 제거(프롬프트에 안 들어감).
+	// 자산 커버리지 기능이 꺼지면 list_untested_assets만 제거하며, add_task_scope와 insertAssets의 task_scope 누적은 유지한다.
 	base := append(tsx.DropCoverageTools(tsx.PlannerTools()), actool.DefaultTools()...)
 	ctx = WithRunInfo(ctx, RunInfo{TaskID: taskID, ExplorationID: explorationID(ts)})
 	tools, def, cleanup := AugmentTools(ctx, "planner", base)

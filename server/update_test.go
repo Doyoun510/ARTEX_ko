@@ -119,7 +119,7 @@ func TestReleaseCacheDoesNotPoisonOnCallerCancel(t *testing.T) {
 	}
 
 	// 방문자가 탭을 닫으면 요청이 취소됩니다. 이는 GitHub에 문제가 있다는 뜻이 아니며, "취소됨"을 절대로
-	// 캐시에 기록해서는 안 됩니다. 그렇지 않으면 이후 30분 동안 모든 방문자가 뜬금없는 오류를 받습니다.
+	// 캐시에 기록해서는 안 됩니다. 정상 결과 TTL은 30분, 일반 오류 TTL은 2분이며, 취소 오류는 캐시하지 않아야 합니다.
 	c.fetch = func(ctx context.Context, _ *http.Client) (*selfupdate.Release, error) {
 		return nil, ctx.Err()
 	}

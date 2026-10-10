@@ -116,7 +116,7 @@ func TestAssetLineOmitsExcess(t *testing.T) {
 
 func TestSeverityAndStatusLabels(t *testing.T) {
 	if AtLeast("", "low") {
-		t.Fatal("빈 심각도의 순위는 0이므로 모든 기준에서 차단해야 합니다")
+		t.Fatal("빈 심각도의 순위는 0이므로 low 기준에서 차단해야 합니다")
 	}
 	if !AtLeast("critical", "") {
 		t.Fatal("빈 기준은 허용해야 합니다")

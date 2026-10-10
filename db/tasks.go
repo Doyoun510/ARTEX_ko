@@ -43,11 +43,11 @@ type Task struct {
 	FirstRunAt     *time.Time `json:"first_run_at,omitempty"` // 처음 실제로 실행을 시작한 시각(created_at 아님); nil=아직 실행 안 함
 	DeadlineAt     *time.Time `json:"deadline_at,omitempty"`  // = first_run_at + timeout_seconds; nil=무제한 또는 미실행
 	// planner heartbeat 트리거 간격(초): 지난 plan 종료/작업 시작부터 이 값만큼 지나고 그동안 트리거가 없으면 → 한 라운드 트리거.
-	// 하한=기본=300(5min), 미만이면 전부 300으로 올림(CreateTask에서 정규화). docs/planner-trigger-impl-plan.md 참조
+	// 하한=기본=600초(10분), 미만이면 전부 600초로 올림(CreateTask에서 정규화). docs/planner-trigger-impl-plan.md 참조
 	PlanHeartbeatSeconds int `json:"plan_heartbeat_seconds"`
-	// CoverageEnabled는 '자산 커버리지 기능' 전체 스위치(기본 true). false면: 테스트 커버리지를 계산/표시하지 않고,
-	// task_scope(source=auto)를 자동 누적하지 않으며, agent에 add_task_scope/
-	// list_untested_assets를 열지 않고, 현황에 coverage 블록을 주입하지 않는다(scope 필드는 유지). company 연관
+	// CoverageEnabled는 자산 커버리지 기능 스위치(기본 true). false면 커버리지 지표를 생략하고 list_untested_assets만 제거한다.
+	// 현황의 host_count와 scope, add_task_scope 및 insertAssets의 task_scope 누적은 유지한다.
+	// Worker가 의도의 asset_ids를 초기 자동 편입하는 별도 경로는 coverageEnabled 조건을 따른다. company 연관
 	// (task_scope kind=company)은 이 스위치와 무관하며 전혀 영향받지 않는다. db/task_scope.go 참조.
 	CoverageEnabled bool `json:"coverage_enabled"`
 }

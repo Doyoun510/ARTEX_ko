@@ -951,8 +951,8 @@ export interface Settings {
 
 // ---- 취약점 IM 푸시 ----
 
-// NotificationFilter는 채널의 필터 조건, 필드는 모두 선택적이며 생략 시 필터 안 함.
-// 백엔드는 모든 필드를 검증하지 않음: 설정이 비정상이면 '매칭'으로 처리(누락보다 과다 푸시가 낫다).
+// NotificationFilter의 필드는 모두 선택적이며, 저장 시 min_severity는 빈 값 또는 등록된 심각도만 허용한다.
+// 읽기 시 ParseFilter는 JSON 파싱 오류를 반환하지 않고 파싱된 값을 Match에 전달하며, Match는 이벤트 유형·심각도·작업/자산·유형 조건별로 판정한다.
 export interface NotificationFilter {
   min_severity?: string; // "" | low | medium | high | critical
   task_ids?: number[]; // 빈 값=무제한; 비어 있지 않으면 취약점이 속한 작업과 교집합 필요

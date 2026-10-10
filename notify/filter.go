@@ -8,7 +8,7 @@ import (
 )
 
 // Filter는 notification_channels.filter JSONB 열의 계약으로, 채널 인스턴스의 필터 조건입니다.
-// 모든 필드는 선택 사항이며 생략하면 '필터링하지 않음'입니다. 이는 잘못된 설정의 기본 처리 의미이므로 ParseFilter를 참조하세요.
+// 각 필드의 생략 시 동작은 아래 설명과 Match를 참조하세요. JSON 파싱 오류 처리는 ParseFilter를 참조하세요.
 type Filter struct {
 	// MinSeverity는 최소 심각도 기준(low/medium/high/critical)이며, 비어 있으면 기준을 두지 않습니다.
 	MinSeverity string `json:"min_severity"`
@@ -26,16 +26,16 @@ type Filter struct {
 
 // ParseFilter는 채널 필터 설정을 파싱합니다.
 //
-// **error를 절대로 반환하지 않습니다.** 의도적인 설계 선택으로, 필터 조건 설정이 잘못되면 항상 영값
-// Filter(= 필터 없음 = 전부 매칭)를 사용합니다. 취약점 알림 시스템에서는 **알림 하나를 더 보내는 것이
-// 높음 심각도 알림 하나를 조용히 누락하는 것보다 훨씬 낫기** 때문입니다. 파싱 실패가 "알림 전송 없음"이 되면 설정이 된 것처럼 보이지만,
-// 실제로는 아무것도 보내지 않는 채널이 됩니다. 이는 가장 나쁜 실패 방식입니다.
+// **error를 절대로 반환하지 않습니다.** 빈 입력이면 영값 Filter를 반환하며, 그 밖에는 JSON 파싱 오류를 무시합니다.
+// 타입 오류 등에서는 일부 필드 값이 남을 수 있으므로, 파싱 실패가 모든 필드의 영값 초기화를 뜻하지는 않습니다.
+// 반환된 Filter에는 이후 Match의 이벤트 유형·심각도·작업/자산 범위·키워드 조건이 적용됩니다.
+// 따라서 JSON 파싱 오류를 반환하지 않는다는 사실이 모든 이벤트의 매칭을 보장하지는 않습니다.
 func ParseFilter(raw []byte) Filter {
 	var f Filter
 	if len(raw) == 0 {
 		return f
 	}
-	// 파싱에 실패하면 f는 영값을 유지하며, 필터링하지 않습니다.
+	// 파싱 오류는 반환하지 않으며, 일부 필드 값이 남은 f를 반환할 수 있습니다.
 	_ = json.Unmarshal(raw, &f)
 	return f
 }
@@ -68,7 +68,7 @@ func (f Filter) Validate() error {
 
 // Match는 이벤트를 해당 필터 조건의 채널로 전송해야 하는지 판정합니다.
 //
-// **error를 절대로 반환하지 않으며**, 이유는 ParseFilter와 같습니다. 모든 내부 오류는 "매칭"으로 처리합니다.
+// **error를 절대로 반환하지 않으며**, 전달된 Filter와 이벤트를 아래 조건에 따라 bool로 판정합니다.
 // 판정 순서: 이벤트 유형 → 심각도 기준 → 작업/자산 범위 → 취약점 유형 키워드.
 func Match(f Filter, s Snapshot) bool {
 	// 상태 변경 이벤트는 명시적으로 활성화한 채널만 받습니다. 대부분의 사용자는

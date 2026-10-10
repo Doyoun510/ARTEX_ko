@@ -1044,7 +1044,7 @@ export default function SkillsPage() {
               <div className="grid gap-1.5">
                 <Label htmlFor="sk-name">이름 <span className="text-destructive">*</span></Label>
                 <Input id="sk-name" placeholder="sqli-deepdive" value={newName} onChange={(e) => setNewName(e.target.value)} />
-                <p className="text-muted-foreground text-xs">소문자 / 숫자 / 하이픈, 1–64자</p>
+                <p className="text-muted-foreground text-xs">문자로 시작하는 1–64자. ASCII 영문 소문자·비ASCII 글자·ASCII/비ASCII 숫자·하이픈 허용. 끝 하이픈·연속 하이픈 불가</p>
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="sk-desc">설명 <span className="text-destructive">*</span></Label>

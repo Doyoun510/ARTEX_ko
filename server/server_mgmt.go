@@ -1086,7 +1086,7 @@ func (s *Server) fsCreateSkill(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !validSkillName(body.Name) {
-		writeErr(w, 400, "skill name must be 1-64 lowercase alphanumeric/hyphen characters, not starting/ending/doubling hyphens")
+		writeErr(w, 400, "skill name must be 1-64 characters, start with a letter, and contain only ASCII lowercase letters, non-ASCII letters, digits, or hyphens; trailing or consecutive hyphens are not allowed")
 		return
 	}
 	if strings.TrimSpace(body.Description) == "" {
@@ -1351,7 +1351,7 @@ func (s *Server) fsUploadSkill(w http.ResponseWriter, r *http.Request) {
 	}
 	if !validSkillName(name) {
 		writeErr(w, 400, "skill 이름이 유효하지 않음(SKILL.md의 name 필드에서 가져옴): "+name+
-			"(≤64자, 문자로 시작, 소문자/숫자/하이픈 또는 중문 등 비 ASCII 문자만, 공백·점·경로 구분자 불가)")
+			"(1–64자, 문자로 시작, ASCII 영문 소문자·비ASCII 글자·ASCII/비ASCII 숫자·하이픈 허용, 끝 하이픈·연속 하이픈 및 공백·점·경로 구분자 불가)")
 		return
 	}
 
